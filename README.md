@@ -3,17 +3,21 @@
 Prototipo web de un **directorio comunal de negocios y servicios** para Los Reyes de
 Salgado, Michoacán. Sitio estático, mobile-first, sin dependencias ni paso de compilación.
 
-> ⚠️ **Datos de demostración.** Los negocios, calificaciones y teléfonos incluidos en
-> `assets/js/data.js` son ficticios y sirven solo para probar la interfaz. No corresponden
-> a comercios reales de la ciudad. Sustitúyelos antes de publicar el sitio de verdad.
+> ⚠️ **Datos de demostración.** Los negocios, calificaciones, teléfonos y redes sociales
+> incluidos en `assets/js/data.js` son ficticios y sirven solo para probar la interfaz. No
+> corresponden a comercios reales de la ciudad. Los usuarios de redes llevan el prefijo
+> `demo.` a propósito, para que ningún enlace caiga en la cuenta de una persona real.
+> Sustitúyelos antes de publicar el sitio de verdad.
 
 ## Qué incluye
 
 - **Encabezado** con la marca y buscador central (busca por nombre, giro, colonia y etiquetas; ignora acentos).
-- **Cuadrícula de 12 categorías**: 2 columnas en móvil, 3 en tablet y 4 en escritorio, con icono, nombre y conteo de negocios.
+- **Cuadrícula de 12 categorías**: 2 columnas en móvil, 3 en tablet y 4 en escritorio. Cada tarjeta muestra icono, nombre y las especialidades que contiene (no conteos).
 - **Vista de categoría** con barra de filtros por especialidad (`Todos`, `Cerrajeros`, `Fontaneros`, …) que filtra sin recargar la página.
 - **Jerarquía de planes**: los negocios `destacado` aparecen siempre arriba, con badge dorado; los `basico` después. Dentro de cada grupo se ordenan por calificación.
-- **Tarjetas de negocio** con banner, etiqueta de plan, estado abierto/cerrado, calificación, zona, horario, etiquetas y botón **Contactar por WhatsApp** (`https://wa.me/…` con mensaje prellenado).
+- **Tarjetas de negocio** con banner, etiqueta de plan, estado abierto/cerrado, calificación, horario y etiquetas.
+- **Dirección enlazada a Google Maps**: al tocarla abre la ruta de "cómo llegar" al negocio.
+- **Botones circulares de contacto** al pie de cada tarjeta: WhatsApp (con mensaje prellenado), teléfono, Facebook, Instagram y TikTok. Solo se dibujan las redes que el negocio tenga registradas.
 - **Página de registro** con los dos planes y contacto directo por WhatsApp.
 - Modo claro y oscuro automáticos, navegación por URL (`#/c/hogar/fontaneros`) y soporte de teclado.
 
@@ -56,13 +60,23 @@ Para agregar un negocio, añade un objeto al arreglo `negocios` de su categoría
   filtro: 'fontaneros',       // debe coincidir con un id de `filtros` de la categoría
   rating: 4.8,
   tags: ['Fugas', 'Boiler'],  // hasta 4 etiquetas visibles
-  zona: 'Col. Centro',
+  zona: 'Av. Morelos 210, Centro',        // texto que se muestra en la tarjeta
+  mapa: 'Av. Morelos 210, Centro, Los Reyes de Salgado, Michoacán',
   horario: 'Lun a Sáb · 9:00 – 19:00',
   abierto: true,
   tel: '523541234567',        // formato WhatsApp: 52 + 10 dígitos, sin espacios ni signos
+  redes: { facebook: 'usuario', instagram: 'usuario', tiktok: 'usuario' },
   desc: 'Una línea describiendo el servicio.'
 }
 ```
+
+**`mapa`** alimenta el enlace de "cómo llegar". Es opcional: si lo omites, el enlace usa
+`zona` + la ciudad, lo que ubica la zona aproximada pero no la puerta del negocio. Para
+que la ruta sea exacta pon la dirección completa o, mejor aún, las coordenadas que copies
+de Google Maps (`'19.5871,-102.4745'`).
+
+**`redes`** también es opcional y lleva el **usuario**, no la URL completa. Cada red que
+falte simplemente no dibuja su icono, así que un negocio sin Instagram no muestra hueco.
 
 Para cambiar el número que recibe las altas de negocios, edita `WA_DIRECTORIO` en el
 mismo archivo.

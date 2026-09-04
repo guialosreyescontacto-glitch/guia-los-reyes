@@ -244,14 +244,15 @@ button { font: inherit; color: inherit; }
 }
 @media (min-width: 768px) { .hero__lead { font-size: 16.5px; } }
 
-.hero__stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.hero__stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
 .stat {
-  display: flex; align-items: baseline; gap: 6px;
+  display: inline-flex; align-items: center; gap: 7px;
   background: var(--surface); border: 1px solid var(--line);
-  border-radius: 999px; padding: 7px 14px; box-shadow: var(--shadow-sm);
+  border-radius: 999px; padding: 7px 14px 7px 11px;
+  font-size: 12.5px; font-weight: 550; color: var(--ink-2);
+  box-shadow: var(--shadow-sm);
 }
-.stat__num { font-weight: 700; font-size: 15px; letter-spacing: -.02em; }
-.stat__label { font-size: 12.5px; color: var(--ink-3); }
+.stat__ico { width: 14px; height: 14px; flex: none; color: var(--accent); }
 
 /* ==========================================================================
    ENCABEZADOS DE SECCIÓN
@@ -310,11 +311,14 @@ button { font: inherit; color: inherit; }
 @media (min-width: 768px) { .cat__name { font-size: 15px; } }
 
 .cat__meta {
-  margin: auto 0 0; display: flex; align-items: center; gap: 5px;
-  font-size: 11.5px; color: var(--ink-3);
+  margin: auto 0 0; display: flex; align-items: flex-start; gap: 6px;
+  font-size: 11.5px; line-height: 1.4; color: var(--ink-3);
+  /* La lista de especialidades no debe estirar la tarjeta */
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .cat__dot {
-  width: 5px; height: 5px; border-radius: 50%;
+  display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+  margin-right: 5px; vertical-align: 2px;
   background: var(--cat-color, var(--accent)); flex: none;
 }
 
@@ -369,10 +373,6 @@ button { font: inherit; color: inherit; }
 .chip:active { transform: scale(.96); }
 .chip[aria-selected="true"] {
   background: var(--ink); color: var(--bg); border-color: var(--ink);
-}
-.chip__count {
-  font-size: 11px; font-weight: 700; opacity: .6;
-  font-variant-numeric: tabular-nums;
 }
 
 .results-meta {
@@ -491,15 +491,49 @@ button { font: inherit; color: inherit; }
 }
 .card--featured .tag { background: var(--gold-soft); border-color: color-mix(in srgb, var(--gold) 22%, transparent); color: var(--gold); }
 
-.card__foot { margin-top: auto; padding-top: 12px; display: flex; gap: 8px; }
-.card__foot .btn--wa { flex: 1; }
-.card__call {
-  display: inline-grid; place-items: center; width: 42px; flex: none;
-  border-radius: 999px; border: 1px solid var(--line-strong);
-  background: var(--surface); color: var(--ink-2); cursor: pointer;
+/* --- Dirección enlazada a Google Maps --- */
+.card__mapa {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: var(--ink-3); text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: color .15s, border-color .15s;
 }
-.card__call:hover { border-color: var(--accent); color: var(--accent); }
-.card__call svg { width: 16px; height: 16px; }
+.card__mapa:hover { color: var(--accent); border-bottom-color: currentColor; }
+
+/* --- Fila de botones circulares de contacto --- */
+.card__actions {
+  margin-top: auto; padding-top: 14px;
+  display: flex; flex-wrap: wrap; gap: 9px;
+}
+
+.act {
+  width: 42px; height: 42px; flex: none; padding: 10px;
+  display: grid; place-items: center; border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--surface); color: var(--ink-2);
+  transition: transform .14s cubic-bezier(.2,.8,.3,1), background .15s, color .15s, border-color .15s, box-shadow .15s;
+}
+.act svg { width: 100%; height: 100%; }
+.act:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.act:active { transform: translateY(0) scale(.94); }
+
+/* WhatsApp es la acción principal: va rellena desde el inicio. */
+.act--wa {
+  background: var(--wa); border-color: transparent; color: #06301a;
+  box-shadow: 0 1px 3px rgba(18,140,63,.35);
+}
+.act--wa:hover { background: #1fbe5a; box-shadow: 0 4px 10px rgba(18,140,63,.35); }
+
+/* El resto se tiñe con el color de su marca al pasar el cursor. */
+.act--tel:hover       { border-color: var(--accent);  color: var(--accent); }
+.act--facebook:hover  { border-color: #1877f2; color: #1877f2; }
+.act--instagram:hover { border-color: #d62976; color: #d62976; }
+.act--tiktok:hover    { border-color: var(--ink);     color: var(--ink); }
+
+@media (min-width: 768px) {
+  .act { width: 40px; height: 40px; padding: 9px; }
+  .card__actions { gap: 8px; }
+}
 
 /* ==========================================================================
    ESTADOS VACÍOS / REGISTRO / FOOTER

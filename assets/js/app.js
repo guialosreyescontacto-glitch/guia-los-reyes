@@ -27,6 +27,10 @@
     `<svg class="${cls || ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" ` +
     `stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 
+  /* Los logotipos de las redes son siluetas rellenas, no trazos. */
+  const logo = (paths) =>
+    `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${paths}</svg>`;
+
   const iniciales = (nombre) => nombre
     .replace(/^(El|La|Los|Las|De|Del)\s+/i, '')
     .split(/\s+/).filter(w => w.length > 2).slice(0, 2)
@@ -34,6 +38,40 @@
 
   const waLink = (tel, nombre) =>
     `https://wa.me/${tel}?text=${encodeURIComponent(WA_TEMPLATE(nombre))}`;
+
+  /* Enlace de "cómo llegar" en Google Maps. Usa `mapa` (dirección exacta o
+     coordenadas) y, si el negocio no la tiene, la zona más la ciudad. */
+  const mapaLink = (neg) =>
+    'https://www.google.com/maps/dir/?api=1&destination=' +
+    encodeURIComponent(neg.mapa || `${neg.zona}, ${CIUDAD}`);
+
+  const REDES = {
+    facebook:  { logo: LOGOS.facebook,  url: (u) => `https://www.facebook.com/${u}`,  nombre: 'Facebook' },
+    instagram: { logo: LOGOS.instagram, url: (u) => `https://www.instagram.com/${u}`, nombre: 'Instagram' },
+    tiktok:    { logo: LOGOS.tiktok,    url: (u) => `https://www.tiktok.com/@${u}`,   nombre: 'TikTok' }
+  };
+
+  /** Fila de botones circulares: WhatsApp, teléfono y las redes que existan. */
+  function botonesContacto(neg) {
+    const botones = [
+      `<a class="act act--wa" href="${waLink(neg.tel, neg.nombre)}" target="_blank" rel="noopener"
+          title="WhatsApp" aria-label="Escribir por WhatsApp a ${esc(neg.nombre)}">${logo(LOGOS.whatsapp)}</a>`,
+      `<a class="act act--tel" href="tel:+${esc(neg.tel)}"
+          title="Llamar" aria-label="Llamar a ${esc(neg.nombre)}">${logo(LOGOS.telefono)}</a>`
+    ];
+
+    Object.keys(REDES).forEach((red) => {
+      const usuario = (neg.redes || {})[red];
+      if (!usuario) return;
+      const r = REDES[red];
+      botones.push(
+        `<a class="act act--${red}" href="${esc(r.url(usuario))}" target="_blank" rel="noopener"
+            title="${r.nombre}" aria-label="${r.nombre} de ${esc(neg.nombre)}">${logo(r.logo)}</a>`
+      );
+    });
+
+    return botones.join('');
+  }
 
   /* Índice plano de negocios, con su categoría asociada */
   const TODOS = CATEGORIAS.flatMap(cat =>
@@ -51,8 +89,8 @@
   /* ---------------------------------------------------- Plantillas (HTML) */
 
   function tarjetaCategoria(cat) {
-    const n = cat.negocios.length;
-    const destacados = cat.negocios.filter(esDestacado).length;
+    /* En vez de un conteo, adelantamos qué se encuentra dentro. */
+    const muestra = cat.filtros.slice(0, 3).map(f => f.label).join(' · ');
     return `
       <li>
         <button class="cat" type="button" data-cat="${cat.id}"
@@ -61,7 +99,7 @@
           <h3 class="cat__name">${esc(cat.nombre)}</h3>
           <span class="cat__meta">
             <span class="cat__dot"></span>
-            ${n} negocio${n === 1 ? '' : 's'}${destacados ? ' · ' + destacados + ' ★' : ''}
+            ${esc(muestra)}${cat.filtros.length > 3 ? ' y más' : ''}
           </span>
         </button>
       </li>`;
@@ -96,7 +134,8 @@
           <p class="card__line">
             <span class="card__rating">${icon(ICONS.star)}${neg.rating.toFixed(1)}</span>
             <span class="card__sep">·</span>
-            ${icon(ICONS.pin)} ${esc(neg.zona)}
+            <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener"
+               title="Cómo llegar en Google Maps">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
           </p>
 
           <p class="card__desc">${esc(neg.desc)}</p>
@@ -105,14 +144,7 @@
 
           <p class="card__line">${icon(ICONS.clock)} ${esc(neg.horario)}</p>
 
-          <div class="card__foot">
-            <a class="btn btn--wa" href="${waLink(neg.tel, neg.nombre)}" target="_blank" rel="noopener">
-              <span class="wa-ico"></span> Contactar por WhatsApp
-            </a>
-            <a class="card__call" href="tel:+${esc(neg.tel)}" aria-label="Llamar a ${esc(neg.nombre)}">
-              ${icon(ICONS.phone)}
-            </a>
-          </div>
+          <div class="card__actions">${botonesContacto(neg)}</div>
         </div>
       </article>`;
   }
@@ -125,18 +157,16 @@
 
   function renderHome() {
     $('#categoryGrid').innerHTML = CATEGORIAS.map(tarjetaCategoria).join('');
-    $('#totalCount').textContent = TODOS.length;
 
-    const destacados = TODOS.filter(esDestacado);
     $('#heroStats').innerHTML = [
-      [TODOS.length, 'negocios'],
-      [CATEGORIAS.length, 'categorías'],
-      [destacados.length, 'recomendados']
-    ].map(([num, label]) =>
-      `<span class="stat"><span class="stat__num">${num}</span><span class="stat__label">${label}</span></span>`
+      'Negocios de la ciudad',
+      'Contacto directo por WhatsApp',
+      'Cómo llegar en un toque'
+    ].map(txt =>
+      `<span class="stat">${icon(ICONS.check, 'stat__ico')}${txt}</span>`
     ).join('');
 
-    pintarLista($('#featuredList'), destacados.slice(0, 6));
+    pintarLista($('#featuredList'), TODOS.filter(esDestacado).slice(0, 6));
   }
 
   /* ----------------------------------------------------- Vista: categoría */
@@ -157,21 +187,13 @@
     $('#catIcon').innerHTML = icon(cat.icono);
     $('#catTitle').textContent = cat.nombre;
 
-    const destacados = cat.negocios.filter(esDestacado).length;
-    $('#catSub').textContent =
-      `${cat.negocios.length} negocios · ${destacados} destacado${destacados === 1 ? '' : 's'}`;
+    $('#catSub').textContent = 'Los recomendados aparecen primero';
 
     /* Barra de filtros / tags */
-    const cuenta = (id) => id === 'todos'
-      ? cat.negocios.length
-      : cat.negocios.filter(n => n.filtro === id).length;
-
     const chips = [{ id: 'todos', label: 'Todos' }].concat(cat.filtros);
     $('#filterList').innerHTML = chips.map(f => `
       <button class="chip" type="button" role="tab" data-filtro="${f.id}"
-              aria-selected="${f.id === filtro}">
-        ${esc(f.label)} <span class="chip__count">${cuenta(f.id)}</span>
-      </button>`).join('');
+              aria-selected="${f.id === filtro}">${esc(f.label)}</button>`).join('');
 
     /* Lista de negocios */
     const lista = filtro === 'todos'
@@ -181,9 +203,9 @@
     const conCat = lista.map(n => Object.assign({}, n, { cat: cat }));
     pintarLista($('#businessList'), conCat);
 
-    $('#resultCount').textContent =
-      `${lista.length} negocio${lista.length === 1 ? '' : 's'}` +
-      (filtro === 'todos' ? '' : ` en “${chips.find(f => f.id === filtro).label}”`);
+    $('#resultCount').textContent = filtro === 'todos'
+      ? 'Todos los negocios de la categoría'
+      : `Mostrando: ${chips.find(f => f.id === filtro).label}`;
 
     $('#emptyState').hidden = lista.length > 0;
 
@@ -205,8 +227,9 @@
     });
 
     pintarLista($('#searchList'), res);
-    $('#searchCount').textContent =
-      `${res.length} resultado${res.length === 1 ? '' : 's'} en el directorio`;
+    $('#searchCount').textContent = res.length
+      ? 'Esto encontramos en el directorio'
+      : '';
     $('#searchEmpty').hidden = res.length > 0;
 
     mostrarVista('search');
