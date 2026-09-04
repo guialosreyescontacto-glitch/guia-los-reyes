@@ -1,0 +1,21 @@
+# Dependencias
+node_modules/
+
+# Vercel
+.vercel/
+
+# Entorno
+.env
+.env.local
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+
+# Archivos temporales de pruebas
+_debug.html

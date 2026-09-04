@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <title>Guía Los Reyes — Directorio de negocios y servicios</title>
+  <meta name="description" content="Directorio comunal de negocios, servicios y profesionales en Los Reyes de Salgado, Michoacán. Encuentra y contacta por WhatsApp.">
+
+  <meta property="og:title" content="Guía Los Reyes">
+  <meta property="og:description" content="El directorio de negocios y servicios de Los Reyes de Salgado, Michoacán.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_MX">
+
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <!-- ============ HEADER ============ -->
+  <header class="header" id="header">
+    <div class="header__inner container">
+
+      <a class="brand" href="#/" data-nav="home" aria-label="Guía Los Reyes, ir al inicio">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </span>
+        <span class="brand__text">
+          <span class="brand__name">Guía <strong>Los Reyes</strong></span>
+          <span class="brand__sub">Los Reyes de Salgado, Mich.</span>
+        </span>
+      </a>
+
+      <form class="search" role="search" id="searchForm" autocomplete="off">
+        <span class="search__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+        </span>
+        <label class="sr-only" for="searchInput">Buscar negocio, servicio o categoría</label>
+        <input id="searchInput" class="search__input" type="search" placeholder="Buscar: cerrajero, taquería, dentista…" enterkeyhint="search">
+        <button class="search__clear" type="button" id="searchClear" aria-label="Limpiar búsqueda" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </form>
+
+      <a class="btn btn--ghost header__cta" href="#/registro" data-nav="registro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>
+        <span>Registrar negocio</span>
+      </a>
+
+    </div>
+  </header>
+
+  <main id="contenido">
+
+    <!-- ============ VISTA: INICIO ============ -->
+    <section class="view" id="view-home">
+      <div class="hero">
+        <div class="container">
+          <p class="hero__eyebrow">Directorio comunal</p>
+          <h1 class="hero__title">Todo lo que necesitas en <span>Los Reyes</span>, a un mensaje de distancia.</h1>
+          <p class="hero__lead">Encuentra negocios, talleres, clínicas y profesionales de la ciudad. Contacta directo por WhatsApp, sin intermediarios.</p>
+          <div class="hero__stats" id="heroStats"></div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-head__title">Explora por categoría</h2>
+          <p class="section-head__sub">12 categorías · <span id="totalCount">0</span> negocios registrados</p>
+        </div>
+        <ul class="grid" id="categoryGrid" role="list"></ul>
+
+        <div class="section-head section-head--mt">
+          <h2 class="section-head__title">Recomendados de la semana</h2>
+          <p class="section-head__sub">Negocios con plan destacado</p>
+        </div>
+        <div class="cards" id="featuredList"></div>
+      </div>
+    </section>
+
+    <!-- ============ VISTA: CATEGORÍA ============ -->
+    <section class="view" id="view-category" hidden>
+      <div class="catbar">
+        <div class="container">
+          <button class="backlink" type="button" data-nav="home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            Todas las categorías
+          </button>
+          <div class="catbar__head">
+            <span class="catbar__icon" id="catIcon" aria-hidden="true"></span>
+            <div>
+              <h1 class="catbar__title" id="catTitle">Categoría</h1>
+              <p class="catbar__sub" id="catSub"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de filtros / tags -->
+        <nav class="filters" aria-label="Filtrar por especialidad">
+          <div class="filters__scroll container" id="filterList" role="tablist"></div>
+        </nav>
+      </div>
+
+      <div class="container">
+        <div class="results-meta">
+          <span id="resultCount">0 negocios</span>
+        </div>
+        <div class="cards" id="businessList"></div>
+        <p class="empty" id="emptyState" hidden>
+          No hay negocios en este filtro todavía.
+          <a href="#/registro" data-nav="registro">¿Tienes uno? Regístralo gratis.</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ VISTA: BÚSQUEDA ============ -->
+    <section class="view" id="view-search" hidden>
+      <div class="container">
+        <div class="section-head section-head--mt">
+          <h1 class="section-head__title">Resultados para “<span id="searchTerm"></span>”</h1>
+          <p class="section-head__sub" id="searchCount"></p>
+        </div>
+        <div class="cards" id="searchList"></div>
+        <p class="empty" id="searchEmpty" hidden>
+          Sin resultados. Prueba con otra palabra como “taller”, “dentista” o “pizza”.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ VISTA: REGISTRO ============ -->
+    <section class="view" id="view-registro" hidden>
+      <div class="container">
+        <div class="panel">
+          <button class="backlink" type="button" data-nav="home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            Volver
+          </button>
+          <h1 class="panel__title">Registra tu negocio en Guía Los Reyes</h1>
+          <p class="panel__lead">Aparece frente a los vecinos que ya están buscando lo que ofreces. Elige el plan que te acomode.</p>
+
+          <div class="plans">
+            <article class="plan">
+              <h2 class="plan__name">Básico</h2>
+              <p class="plan__price">Gratis</p>
+              <ul class="plan__list">
+                <li>Ficha con nombre, giro y horario</li>
+                <li>Botón de WhatsApp directo</li>
+                <li>Aparece en tu categoría</li>
+              </ul>
+            </article>
+            <article class="plan plan--featured">
+              <span class="badge badge--featured">Más elegido</span>
+              <h2 class="plan__name">Destacado</h2>
+              <p class="plan__price">$249 <small>/ mes</small></p>
+              <ul class="plan__list">
+                <li>Siempre arriba en la categoría</li>
+                <li>Banner con foto y distintivo</li>
+                <li>Hasta 4 etiquetas de servicio</li>
+                <li>Aparece en “Recomendados”</li>
+              </ul>
+            </article>
+          </div>
+
+          <a class="btn btn--wa btn--block" id="registerWa" href="#" target="_blank" rel="noopener">
+            <span class="wa-ico" aria-hidden="true"></span>
+            Quiero registrar mi negocio
+          </a>
+          <p class="fineprint">Te contactamos por WhatsApp para dar de alta tu ficha.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p class="footer__brand">Guía <strong>Los Reyes</strong></p>
+      <p class="footer__note">Directorio comunal de Los Reyes de Salgado, Michoacán.</p>
+      <p class="footer__demo"><strong>Prototipo de demostración:</strong> los negocios y teléfonos mostrados son datos de ejemplo, no corresponden a comercios reales.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
