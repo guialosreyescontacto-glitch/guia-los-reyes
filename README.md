@@ -69,16 +69,16 @@ mismo archivo.
 
 ## Publicar en GitHub y Vercel
 
-Con la cuenta `guialosreyes.contacto@gmail.com` en ambos servicios:
+El repositorio vive en la cuenta `guialosreyes.contacto@gmail.com`, cuyo usuario de
+GitHub es **`guialosreyescontacto-glitch`**:
 
 ```bash
-git init
-git add .
-git commit -m "Prototipo inicial de Guía Los Reyes"
-git branch -M main
-git remote add origin https://github.com/<tu-usuario>/guia-los-reyes.git
 git push -u origin main
 ```
+
+El remoto ya apunta a `https://guialosreyescontacto-glitch@github.com/guialosreyescontacto-glitch/guia-los-reyes.git`.
+El usuario va incluido en la URL para que Git no reutilice las credenciales de la cuenta
+personal guardadas en Windows; la primera vez abrirá el navegador para iniciar sesión.
 
 En Vercel: **Add New → Project → Import Git Repository**, elige el repo y despliega.
 Al ser un sitio estático no hay que configurar nada: deja *Framework Preset* en `Other`,
