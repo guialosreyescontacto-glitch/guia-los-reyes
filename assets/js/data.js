@@ -29,9 +29,12 @@ const ICONS = {
   check:      '<path d="M20 6 9 17l-5-5"/>',
 
   /* WhatsApp de trazo: la burbuja con la cola y, dentro, el auricular de
-     `phone` reescalado. El grupo compensa el stroke-width al reducirse. */
-  whatsapp:   '<path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.5L3.5 20.5l1.6-4.8A8.5 8.5 0 1 1 21 11.5Z"/>' +
-              '<g transform="translate(8.15 7.75) scale(.335)" stroke-width="5.9">' +
+     `phone` reescalado. El auricular se centra en el círculo (12.5, 11.3)
+     usando el centro real de su bbox (12.06, 11.96), y el grupo sube el
+     stroke-width para que al reducirse quede en 1.7 y no compita con la
+     burbuja. Escalas mayores a .5 sacan el auricular fuera del círculo. */
+  whatsapp:   '<path d="M21.5 11.3a9 9 0 0 1-13.3 7.9L3 20.8l1.7-5.1A9 9 0 1 1 21.5 11.3Z"/>' +
+              '<g transform="translate(6.71 5.56) scale(.48)" stroke-width="3.54">' +
               '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></g>',
   globo:      '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/>'
 };
