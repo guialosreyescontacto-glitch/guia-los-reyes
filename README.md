@@ -83,6 +83,21 @@ simplemente no dibuja su icono, así que un negocio sin Instagram no muestra hue
 Para cambiar el número que recibe las altas de negocios, edita `WA_DIRECTORIO` en el
 mismo archivo.
 
+### Al editar CSS o JS, sube el `?v=`
+
+`index.html` enlaza los assets con un número de versión:
+
+```html
+<link rel="stylesheet" href="assets/css/styles.css?v=4">
+<script src="assets/js/data.js?v=4"></script>
+<script src="assets/js/app.js?v=4"></script>
+```
+
+Si cambias `styles.css`, `data.js` o `app.js`, **sube ese número en los tres enlaces**
+antes de publicar. Sin eso, los navegadores que ya visitaron el sitio siguen usando la
+copia vieja del archivo y el cambio no se ve, aunque el deploy de Vercel esté correcto.
+Cambiar `index.html` solo (textos, estructura) no necesita subir la versión.
+
 ## Publicar en GitHub y Vercel
 
 El repositorio vive en la cuenta `guialosreyes.contacto@gmail.com`, cuyo usuario de
