@@ -18,7 +18,7 @@ Salgado, Michoacán. Sitio estático, mobile-first, sin dependencias ni paso de 
 - **Tarjetas de negocio** con banner, etiqueta de plan, estado abierto/cerrado, calificación, horario y etiquetas.
 - **Dirección enlazada a Google Maps**: al tocarla abre la ruta de "cómo llegar" al negocio.
 - **Botones circulares de contacto** al pie de cada tarjeta: WhatsApp (con mensaje prellenado), teléfono, Facebook, Instagram y TikTok. Solo se dibujan las redes que el negocio tenga registradas.
-- **Página de registro** con los dos planes y contacto directo por WhatsApp.
+- **Página de registro** con los tres planes comerciales —Básico ($300 MXN/mes), Destacado ($500) y Premium ($1,000)— y contacto directo por WhatsApp.
 - Modo claro y oscuro automáticos, navegación por URL (`#/c/hogar/fontaneros`) y soporte de teclado.
 
 ## Estructura
@@ -104,3 +104,5 @@ sin *Build Command* y con *Output Directory* vacío (la raíz).
 - Sustituir los banners de color por fotos reales (`<img>` dentro de `.card__banner`).
 - Mover `data.js` a una API o CMS cuando el catálogo crezca.
 - Calcular el estado *Abierto / Cerrado* a partir de horarios reales en vez del campo fijo `abierto`.
+- Implementar el plan **Premium** en el listado: `data.js` hoy solo distingue `destacado` y `basico`;
+  falta un `plan: 'premium'` que quede por encima de los destacados y alimente el banner VIP de la portada.

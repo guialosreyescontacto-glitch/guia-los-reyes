@@ -343,10 +343,9 @@
   /* -------------------------------------------------------------- Arranque */
 
   window.addEventListener('hashchange', router);
-
   $('#registerWa').href =
     `https://wa.me/${WA_DIRECTORIO}?text=` +
-    encodeURIComponent('Hola, quiero registrar mi negocio en Guía Los Reyes.');
+    encodeURIComponent('Hola, quiero registrar mi negocio en Guía Los Reyes. ¿Me pueden dar informes de los planes?');
 
   renderHome();
   syncHeaderHeight();
