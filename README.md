@@ -3,11 +3,12 @@
 Prototipo web de un **directorio comunal de negocios y servicios** para Los Reyes de
 Salgado, Michoacán. Sitio estático, mobile-first, sin dependencias ni paso de compilación.
 
-> ⚠️ **Datos de demostración.** Los negocios, calificaciones, teléfonos y redes sociales
-> incluidos en `assets/js/data.js` son ficticios y sirven solo para probar la interfaz. No
-> corresponden a comercios reales de la ciudad. Los usuarios de redes llevan el prefijo
-> `demo.` a propósito, para que ningún enlace caiga en la cuenta de una persona real.
-> Sustitúyelos antes de publicar el sitio de verdad.
+> ⚠️ **Datos de demostración.** Los negocios, calificaciones, teléfonos, sitios web y
+> redes sociales incluidos en `assets/js/data.js` son ficticios y sirven solo para probar
+> la interfaz. No corresponden a comercios reales de la ciudad. Los usuarios de redes
+> llevan el prefijo `demo.` y los dominios terminan en `.example` (un TLD reservado que
+> no resuelve) a propósito, para que ningún enlace caiga en la cuenta o el sitio de una
+> persona real. Sustitúyelos antes de publicar el sitio de verdad.
 
 ## Qué incluye
 
@@ -17,7 +18,7 @@ Salgado, Michoacán. Sitio estático, mobile-first, sin dependencias ni paso de 
 - **Jerarquía de planes**: los negocios `destacado` aparecen siempre arriba, con badge dorado; los `basico` después. Dentro de cada grupo se ordenan por calificación.
 - **Tarjetas de negocio** con banner, etiqueta de plan, estado abierto/cerrado, calificación, horario y etiquetas.
 - **Dirección enlazada a Google Maps**: al tocarla abre la ruta de "cómo llegar" al negocio.
-- **Botones circulares de contacto** al pie de cada tarjeta: WhatsApp (con mensaje prellenado), teléfono, Facebook, Instagram y TikTok. Solo se dibujan las redes que el negocio tenga registradas.
+- **Botones circulares de contacto** al pie de cada tarjeta: WhatsApp, teléfono, sitio web, Facebook, Instagram y TikTok. Todos parten en gris neutro y toman el color de su marca al pasar el cursor. Solo se dibuja el icono de los enlaces que el negocio tenga registrados.
 - **Página de registro** con los tres planes comerciales —Básico ($300 MXN/mes), Destacado ($500) y Premium ($1,000)— y contacto directo por WhatsApp.
 - Modo claro y oscuro automáticos, navegación por URL (`#/c/hogar/fontaneros`) y soporte de teclado.
 
@@ -65,7 +66,7 @@ Para agregar un negocio, añade un objeto al arreglo `negocios` de su categoría
   horario: 'Lun a Sáb · 9:00 – 19:00',
   abierto: true,
   tel: '523541234567',        // formato WhatsApp: 52 + 10 dígitos, sin espacios ni signos
-  redes: { facebook: 'usuario', instagram: 'usuario', tiktok: 'usuario' },
+  redes: { web: 'tunegocio.com', facebook: 'usuario', instagram: 'usuario', tiktok: 'usuario' },
   desc: 'Una línea describiendo el servicio.'
 }
 ```
@@ -75,8 +76,9 @@ Para agregar un negocio, añade un objeto al arreglo `negocios` de su categoría
 que la ruta sea exacta pon la dirección completa o, mejor aún, las coordenadas que copies
 de Google Maps (`'19.5871,-102.4745'`).
 
-**`redes`** también es opcional y lleva el **usuario**, no la URL completa. Cada red que
-falte simplemente no dibuja su icono, así que un negocio sin Instagram no muestra hueco.
+**`redes`** también es opcional. Las redes llevan el **usuario**, no la URL completa;
+`web` lleva el dominio (`'tunegocio.com'`) o la URL entera. Cada entrada que falte
+simplemente no dibuja su icono, así que un negocio sin Instagram no muestra hueco.
 
 Para cambiar el número que recibe las altas de negocios, edita `WA_DIRECTORIO` en el
 mismo archivo.

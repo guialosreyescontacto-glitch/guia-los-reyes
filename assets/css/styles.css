@@ -457,6 +457,8 @@ button { font: inherit; color: inherit; }
   color: #422006;
   box-shadow: 0 2px 8px rgba(180,83,9,.35);
 }
+/* La estrella del badge va sólida; la de la calificación se queda de trazo. */
+.badge--featured svg { fill: currentColor; }
 .badge--vip {
   background: linear-gradient(135deg, var(--accent), var(--accent-ink));
   color: #ffffff;
@@ -526,15 +528,10 @@ button { font: inherit; color: inherit; }
 .act:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
 .act:active { transform: translateY(0) scale(.94); }
 
-/* WhatsApp es la acción principal: va rellena desde el inicio. */
-.act--wa {
-  background: var(--wa); border-color: transparent; color: #06301a;
-  box-shadow: 0 1px 3px rgba(18,140,63,.35);
-}
-.act--wa:hover { background: #1fbe5a; box-shadow: 0 4px 10px rgba(18,140,63,.35); }
-
-/* El resto se tiñe con el color de su marca al pasar el cursor. */
+/* Todos parten neutros y se tiñen con el color de su marca al pasar el cursor. */
+.act--wa:hover        { border-color: var(--wa); color: var(--wa); }
 .act--tel:hover       { border-color: var(--accent);  color: var(--accent); }
+.act--web:hover       { border-color: #2563eb; color: #2563eb; }
 .act--facebook:hover  { border-color: #1877f2; color: #1877f2; }
 .act--instagram:hover { border-color: #d62976; color: #d62976; }
 .act--tiktok:hover    { border-color: var(--ink);     color: var(--ink); }

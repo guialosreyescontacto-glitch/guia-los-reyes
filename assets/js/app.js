@@ -45,17 +45,22 @@
     'https://www.google.com/maps/dir/?api=1&destination=' +
     encodeURIComponent(neg.mapa || `${neg.zona}, ${CIUDAD}`);
 
+  /* Enlaces opcionales de la ficha. `web` guarda un dominio o una URL; las
+     redes guardan el usuario, no la dirección completa. El sitio web usa un
+     glifo de trazo (`icono`); las redes, su logotipo relleno (`logo`). */
   const REDES = {
+    web:       { icono: ICONS.globo,    url: (u) => /^https?:\/\//i.test(u) ? u : `https://${u}`,
+                 nombre: 'Sitio web' },
     facebook:  { logo: LOGOS.facebook,  url: (u) => `https://www.facebook.com/${u}`,  nombre: 'Facebook' },
     instagram: { logo: LOGOS.instagram, url: (u) => `https://www.instagram.com/${u}`, nombre: 'Instagram' },
     tiktok:    { logo: LOGOS.tiktok,    url: (u) => `https://www.tiktok.com/@${u}`,   nombre: 'TikTok' }
   };
 
-  /** Fila de botones circulares: WhatsApp, teléfono y las redes que existan. */
+  /** Fila de botones circulares: WhatsApp, teléfono y los enlaces que existan. */
   function botonesContacto(neg) {
     const botones = [
       `<a class="act act--wa" href="${waLink(neg.tel, neg.nombre)}" target="_blank" rel="noopener"
-          title="WhatsApp" aria-label="Escribir por WhatsApp a ${esc(neg.nombre)}">${logo(LOGOS.whatsapp)}</a>`,
+          title="WhatsApp" aria-label="Escribir por WhatsApp a ${esc(neg.nombre)}">${icon(ICONS.whatsapp)}</a>`,
       `<a class="act act--tel" href="tel:+${esc(neg.tel)}"
           title="Llamar" aria-label="Llamar a ${esc(neg.nombre)}">${logo(LOGOS.telefono)}</a>`
     ];
@@ -64,9 +69,10 @@
       const usuario = (neg.redes || {})[red];
       if (!usuario) return;
       const r = REDES[red];
+      const glifo = r.logo ? logo(r.logo) : icon(r.icono);
       botones.push(
         `<a class="act act--${red}" href="${esc(r.url(usuario))}" target="_blank" rel="noopener"
-            title="${r.nombre}" aria-label="${r.nombre} de ${esc(neg.nombre)}">${logo(r.logo)}</a>`
+            title="${r.nombre}" aria-label="${r.nombre} de ${esc(neg.nombre)}">${glifo}</a>`
       );
     });
 
