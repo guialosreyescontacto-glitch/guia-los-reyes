@@ -522,19 +522,36 @@ button { font: inherit; color: inherit; }
   display: grid; place-items: center; border-radius: 50%;
   border: 1px solid var(--line-strong);
   background: var(--surface); color: var(--ink-2);
-  transition: transform .14s cubic-bezier(.2,.8,.3,1), background .15s, color .15s, border-color .15s, box-shadow .15s;
+  transition: all .2s ease;
 }
 .act svg { width: 100%; height: 100%; }
-.act:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
 .act:active { transform: translateY(0) scale(.94); }
 
-/* Todos parten neutros y se tiñen con el color de su marca al pasar el cursor. */
-.act--wa:hover        { border-color: var(--wa); color: var(--wa); }
-.act--tel:hover       { border-color: var(--accent);  color: var(--accent); }
-.act--web:hover       { border-color: #2563eb; color: #2563eb; }
-.act--facebook:hover  { border-color: #1877f2; color: #1877f2; }
-.act--instagram:hover { border-color: #d62976; color: #d62976; }
-.act--tiktok:hover    { border-color: var(--ink);     color: var(--ink); }
+/* Color oficial de cada botón, en una variable para no repetir las reglas
+   entre el modo con cursor y el táctil. */
+.act--wa        { --marca: var(--wa); }
+.act--tel       { --marca: var(--accent); }
+.act--web       { --marca: #2563eb; }
+.act--facebook  { --marca: #1877f2; }
+.act--instagram { --marca: #d62976; }
+.act--tiktok    { --marca: var(--ink); }
+
+/* Con cursor: gris en reposo y color de marca al pasar por encima. El
+   levantamiento vive aquí porque en táctil el :hover se queda pegado
+   después de tocar. */
+@media (hover: hover) {
+  .act:hover {
+    transform: translateY(-2px); box-shadow: var(--shadow-sm);
+    border-color: var(--marca, var(--line-strong)); color: var(--marca, var(--ink-2));
+  }
+}
+
+/* Táctil: la marca se reconoce de un vistazo, atenuada para no saturar la
+   tarjeta, y sube a tono pleno mientras el dedo la mantiene pulsada. */
+@media (hover: none) {
+  .act { color: var(--marca, var(--ink-2)); opacity: .7; }
+  .act:active { opacity: 1; border-color: var(--marca, var(--line-strong)); }
+}
 
 @media (min-width: 768px) {
   .act { width: 40px; height: 40px; padding: 9px; }

@@ -88,9 +88,9 @@ mismo archivo.
 `index.html` enlaza los assets con un número de versión:
 
 ```html
-<link rel="stylesheet" href="assets/css/styles.css?v=6">
-<script src="assets/js/data.js?v=6"></script>
-<script src="assets/js/app.js?v=6"></script>
+<link rel="stylesheet" href="assets/css/styles.css?v=7">
+<script src="assets/js/data.js?v=7"></script>
+<script src="assets/js/app.js?v=7"></script>
 ```
 
 Si cambias `styles.css`, `data.js` o `app.js`, **sube ese número en los tres enlaces**
