@@ -18,9 +18,10 @@ Salgado, Michoacán. Sitio estático, mobile-first, sin dependencias ni paso de 
 - **Jerarquía de planes**: los negocios `destacado` aparecen siempre arriba, con badge dorado; los `basico` después. Dentro de cada grupo se ordenan por calificación.
 - **Tarjetas de negocio** con banner, etiqueta de plan, estado abierto/cerrado, calificación, horario y etiquetas.
 - **Dirección enlazada a Google Maps**: al tocarla abre la ruta de "cómo llegar" al negocio.
-- **Botones circulares de contacto** al pie de cada tarjeta: WhatsApp, teléfono, sitio web, Facebook, Instagram y TikTok. Todos parten en gris neutro y toman el color de su marca al pasar el cursor. Solo se dibuja el icono de los enlaces que el negocio tenga registrados.
+- **Botones circulares de contacto** al pie de cada tarjeta: WhatsApp, teléfono, sitio web, Facebook, Instagram y TikTok. En escritorio parten en gris y toman el color de su marca al pasar el cursor; en pantallas táctiles ya salen en color al 50% de opacidad y suben al 100% al tocarlos. Solo se dibuja el icono de los enlaces que el negocio tenga registrados.
 - **Página de registro** con los tres planes comerciales —Básico ($300 MXN/mes), Destacado ($500) y Premium ($1,000)— y contacto directo por WhatsApp.
-- Modo claro y oscuro automáticos, navegación por URL (`#/c/hogar/fontaneros`) y soporte de teclado.
+- **Modo claro y oscuro**: sigue la preferencia del sistema y el botón sol/luna del encabezado permite forzar uno u otro. La elección se guarda en `localStorage` y se aplica en un script del `<head>` para que no haya destello al cargar.
+- Navegación por URL (`#/c/hogar/fontaneros`) y soporte de teclado.
 
 ## Estructura
 
@@ -88,9 +89,9 @@ mismo archivo.
 `index.html` enlaza los assets con un número de versión:
 
 ```html
-<link rel="stylesheet" href="assets/css/styles.css?v=8">
-<script src="assets/js/data.js?v=8"></script>
-<script src="assets/js/app.js?v=8"></script>
+<link rel="stylesheet" href="assets/css/styles.css?v=9">
+<script src="assets/js/data.js?v=9"></script>
+<script src="assets/js/app.js?v=9"></script>
 ```
 
 Si cambias `styles.css`, `data.js` o `app.js`, **sube ese número en los tres enlaces**

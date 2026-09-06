@@ -346,6 +346,23 @@
   };
   window.addEventListener('resize', syncHeaderHeight);
 
+  /* ----------------------------------------------------------- Tema claro/oscuro */
+
+  /* El tema guardado ya se aplicó en el <head> para evitar el destello; aquí
+     solo se atiende el botón. Sin preferencia guardada mandan los medios del
+     sistema, así que el tema actual se lee de los dos lados. */
+  const raiz = document.documentElement;
+  const prefiereOscuro = window.matchMedia('(prefers-color-scheme: dark)');
+
+  const temaActual = () =>
+    raiz.getAttribute('data-theme') || (prefiereOscuro.matches ? 'dark' : 'light');
+
+  $('#themeToggle').addEventListener('click', () => {
+    const nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+    raiz.setAttribute('data-theme', nuevo);
+    try { localStorage.setItem('tema', nuevo); } catch (e) { /* sin persistencia */ }
+  });
+
   /* -------------------------------------------------------------- Arranque */
 
   window.addEventListener('hashchange', router);

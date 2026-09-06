@@ -4,7 +4,7 @@
    ========================================================================== */
 
 :root {
-  /* Neutros */
+  /* Neutros (modo claro) */
   --bg:            #f7f7f5;
   --surface:       #ffffff;
   --surface-2:     #f1f1ee;
@@ -23,6 +23,11 @@
   --wa:            #25d366;
   --wa-ink:        #128c3f;
 
+  /* Colores de marca de los botones de contacto */
+  --brand-web:     #2563eb;
+  --brand-fb:      #1877f2;
+  --brand-ig:      #d62976;
+
   --radius:        14px;
   --radius-lg:     20px;
   --shadow-sm:     0 1px 2px rgba(25,25,23,.06), 0 1px 3px rgba(25,25,23,.05);
@@ -31,27 +36,73 @@
 
   --header-h:      64px;
   --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* ---- Paleta oscura ----------------------------------------------------
+     Los valores viven aquí una sola vez. Más abajo se asignan por dos
+     caminos —la preferencia del sistema y el selector manual— que deben
+     listar las mismas variables; si agregas una, agrégala en los dos. */
+  --d-bg:          #141414;
+  --d-surface:     #1e1e1e;   /* tarjetas, con contraste claro sobre el fondo */
+  --d-surface-2:   #262626;
+  --d-line:        #2f2f2f;
+  --d-line-strong: #3f3f3f;
+  --d-ink:         #f2f2f2;
+  --d-ink-2:       #b4b4b4;
+  --d-ink-3:       #8a8a8a;
+  --d-accent:      #2dd4bf;   /* verde brillante para botones y enlaces */
+  --d-accent-ink:  #5eead4;
+  --d-accent-soft: #14312e;
+  --d-gold:        #fbbf24;
+  --d-gold-soft:   #332711;
+  --d-brand-web:   #60a5fa;   /* los azules y el rosa se aclaran para que */
+  --d-brand-fb:    #4a9bff;   /* sigan siendo legibles sobre el fondo      */
+  --d-brand-ig:    #f472b6;
+  --d-shadow-sm:   0 1px 2px rgba(0,0,0,.5);
+  --d-shadow-md:   0 4px 12px rgba(0,0,0,.55);
+  --d-shadow-lg:   0 12px 32px rgba(0,0,0,.6);
 }
 
+/* Modo oscuro por preferencia del sistema, salvo que el usuario haya
+   elegido el claro a mano. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:          #121211;
-    --surface:     #1c1c1a;
-    --surface-2:   #242422;
-    --line:        #2e2e2b;
-    --line-strong: #3c3c38;
-    --ink:         #f4f4f1;
-    --ink-2:       #b6b6ad;
-    --ink-3:       #8a8a80;
-    --accent:      #2dd4bf;
-    --accent-ink:  #5eead4;
-    --accent-soft: #143430;
-    --gold:        #fbbf24;
-    --gold-soft:   #33270f;
-    --shadow-sm:   0 1px 2px rgba(0,0,0,.4);
-    --shadow-md:   0 4px 12px rgba(0,0,0,.45);
-    --shadow-lg:   0 12px 32px rgba(0,0,0,.5);
+    --bg: var(--d-bg);                 --surface: var(--d-surface);
+    --surface-2: var(--d-surface-2);   --line: var(--d-line);
+    --line-strong: var(--d-line-strong);
+    --ink: var(--d-ink);               --ink-2: var(--d-ink-2);
+    --ink-3: var(--d-ink-3);
+    --accent: var(--d-accent);         --accent-ink: var(--d-accent-ink);
+    --accent-soft: var(--d-accent-soft);
+    --gold: var(--d-gold);             --gold-soft: var(--d-gold-soft);
+    --brand-web: var(--d-brand-web);   --brand-fb: var(--d-brand-fb);
+    --brand-ig: var(--d-brand-ig);
+    --shadow-sm: var(--d-shadow-sm);   --shadow-md: var(--d-shadow-md);
+    --shadow-lg: var(--d-shadow-lg);
   }
+}
+
+/* Modo oscuro elegido a mano con el selector del encabezado. */
+:root[data-theme="dark"] {
+  --bg: var(--d-bg);                 --surface: var(--d-surface);
+  --surface-2: var(--d-surface-2);   --line: var(--d-line);
+  --line-strong: var(--d-line-strong);
+  --ink: var(--d-ink);               --ink-2: var(--d-ink-2);
+  --ink-3: var(--d-ink-3);
+  --accent: var(--d-accent);         --accent-ink: var(--d-accent-ink);
+  --accent-soft: var(--d-accent-soft);
+  --gold: var(--d-gold);             --gold-soft: var(--d-gold-soft);
+  --brand-web: var(--d-brand-web);   --brand-fb: var(--d-brand-fb);
+  --brand-ig: var(--d-brand-ig);
+  --shadow-sm: var(--d-shadow-sm);   --shadow-md: var(--d-shadow-md);
+  --shadow-lg: var(--d-shadow-lg);
+}
+
+/* Le dice al navegador de qué tono son los controles nativos (scrollbars,
+   campos de formulario) en cada modo. */
+:root { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { color-scheme: dark; }
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -171,13 +222,38 @@ button { font: inherit; color: inherit; }
 }
 .search__clear:hover { background: var(--line-strong); }
 
-/* --- CTA header --- */
-.header__cta { grid-area: cta; }
+/* --- CTA y selector de tema del encabezado --- */
+.header__acciones {
+  grid-area: cta; justify-self: end;
+  display: flex; align-items: center; gap: 8px;
+}
 .header__cta span { display: none; }
 @media (min-width: 900px) {
-  .header__cta { justify-self: end; }
   .header__cta span { display: inline; }
 }
+
+.theme-toggle {
+  width: 38px; height: 38px; flex: none; padding: 9px;
+  display: grid; place-items: center; border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--surface); color: var(--ink-2);
+  cursor: pointer; transition: all .2s ease;
+}
+.theme-toggle svg { width: 100%; height: 100%; }
+.theme-toggle:active { transform: scale(.94); }
+@media (hover: hover) {
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+}
+
+/* Se muestra el icono del modo al que se cambiaría: luna estando en claro,
+   sol estando en oscuro. Sigue los mismos dos caminos que la paleta. */
+.theme-toggle__sol { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-toggle__sol  { display: block; }
+  :root:not([data-theme="light"]) .theme-toggle__luna { display: none; }
+}
+:root[data-theme="dark"] .theme-toggle__sol  { display: block; }
+:root[data-theme="dark"] .theme-toggle__luna { display: none; }
 
 /* ==========================================================================
    BOTONES
@@ -468,6 +544,7 @@ button { font: inherit; color: inherit; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .badge--vip { color: #06302c; }
 }
+:root[data-theme="dark"] .badge--vip { color: #06302c; }
 .badge--basic {
   background: rgba(255,255,255,.85); color: #3f3f3a;
 }
@@ -531,9 +608,9 @@ button { font: inherit; color: inherit; }
    entre el modo con cursor y el táctil. */
 .act--wa        { --marca: var(--wa); }
 .act--tel       { --marca: var(--accent); }
-.act--web       { --marca: #2563eb; }
-.act--facebook  { --marca: #1877f2; }
-.act--instagram { --marca: #d62976; }
+.act--web       { --marca: var(--brand-web); }
+.act--facebook  { --marca: var(--brand-fb); }
+.act--instagram { --marca: var(--brand-ig); }
 .act--tiktok    { --marca: var(--ink); }
 
 /* Con cursor: gris en reposo y color de marca al pasar por encima. El
