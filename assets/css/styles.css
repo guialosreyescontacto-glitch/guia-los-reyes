@@ -549,7 +549,7 @@ button { font: inherit; color: inherit; }
 /* Táctil: la marca se reconoce de un vistazo, atenuada para no saturar la
    tarjeta, y sube a tono pleno mientras el dedo la mantiene pulsada. */
 @media (hover: none) {
-  .act { color: var(--marca, var(--ink-2)); opacity: .7; }
+  .act { color: var(--marca, var(--ink-2)); opacity: .5; }
   .act:active { opacity: 1; border-color: var(--marca, var(--line-strong)); }
 }
 
