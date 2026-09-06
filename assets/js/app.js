@@ -160,7 +160,7 @@
 
     $('#heroStats').innerHTML = [
       'Negocios de la ciudad',
-      'Contacto directo por WhatsApp',
+      'Contacto directo e inmediato',
       'Cómo llegar en un toque'
     ].map(txt =>
       `<span class="stat">${icon(ICONS.check, 'stat__ico')}${txt}</span>`
