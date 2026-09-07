@@ -366,9 +366,14 @@
   /* -------------------------------------------------------------- Arranque */
 
   window.addEventListener('hashchange', router);
-  $('#registerWa').href =
-    `https://wa.me/${WA_DIRECTORIO}?text=` +
-    encodeURIComponent('Hola, quiero registrar mi negocio en Guía Los Reyes. ¿Me pueden dar informes de los planes?');
+  /* Cada tarjeta de plan abre WhatsApp con su propio mensaje. El nombre y el
+     precio vienen del HTML, junto al precio que se muestra, para que al
+     cambiar una tarifa no haya que tocar dos archivos. */
+  $$('.plan__cta').forEach((btn) => {
+    const texto = `Hola, me interesa registrar mi negocio en Guía Los Reyes ` +
+                  `con el Plan ${btn.dataset.plan} (${btn.dataset.precio}).`;
+    btn.href = `https://wa.me/${WA_DIRECTORIO}?text=${encodeURIComponent(texto)}`;
+  });
 
   renderHome();
   syncHeaderHeight();

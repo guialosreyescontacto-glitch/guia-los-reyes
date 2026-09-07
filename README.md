@@ -19,7 +19,7 @@ Salgado, Michoacán. Sitio estático, mobile-first, sin dependencias ni paso de 
 - **Tarjetas de negocio** con banner, etiqueta de plan, estado abierto/cerrado, calificación, horario y etiquetas.
 - **Dirección enlazada a Google Maps**: al tocarla abre la ruta de "cómo llegar" al negocio.
 - **Botones circulares de contacto** al pie de cada tarjeta: WhatsApp, teléfono, sitio web, Facebook, Instagram y TikTok. En escritorio parten en gris y toman el color de su marca al pasar el cursor; en pantallas táctiles ya salen en color al 50% de opacidad y suben al 100% al tocarlos. Solo se dibuja el icono de los enlaces que el negocio tenga registrados.
-- **Página de registro** con los tres planes comerciales —Básico ($300 MXN/mes), Destacado ($500) y Premium ($1,000)— y contacto directo por WhatsApp.
+- **Página de registro** con los tres planes comerciales —Básico ($300 MXN/mes), Destacado ($500) y Premium ($1,000)—. Cada tarjeta lleva su propio botón que abre WhatsApp con el mensaje del plan elegido ya escrito.
 - **Modo claro y oscuro**: sigue la preferencia del sistema y el botón sol/luna del encabezado permite forzar uno u otro. La elección se guarda en `localStorage` y se aplica en un script del `<head>` para que no haya destello al cargar.
 - Navegación por URL (`#/c/hogar/fontaneros`) y soporte de teclado.
 
@@ -83,6 +83,10 @@ simplemente no dibuja su icono, así que un negocio sin Instagram no muestra hue
 
 Para cambiar el número que recibe las altas de negocios, edita `WA_DIRECTORIO` en el
 mismo archivo.
+
+El nombre y el precio que van en ese mensaje salen de los atributos `data-plan` y
+`data-precio` del botón de cada tarjeta, en `index.html`, junto al precio que se
+muestra: al cambiar una tarifa se editan los dos ahí mismo.
 
 ### Al editar CSS o JS, sube el `?v=`
 

@@ -659,7 +659,7 @@ button { font: inherit; color: inherit; }
 .plans { display: grid; gap: 12px; padding-top: 11px; margin-bottom: 22px; }
 
 @media (min-width: 640px) {
-  .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* Con dos columnas el tercer plan quedaría solo: que ocupe el ancho completo. */
   .plans > :last-child { grid-column: 1 / -1; }
 }
@@ -671,6 +671,9 @@ button { font: inherit; color: inherit; }
 .plan {
   position: relative; min-width: 0; padding: 18px; border-radius: var(--radius);
   border: 1px solid var(--line); background: var(--surface-2);
+  /* Columna para que el botón se pegue al fondo aunque las listas de
+     beneficios tengan distinto largo. */
+  display: flex; flex-direction: column;
 }
 .plan--featured {
   background: var(--surface);
@@ -688,7 +691,7 @@ button { font: inherit; color: inherit; }
 .plan__price { margin: 6px 0 12px; font-size: 27px; font-weight: 700; letter-spacing: -.03em; }
 .plan__price small { font-size: 13px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
 .plan__incluye { margin: -4px 0 11px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
-.plan__list { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; font-size: 13.5px; color: var(--ink-2); }
+.plan__list { margin: 0 0 16px; padding: 0; list-style: none; display: grid; gap: 7px; font-size: 13.5px; color: var(--ink-2); }
 .plan__list li { position: relative; padding-left: 20px; overflow-wrap: break-word; }
 .plan__list li::before {
   content: ""; position: absolute; left: 0; top: 6px; width: 13px; height: 9px;
@@ -696,6 +699,11 @@ button { font: inherit; color: inherit; }
   transform: rotate(-45deg); border-radius: 1px;
 }
 .plan--featured .plan__list li::before { border-color: var(--gold); }
+
+/* El margen automático empuja el botón al fondo de la tarjeta, para que los
+   tres queden alineados aunque las listas tengan distinto largo. El aire
+   mínimo lo pone el margen inferior de la lista. */
+.plan__cta { margin-top: auto; padding-block: 11px; white-space: normal; }
 
 .fineprint { margin: 10px 0 0; text-align: center; font-size: 12px; color: var(--ink-3); }
 
