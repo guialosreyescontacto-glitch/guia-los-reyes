@@ -304,23 +304,15 @@ button { font: inherit; color: inherit; }
 @media (min-width: 768px) { .hero { padding: 56px 0 48px; } }
 
 /* Dos columnas en escritorio: el texto a la izquierda y el carrusel VIP a la
-   derecha. Debajo de 1024px la retícula cae a una sola columna y el carrusel
+   derecha. Debajo de 940px la retícula cae a una sola columna y el carrusel
    pasa abajo por orden del documento, sin reglas extra. */
 .hero__inner {
   display: grid; gap: 26px;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
 }
-@media (min-width: 1024px) {
-  .hero__inner {
-    grid-template-columns: minmax(0, 1fr) minmax(400px, 520px);
-    gap: 40px;
-    /* Estirado, no centrado: así el carrusel llega al borde superior e
-       inferior del bloque de texto. El texto se sigue centrando por su
-       cuenta para cuando el carrusel sea el más alto de los dos. */
-    align-items: stretch;
-  }
-  .hero__texto { align-self: center; }
+@media (min-width: 940px) {
+  .hero__inner { grid-template-columns: minmax(0, 1fr) minmax(360px, 440px); gap: 36px; }
 }
 
 .hero__eyebrow {
@@ -432,24 +424,6 @@ button { font: inherit; color: inherit; }
   .vip__dot:hover::before { background: var(--ink-3); }
   .vip__dot.is-active:hover::before { background: var(--accent); }
 }
-
-/* En escritorio el carrusel se estira a lo alto de la fila del hero: los
-   puntos conservan su renglón y las diapositivas se llevan el resto. El
-   `min-height` evita que un bloque de texto corto lo deje sin aire. */
-@media (min-width: 1024px) {
-  .vip { display: flex; flex-direction: column; }
-  .vip__slides { flex: 1; min-height: 300px; }
-  .vip__slide  { padding: 26px; gap: 18px; }
-  /* Los márgenes automáticos centran el bloque de texto en el espacio que
-     sobra, para que el alto extra no quede como un hueco entre el texto y
-     los iconos, que siguen abajo a la derecha. */
-  .vip__texto  { margin-block: auto; }
-  .vip__nombre { font-size: 30px; margin: 12px 0 8px; }
-  /* Con más alto disponible cabe una línea más de descripción. */
-  .vip__desc   { font-size: 15px; -webkit-line-clamp: 3; }
-  .vip__meta   { font-size: 13.5px; margin-top: 11px; }
-}
-
 /* ==========================================================================
    ENCABEZADOS DE SECCIÓN
    ========================================================================== */
