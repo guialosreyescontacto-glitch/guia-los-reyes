@@ -359,30 +359,37 @@ button { font: inherit; color: inherit; }
 /* El aire lo pone la retícula del hero, no un margen propio. */
 .vip { min-width: 0; }
 
-/* Todas las diapositivas ocupan la misma celda: la altura la fija la más
-   alta y el cambio no empuja el resto de la página. */
-.vip__slides {
-  display: grid;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
+/* La ventana recorta y la pista es lo único que se mueve: las diapositivas van
+   en fila y el JS la corre de página en página. En escritorio caben dos a la
+   vez, así el plan Premium enseña el doble de negocios y la vuelta completa se
+   da en la mitad del tiempo. El relleve de abajo es para que la sombra de las
+   tarjetas no se corte contra el borde de la ventana. */
+
+.vip__slides { overflow: hidden; padding-block: 2px 8px; }
+.vip__pista {
+  display: flex; align-items: stretch; gap: 14px;
+  will-change: transform;
+  transition: transform .45s cubic-bezier(.2,.8,.3,1);
 }
+/* Sin animaciones no hay deslizamiento: el cambio de página es instantáneo. */
+.vip--quieto .vip__pista { transition: none; }
+
 .vip__slide {
-  grid-area: 1 / 1;
+  /* El ancho lo calcula el JS con el de la ventana, para que las dos tarjetas
+     y su separación den exactamente el ancho disponible. */
+  flex: 0 0 var(--vip-w, 100%);
   position: relative;
   /* Dos filas: arriba el cuerpo (texto + foto) y abajo la barra de
-     contacto. La altura la fija la diapositiva más alta, así que todas
-     comparten alto. */
+     contacto. Todas las diapositivas comparten alto porque la pista las
+     estira. */
   display: flex; flex-direction: column; justify-content: space-between; gap: 12px;
   padding: 18px;
   background: var(--banner, linear-gradient(135deg, #0f766e, #115e59));
   color: #fff;
-  /* `visibility` saca la diapositiva oculta del tabulador y del lector de
-     pantalla; la opacidad sola la dejaría enfocable por debajo. */
-  opacity: 0; visibility: hidden;
-  transition: opacity .45s ease, visibility .45s;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
 }
-.vip__slide.is-active { opacity: 1; visibility: visible; }
 .vip__slide::before {
   content: ""; position: absolute; inset: 0;
   background:
@@ -447,6 +454,27 @@ button { font: inherit; color: inherit; }
 @media (min-width: 560px) { .vip__foto { width: 118px; } }
 @media (min-width: 1180px) { .vip__foto { width: 132px; } }
 
+/* ---- Dos por vista -------------------------------------------------------
+   Con dos tarjetas en la misma columna del hero cada una mide poco más de
+   280px: ahí la fila de texto y foto ya no cabe de lado a lado, así que la
+   foto se pasa arriba a todo lo ancho y el texto queda debajo. Estas reglas
+   sólo aplican cuando el JS marca `vip--dos`, por eso ganan a las de arriba
+   sin necesidad de `!important`. */
+.vip--dos .vip__slide { padding: 14px; gap: 10px; }
+.vip--dos .vip__cuerpo { flex-direction: column; align-items: stretch; gap: 10px; }
+.vip--dos .vip__foto {
+  order: -1;                 /* la foto sube: en el marcado va después del texto */
+  width: auto; align-self: stretch; aspect-ratio: 16 / 9;
+  border-radius: 12px;
+}
+.vip--dos .vip__foto-ini { font-size: 23px; }
+.vip--dos .vip__foto-glifo { right: -10px; bottom: -12px; width: 62px; height: 62px; }
+.vip--dos .vip__nombre { margin: 8px 0 4px; font-size: 17px; }
+.vip--dos .vip__desc { font-size: 12.5px; line-height: 1.45; }
+.vip--dos .vip__meta { margin-top: 8px; font-size: 11.5px; }
+.vip--dos .vip__acciones { margin: 4px -14px -14px; padding: 10px 14px; gap: 6px; }
+.vip--dos .vip__acciones .act { width: 34px; height: 34px; padding: 8px; }
+
 /* Fila inferior: barra de contacto a todo lo ancho de la tarjeta. Los
    márgenes negativos cancelan el relleno de la diapositiva para que llegue
    a los bordes, y se reutiliza `.act` tal cual, para que el color de marca
@@ -481,15 +509,14 @@ button { font: inherit; color: inherit; }
    CARRUSEL DE DESTACADOS  (portada, arriba de las categorías)
    ========================================================================== */
 /* El marco sostiene la pista y las dos flechas. Las flechas son hermanas de la
-   pista y no hijas: adentro las recortaría el `overflow` y las borraría el
-   desvanecido de los costados. */
+   pista y no hijas: adentro las recortaría el `overflow`. */
 .dest__marco { position: relative; }
 
 /* La pista es la ventana por la que pasa el desfile, y mide exactamente lo
    mismo que la caja de contenido: empieza y termina donde el título de la
-   sección y la cuadrícula de categorías, para que el carrusel respete el mismo
-   margen que el resto de la página. El desvanecido de los costados marca ese
-   límite sin cortar las tarjetas en seco. */
+   sección y la cuadrícula de categorías. El corte es limpio contra ese borde
+   —sin degradados ni velos— para que las tarjetas se vean nítidas de lado a
+   lado. */
 .dest__pista {
   position: relative;
   overflow: hidden;
@@ -498,10 +525,6 @@ button { font: inherit; color: inherit; }
      de la página, si no el usuario quedaría atorado al querer bajar. */
   touch-action: pan-y;
   cursor: grab;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px,
-                                      #000 calc(100% - 24px), transparent);
-          mask-image: linear-gradient(90deg, transparent, #000 24px,
-                                      #000 calc(100% - 24px), transparent);
 }
 .dest__pista.is-agarrada { cursor: grabbing; }
 /* Los enlaces traen su propio cursor de mano; la manita de arrastrar es para
@@ -513,19 +536,94 @@ button { font: inherit; color: inherit; }
    escribe el JS cuadro a cuadro: así el desfile automático, las flechas y el
    arrastre mueven todos la misma posición y ninguno pelea con el otro. */
 .dest__cinta {
-  display: flex; gap: 12px; width: max-content;
+  display: flex; gap: 10px; width: max-content;
   will-change: transform;
 }
-.dest__grupo { display: flex; gap: 12px; }
-@media (min-width: 768px) {
-  .dest__cinta, .dest__grupo { gap: 14px; }
+.dest__grupo { display: flex; gap: 10px; }
+/* Las mismas separaciones y los mismos cortes que la cuadrícula de categorías:
+   2 tarjetas por pantalla en móvil, 3 desde 560px y 4 desde 900px. El ancho
+   de cada una lo calcula el JS con esa cuenta, así el carrusel cae en la misma
+   retícula que la cuadrícula de abajo. */
+@media (min-width: 560px) { .dest__cinta, .dest__grupo { gap: 12px; } }
+@media (min-width: 900px) { .dest__cinta, .dest__grupo { gap: 14px; } }
+
+.dest__card {
+  flex: 0 0 var(--dest-w, 260px);
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--gold) 38%, var(--line));
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 18%, transparent), var(--shadow-sm);
+  transition: box-shadow .16s;
+}
+@media (hover: hover) {
+  .dest__card:hover {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 30%, transparent), var(--shadow-md);
+  }
 }
 
-/* Con animaciones reducidas el carrusel no arranca solo; queda quieto en la
-   primera tarjeta hasta que el usuario lo mueva. Y sin movimiento el
-   desvanecido de la izquierda parecería un defecto, así que ahí se apaga. */
-.dest__pista.is-manual {
-  -webkit-mask-image: none; mask-image: none;
+/* Foto o logotipo. `object-fit: cover` llena el recuadro con cualquier
+   proporción sin deformar la imagen; sin `foto`, las iniciales sobre el glifo
+   de la categoría, igual que en el resto del sitio. */
+.dest__foto {
+  position: relative; aspect-ratio: 16 / 9;
+  display: grid; place-items: center;
+  background: var(--banner, linear-gradient(135deg, #0f766e, #115e59));
+  overflow: hidden;
+}
+.dest__foto img { width: 100%; height: 100%; object-fit: cover; }
+.dest__foto::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(90% 130% at 15% 0%, rgba(255,255,255,.22), transparent 60%),
+    linear-gradient(180deg, transparent 45%, rgba(0,0,0,.28));
+}
+.dest__ini {
+  position: relative; z-index: 1;
+  font-size: 21px; font-weight: 700; letter-spacing: -.04em;
+  color: rgba(255,255,255,.94); text-shadow: 0 2px 10px rgba(0,0,0,.28);
+}
+.dest__glifo {
+  position: absolute; right: -9px; bottom: -12px; width: 60px; height: 60px;
+  color: rgba(255,255,255,.16); z-index: 1;
+}
+/* Por encima del velo del ::after, que si no lo apagaría. Un punto más chico
+   que el badge de las tarjetas del listado, para que no se coma la foto. */
+.dest__foto .badge {
+  position: absolute; top: 7px; left: 7px; z-index: 2;
+  padding: 3px 8px; font-size: 10px;
+}
+.dest__foto .badge svg { width: 11px; height: 11px; }
+
+.dest__cuerpo { display: flex; flex-direction: column; gap: 5px; padding: 9px 10px 10px; flex: 1; }
+.dest__nombre {
+  margin: 0; font-size: 13.5px; font-weight: 700; letter-spacing: -.02em; line-height: 1.25;
+  /* A dos líneas: un nombre largo no debe descuadrar el alto de la fila. */
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.dest__cat {
+  margin: 0; display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--ink-3);
+  /* La categoría no envuelve: con la tarjeta angosta bastaría un nombre largo
+     para robarle un renglón a los botones. */
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dest__cat svg { width: 12px; height: 12px; flex: none; }
+
+/* Botones más chicos que los del listado. En escritorio los seis de un negocio
+   con todas sus redes caben en un renglón; en el teléfono, donde la tarjeta
+   mide la mitad, se acomodan en dos. */
+.dest__acciones {
+  margin-top: auto; padding-top: 9px;
+  display: flex; flex-wrap: wrap; gap: 5px;
+}
+.dest__acciones .act { width: 32px; height: 32px; padding: 7px; }
+/* En el teléfono la tarjeta mide la mitad y los botones se acomodan en dos
+   renglones. A 38px entran tres por renglón —tres y tres para un negocio con
+   todas sus redes— y de paso el dedo los alcanza mejor. */
+@media (max-width: 559px) {
+  .dest__acciones .act { width: 38px; height: 38px; padding: 9px; }
 }
 
 /* Flechas flotantes sobre los costados. Sólo en pantallas grandes: en el
@@ -563,74 +661,6 @@ button { font: inherit; color: inherit; }
   }
   .dest__flecha:active { transform: translateY(-50%) scale(.94); }
 }
-
-/* Ancho fijo: mediana, más chica que el banner Premium. El tope de 280px deja
-   los seis botones de contacto en un solo renglón, y el 82vw hace que en el
-   teléfono asome la siguiente tarjeta. */
-.dest__card {
-  flex: 0 0 min(82vw, 280px);
-  display: flex; flex-direction: column;
-  background: var(--surface);
-  border: 1px solid color-mix(in srgb, var(--gold) 38%, var(--line));
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 18%, transparent), var(--shadow-sm);
-  transition: box-shadow .16s;
-}
-@media (hover: hover) {
-  .dest__card:hover {
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 30%, transparent), var(--shadow-md);
-  }
-}
-
-/* Foto o logotipo, más baja que el banner de las tarjetas del listado para que
-   la tarjeta quede compacta. `object-fit: cover` llena el recuadro con
-   cualquier proporción sin deformar la imagen; sin `foto`, las iniciales sobre
-   el glifo de la categoría, igual que en el resto del sitio. */
-.dest__foto {
-  position: relative; aspect-ratio: 16 / 9;
-  display: grid; place-items: center;
-  background: var(--banner, linear-gradient(135deg, #0f766e, #115e59));
-  overflow: hidden;
-}
-.dest__foto img { width: 100%; height: 100%; object-fit: cover; }
-.dest__foto::after {
-  content: ""; position: absolute; inset: 0;
-  background:
-    radial-gradient(90% 130% at 15% 0%, rgba(255,255,255,.22), transparent 60%),
-    linear-gradient(180deg, transparent 45%, rgba(0,0,0,.28));
-}
-.dest__ini {
-  position: relative; z-index: 1;
-  font-size: 26px; font-weight: 700; letter-spacing: -.04em;
-  color: rgba(255,255,255,.94); text-shadow: 0 2px 10px rgba(0,0,0,.28);
-}
-.dest__glifo {
-  position: absolute; right: -10px; bottom: -14px; width: 78px; height: 78px;
-  color: rgba(255,255,255,.16); z-index: 1;
-}
-/* Por encima del velo del ::after, que si no lo apagaría. */
-.dest__foto .badge { position: absolute; top: 9px; left: 9px; z-index: 2; }
-
-.dest__cuerpo { display: flex; flex-direction: column; gap: 7px; padding: 12px 13px 13px; flex: 1; }
-.dest__nombre {
-  margin: 0; font-size: 15.5px; font-weight: 700; letter-spacing: -.025em; line-height: 1.25;
-  /* A dos líneas: un nombre largo no debe descuadrar el alto de la fila. */
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.dest__cat {
-  margin: 0; display: flex; align-items: center; gap: 6px;
-  font-size: 12.5px; color: var(--ink-3);
-}
-.dest__cat svg { width: 14px; height: 14px; flex: none; }
-
-/* Botones un punto más chicos que los del listado, para que los seis de un
-   negocio con todas sus redes quepan en un renglón. */
-.dest__acciones {
-  margin-top: auto; padding-top: 12px;
-  display: flex; flex-wrap: wrap; gap: 6px;
-}
-.dest__acciones .act { width: 36px; height: 36px; padding: 8px; }
 
 /* ==========================================================================
    ENCABEZADOS DE SECCIÓN

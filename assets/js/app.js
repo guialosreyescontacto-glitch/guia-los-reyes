@@ -189,9 +189,10 @@
   /* ----------------------------------------------------- Banner VIP (home) */
 
   /* Rotación exclusiva de los negocios con plan Premium, arriba de la portada.
-     Las diapositivas se apilan en la misma celda de la retícula: así la altura
-     la fija la más alta y el cambio no mueve el resto de la página. */
-  function diapositivaVip(neg, i) {
+     Las diapositivas van en fila dentro de una ventana que las recorta, y la
+     fila se corre de página en página: en escritorio se ven dos a la vez, en
+     el teléfono una. */
+  function diapositivaVip(neg) {
     const [c1, c2] = neg.cat.banner;
     /* La fila superior lleva el texto y el recuadro de la foto; la inferior,
        la barra de contacto con los botones que ya usan las tarjetas. Sin
@@ -199,8 +200,7 @@
        categoría, igual que el banner de las tarjetas. Ojo: dentro de la
        plantilla no caben comillas invertidas, cierran el literal. */
     return `
-      <article class="vip__slide ${i === 0 ? 'is-active' : ''}"
-               style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
+      <article class="vip__slide" style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
         <div class="vip__cuerpo">
           <div class="vip__texto">
             <span class="badge badge--vip">${icon(ICONS.corona)} Premium</span>
@@ -221,6 +221,16 @@
       </article>`;
   }
 
+  /* Cada cuánto pasa a la siguiente página de Premium. Con dos negocios por
+     vista la vuelta completa se da en la mitad de los cambios, así que el
+     banner alcanza a enseñarlos todos sin que la espera se haga larga. */
+  const VIP_MS = 4000;
+
+  /* Cuántos Premium se ven a la vez. Dos en escritorio: la columna del hero da
+     para dos tarjetas de poco más de 280px, que siguen siendo más grandes y
+     más vistosas que las del carrusel de destacados. */
+  const vipPorVista = () => (window.innerWidth >= 768 ? 2 : 1);
+
   function renderVip() {
     const caja = $('#vipBanner');
     const vips = ordenar(TODOS.filter(esPremium));
@@ -228,38 +238,91 @@
     if (caja.hidden) return;
 
     caja.innerHTML =
-      `<div class="vip__slides">${vips.map(diapositivaVip).join('')}</div>` +
-      `<div class="vip__dots">${vips.map((n, i) =>
-        `<button class="vip__dot ${i === 0 ? 'is-active' : ''}" type="button" data-i="${i}"
-                 aria-label="Ver ${esc(n.nombre)}"></button>`).join('')}</div>`;
+      `<div class="vip__slides"><div class="vip__pista">${vips.map(diapositivaVip).join('')}</div></div>` +
+      `<div class="vip__dots"></div>`;
 
-    const slides = $$('.vip__slide', caja);
-    const dots   = $$('.vip__dot', caja);
-    let actual = 0;
+    const ventana = $('.vip__slides', caja);
+    const pista   = $('.vip__pista', caja);
+    const slides  = $$('.vip__slide', caja);
+    const cajaDots = $('.vip__dots', caja);
 
-    const mostrar = (i) => {
-      actual = (i + slides.length) % slides.length;
-      slides.forEach((s, k) => s.classList.toggle('is-active', k === actual));
-      dots.forEach((d, k) => d.classList.toggle('is-active', k === actual));
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
+    caja.classList.toggle('vip--quieto', quieto.matches);
+
+    let porVista = 1, paso = 0, tope = 0, paginas = 0, pagina = 0;
+
+    const dibujarDots = () => {
+      cajaDots.innerHTML = Array.from({ length: paginas }, (_, i) =>
+        `<button class="vip__dot" type="button" data-i="${i}"
+                 aria-label="Ver el grupo ${i + 1} de ${paginas}"></button>`).join('');
+      $$('.vip__dot', cajaDots).forEach((d) => d.addEventListener('click', () => {
+        ir(Number(d.dataset.i));
+        reiniciar();   /* el toque manual reinicia la cuenta */
+      }));
     };
 
-    dots.forEach((d) => d.addEventListener('click', () => {
-      mostrar(Number(d.dataset.i));
-      reiniciar();   /* el toque manual reinicia la cuenta */
-    }));
+    const ir = (p, seco) => {
+      pagina = (p + paginas) % paginas;
+      /* El recorrido se recorta al final: en la última página, si sobran
+         menos negocios que huecos, se alinea con el borde derecho en vez de
+         dejar un espacio vacío. */
+      const x = Math.min(pagina * porVista * paso, tope);
 
-    /* Con animaciones reducidas no se rota sola: el usuario cambia con los
+      if (seco) pista.style.transition = 'none';
+      pista.style.transform = `translate3d(${-x}px, 0, 0)`;
+      if (seco) { void pista.offsetWidth; pista.style.transition = ''; }
+
+      /* Las diapositivas que quedaron fuera de la ventana salen del tabulador
+         y del lector de pantalla: están recortadas, no ocultas, y sin esto se
+         podría llegar con el tabulador a un negocio que no se ve. */
+      const desde = Math.round(x / paso);
+      slides.forEach((s, k) => {
+        const dentro = k >= desde && k < desde + porVista;
+        s.setAttribute('aria-hidden', dentro ? 'false' : 'true');
+        $$('a', s).forEach((a) => { a.tabIndex = dentro ? 0 : -1; });
+      });
+      $$('.vip__dot', cajaDots).forEach((d, i) => d.classList.toggle('is-active', i === pagina));
+    };
+
+    const medir = () => {
+      porVista = Math.min(vipPorVista(), slides.length);
+      caja.classList.toggle('vip--dos', porVista > 1);
+
+      const gap = parseFloat(getComputedStyle(pista).columnGap) || 0;
+      const ancho = (ventana.clientWidth - (porVista - 1) * gap) / porVista;
+      if (ancho <= 0) return;
+      pista.style.setProperty('--vip-w', ancho + 'px');
+
+      paso = ancho + gap;
+      tope = Math.max(0, (slides.length - porVista) * paso);
+
+      const cuantas = Math.max(1, Math.ceil(slides.length / porVista));
+      if (cuantas !== paginas) { paginas = cuantas; dibujarDots(); }
+      ir(Math.min(pagina, paginas - 1), true);
+    };
+
+    /* Con animaciones reducidas no rota sola: el usuario cambia con los
        puntos. Tampoco corre mientras el puntero o el foco están dentro. */
-    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
     let reloj = null;
     const parar     = () => { clearInterval(reloj); reloj = null; };
     const reiniciar = () => {
       parar();
-      if (!quieto.matches && slides.length > 1) reloj = setInterval(() => mostrar(actual + 1), 6000);
+      if (!quieto.matches && paginas > 1) reloj = setInterval(() => ir(pagina + 1), VIP_MS);
     };
 
     ['mouseenter', 'focusin'].forEach(e => caja.addEventListener(e, parar));
     ['mouseleave', 'focusout'].forEach(e => caja.addEventListener(e, reiniciar));
+
+    /* Sólo se remide si cambió el ancho: en el teléfono el `resize` también
+       salta al esconderse la barra de direcciones, que sólo cambia el alto. */
+    let anchoPrev = window.innerWidth;
+    window.addEventListener('resize', () => {
+      if (window.innerWidth === anchoPrev) return;
+      anchoPrev = window.innerWidth;
+      medir();
+    });
+
+    medir();
     reiniciar();
   }
 
@@ -324,35 +387,49 @@
     izq.hidden = false;
     der.hidden = false;
 
-    let dist = 0;   // ancho de una tanda más su separación: el ciclo completo
-    let paso = 0;   // cuánto avanza un clic de flecha
+    let dist   = 0;   // ancho de una tanda más su separación: el ciclo completo
+    let avance = 0;   // lo que ocupa una tarjeta con su separación
+
+    /* Cuántas tarjetas se ven a la vez. Son los mismos cortes que la
+       cuadrícula de categorías —2, 3 y 4 columnas—, para que las tarjetas del
+       carrusel midan lo mismo que las de "Explora por categoría" y las dos
+       secciones se lean como una sola retícula. */
+    const porVista = () =>
+      window.innerWidth >= 900 ? 4 : window.innerWidth >= 560 ? 3 : 2;
 
     const medir = () => {
-      const gap   = parseFloat(getComputedStyle(cinta).columnGap) || 0;
+      const gap = parseFloat(getComputedStyle(cinta).columnGap) || 0;
+      const n   = porVista();
+
+      /* El ancho sale de la cuenta, no de un número fijo: así entran justo `n`
+         tarjetas entre los dos bordes de la página, sin sobrantes ni recortes
+         en reposo. */
+      const carta = (pista.clientWidth - (n - 1) * gap) / n;
+      if (carta <= 0) return;
+      pista.style.setProperty('--dest-w', carta + 'px');
+      avance = carta + gap;
+
       const ancho = grupo.getBoundingClientRect().width;
       if (!ancho) return;
 
       /* Al recorrer justo esto, la tanda siguiente cae exactamente donde
-         arrancó la anterior, así que el reinicio del ciclo no se ve. */
+         arrancó la anterior, así que el reinicio del ciclo no se ve. Y como es
+         un múltiplo exacto de `avance`, el filo de las tarjetas sigue cayendo
+         en el mismo lugar vuelta tras vuelta. */
       dist = ancho + gap;
-
-      /* La flecha avanza las tarjetas enteras que caben a la vista, para que el
-         usuario nunca se quede con media tarjeta pegada al borde. */
-      const carta = grupo.firstElementChild.getBoundingClientRect().width + gap;
-      paso = Math.max(1, Math.floor(pista.clientWidth / carta)) * carta;
 
       /* Copias de la tanda: pasado el ciclo la cinta tiene que seguir cubriendo
          la ventana, o la cola aparecería en blanco. Con pocos negocios en
          pantalla ancha hacen falta varias. La copia se esconde del lector de
          pantalla y sus enlaces salen del tabulador, para no anunciar ni
          recorrer dos veces los mismos negocios. */
-      let n = cinta.children.length;
-      while (n * dist - gap - dist < pista.clientWidth && n < 12) {
+      let c = cinta.children.length;
+      while (c * dist - gap - dist < pista.clientWidth && c < 12) {
         const copia = grupo.cloneNode(true);
         copia.setAttribute('aria-hidden', 'true');
         $$('a', copia).forEach((a) => { a.tabIndex = -1; });
         cinta.appendChild(copia);
-        n++;
+        c++;
       }
     };
 
@@ -411,12 +488,15 @@
     ['mouseenter', 'focusin'].forEach((e) => caja.addEventListener(e, parar));
     ['mouseleave', 'focusout'].forEach((e) => caja.addEventListener(e, () => seguir(0)));
 
-    /* Empujón de flecha: detiene el desfile, desliza un bloque de tarjetas y lo
-       retoma cuando el usuario se retira. */
+    /* Empujón de flecha: detiene el desfile, avanza un solo negocio y lo retoma
+       cuando el usuario se retira. Antes de moverse redondea al filo de tarjeta
+       más cercano, así el borde izquierdo de la pista siempre cae en el
+       principio de una tarjeta y ninguna se queda cortada a la mitad. */
     const empujar = (signo) => {
       parar();
-      if (solo) { pos += signo * paso; pintar(); return; }
-      tiron = { desde: pos, hasta: pos + signo * paso, t0: performance.now() };
+      const meta = (Math.round(pos / avance) + signo) * avance;
+      if (solo) { pos = meta; pintar(); return; }
+      tiron = { desde: pos, hasta: meta, t0: performance.now() };
       andar();
       seguir(DEST_ESPERA);
     };
