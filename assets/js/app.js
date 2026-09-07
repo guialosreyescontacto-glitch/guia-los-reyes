@@ -226,10 +226,11 @@
      banner alcanza a enseñarlos todos sin que la espera se haga larga. */
   const VIP_MS = 4000;
 
-  /* Cuántos Premium se ven a la vez. Dos en escritorio: la columna del hero da
-     para dos tarjetas de poco más de 280px, que siguen siendo más grandes y
-     más vistosas que las del carrusel de destacados. */
-  const vipPorVista = () => (window.innerWidth >= 768 ? 2 : 1);
+  /* Cuántos Premium van en cada página. Dos en escritorio, uno encima del
+     otro: apiladas, las tarjetas se ven anchas —a lo largo, no a lo alto— y el
+     plan enseña el doble de negocios sin encoger ninguno. En el teléfono, uno.
+     El recorrido entre páginas sigue siendo horizontal. */
+  const vipPorPagina = () => (window.innerWidth >= 768 ? 2 : 1);
 
   function renderVip() {
     const caja = $('#vipBanner');
@@ -238,20 +239,29 @@
     if (caja.hidden) return;
 
     caja.innerHTML =
-      `<div class="vip__slides"><div class="vip__pista">${vips.map(diapositivaVip).join('')}</div></div>` +
+      `<div class="vip__slides"><div class="vip__pista"></div></div>` +
       `<div class="vip__dots"></div>`;
 
-    const ventana = $('.vip__slides', caja);
-    const pista   = $('.vip__pista', caja);
-    const slides  = $$('.vip__slide', caja);
+    const ventana  = $('.vip__slides', caja);
+    const pista    = $('.vip__pista', caja);
     const cajaDots = $('.vip__dots', caja);
 
     const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
     caja.classList.toggle('vip--quieto', quieto.matches);
 
-    let porVista = 1, paso = 0, tope = 0, paginas = 0, pagina = 0;
+    let porPagina = 0, paso = 0, paginas = 0, pagina = 0;
 
-    const dibujarDots = () => {
+    /* Cada página es una columna del ancho de la ventana con sus negocios
+       apilados. La pista lleva las columnas en fila, así que el recorrido
+       sigue siendo horizontal aunque las tarjetas se acomoden a lo alto. */
+    const construir = () => {
+      const grupos = [];
+      for (let i = 0; i < vips.length; i += porPagina) grupos.push(vips.slice(i, i + porPagina));
+      paginas = grupos.length;
+
+      pista.innerHTML = grupos.map((g) =>
+        `<div class="vip__grupo">${g.map(diapositivaVip).join('')}</div>`).join('');
+
       cajaDots.innerHTML = Array.from({ length: paginas }, (_, i) =>
         `<button class="vip__dot" type="button" data-i="${i}"
                  aria-label="Ver el grupo ${i + 1} de ${paginas}"></button>`).join('');
@@ -263,41 +273,38 @@
 
     const ir = (p, seco) => {
       pagina = (p + paginas) % paginas;
-      /* El recorrido se recorta al final: en la última página, si sobran
-         menos negocios que huecos, se alinea con el borde derecho en vez de
-         dejar un espacio vacío. */
-      const x = Math.min(pagina * porVista * paso, tope);
 
       if (seco) pista.style.transition = 'none';
-      pista.style.transform = `translate3d(${-x}px, 0, 0)`;
+      pista.style.transform = `translate3d(${-pagina * paso}px, 0, 0)`;
       if (seco) { void pista.offsetWidth; pista.style.transition = ''; }
 
-      /* Las diapositivas que quedaron fuera de la ventana salen del tabulador
-         y del lector de pantalla: están recortadas, no ocultas, y sin esto se
-         podría llegar con el tabulador a un negocio que no se ve. */
-      const desde = Math.round(x / paso);
-      slides.forEach((s, k) => {
-        const dentro = k >= desde && k < desde + porVista;
-        s.setAttribute('aria-hidden', dentro ? 'false' : 'true');
-        $$('a', s).forEach((a) => { a.tabIndex = dentro ? 0 : -1; });
+      /* Las páginas que quedaron fuera de la ventana salen del tabulador y del
+         lector de pantalla: están recortadas, no ocultas, y sin esto se podría
+         llegar con el tabulador a un negocio que no se ve. */
+      $$('.vip__grupo', pista).forEach((g, i) => {
+        const dentro = i === pagina;
+        g.setAttribute('aria-hidden', dentro ? 'false' : 'true');
+        $$('a', g).forEach((a) => { a.tabIndex = dentro ? 0 : -1; });
       });
       $$('.vip__dot', cajaDots).forEach((d, i) => d.classList.toggle('is-active', i === pagina));
     };
 
     const medir = () => {
-      porVista = Math.min(vipPorVista(), slides.length);
-      caja.classList.toggle('vip--dos', porVista > 1);
+      /* Sólo se rearma el marcado si cambió cuántos caben: pasar de una a dos
+         por página reagrupa las tarjetas, y eso no debe ocurrir en cada
+         `resize`. */
+      const n = Math.min(vipPorPagina(), vips.length);
+      if (n !== porPagina) {
+        porPagina = n;
+        construir();
+      }
 
-      const gap = parseFloat(getComputedStyle(pista).columnGap) || 0;
-      const ancho = (ventana.clientWidth - (porVista - 1) * gap) / porVista;
+      const gap   = parseFloat(getComputedStyle(pista).columnGap) || 0;
+      const ancho = ventana.clientWidth;
       if (ancho <= 0) return;
+
       pista.style.setProperty('--vip-w', ancho + 'px');
-
       paso = ancho + gap;
-      tope = Math.max(0, (slides.length - porVista) * paso);
-
-      const cuantas = Math.max(1, Math.ceil(slides.length / porVista));
-      if (cuantas !== paginas) { paginas = cuantas; dibujarDots(); }
       ir(Math.min(pagina, paginas - 1), true);
     };
 

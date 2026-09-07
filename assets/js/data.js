@@ -69,7 +69,7 @@ const CIUDAD = 'Los Reyes de Salgado, Michoacán, México';
           portada, así que conviene que traigan `redes.web`.
    foto   OPCIONAL. Ruta o URL de la foto o el logotipo del negocio. La usan el
           banner VIP de la portada (recuadro cuadrado) y el carrusel de
-          destacados (recuadro 16:9); en ambos se recorta con `object-fit:
+          destacados (banda apaisada); en ambos se recorta con `object-fit:
           cover`, así que conviene una imagen con el motivo centrado. Sin
           `foto` se dibujan las iniciales sobre el glifo de la categoría.
           Los básicos la ignoran: no salen en la portada.
