@@ -312,7 +312,10 @@ button { font: inherit; color: inherit; }
   align-items: center;
 }
 @media (min-width: 940px) {
-  .hero__inner { grid-template-columns: minmax(0, 1fr) minmax(400px, 520px); gap: 36px; }
+  /* Las dos columnas son flexibles y el carrusel se lleva un poco más, en
+     vez de tener un ancho tope: con un tope fijo la columna del texto
+     quedaba más ancha que el propio texto y sobraba un hueco en medio. */
+  .hero__inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 40px; }
 }
 
 .hero__eyebrow {
@@ -323,6 +326,13 @@ button { font: inherit; color: inherit; }
   margin: 0; font-size: clamp(26px, 6.2vw, 44px); line-height: 1.12;
   letter-spacing: -.03em; font-weight: 700; max-width: 15ch;
 }
+@media (min-width: 940px) {
+  /* En dos columnas el título deja de tener tope propio y llena el ancho
+     de su columna: así lo único que lo separa del carrusel es el gap de
+     la retícula, sin el hueco que dejaba el tope de 15ch. */
+  .hero__title { max-width: none; }
+}
+
 .hero__title span {
   background: linear-gradient(100deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--gold)));
   -webkit-background-clip: text; background-clip: text; color: transparent;
