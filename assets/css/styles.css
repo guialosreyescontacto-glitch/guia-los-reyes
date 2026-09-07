@@ -303,6 +303,18 @@ button { font: inherit; color: inherit; }
 }
 @media (min-width: 768px) { .hero { padding: 56px 0 48px; } }
 
+/* Dos columnas en escritorio: el texto a la izquierda y el carrusel VIP a la
+   derecha. Debajo de 940px la retícula cae a una sola columna y el carrusel
+   pasa abajo por orden del documento, sin reglas extra. */
+.hero__inner {
+  display: grid; gap: 26px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+}
+@media (min-width: 940px) {
+  .hero__inner { grid-template-columns: minmax(0, 1fr) minmax(360px, 440px); gap: 36px; }
+}
+
 .hero__eyebrow {
   margin: 0 0 10px; font-size: 11px; font-weight: 700; letter-spacing: .13em;
   text-transform: uppercase; color: var(--accent);
@@ -334,7 +346,8 @@ button { font: inherit; color: inherit; }
    BANNER VIP  (rotación de los negocios con plan Premium, en la portada)
    ========================================================================== */
 
-.vip { margin-top: 22px; }
+/* El aire lo pone la retícula del hero, no un margen propio. */
+.vip { min-width: 0; }
 
 /* Todas las diapositivas ocupan la misma celda: la altura la fija la más
    alta y el cambio no empuja el resto de la página. */
@@ -347,9 +360,10 @@ button { font: inherit; color: inherit; }
 .vip__slide {
   grid-area: 1 / 1;
   position: relative;
-  display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
-  justify-content: space-between;
-  padding: 20px;
+  /* En columna: el texto arriba y la fila de iconos abajo a la derecha. La
+     altura la fija la diapositiva más alta, así que todas comparten alto. */
+  display: flex; flex-direction: column; justify-content: space-between; gap: 14px;
+  padding: 18px;
   background: var(--banner, linear-gradient(135deg, #0f766e, #115e59));
   color: #fff;
   /* `visibility` saca la diapositiva oculta del tabulador y del lector de
@@ -366,28 +380,33 @@ button { font: inherit; color: inherit; }
 }
 .vip__texto, .vip__acciones { position: relative; z-index: 1; }
 
-/* Crece para quedarse con el ancho que no usan los botones, y puede encogerse
-   hasta 300px antes de que estos bajen a la línea siguiente. */
-.vip__texto { flex: 1 1 300px; min-width: 0; }
+/* `min-width: 0` deja que el texto largo se corte en vez de estirar la
+   diapositiva y desbordar la columna del hero. */
+.vip__texto { min-width: 0; }
 .vip__nombre {
+  overflow-wrap: break-word;
   margin: 9px 0 5px; font-size: 20px; font-weight: 700; letter-spacing: -.025em;
   line-height: 1.2;
 }
 @media (min-width: 768px) { .vip__nombre { font-size: 24px; } }
+/* A dos líneas: así el alto del carrusel no depende del largo de cada
+   descripción y la columna del hero se mantiene proporcional. */
 .vip__desc {
   margin: 0; max-width: 56ch; font-size: 13.5px; line-height: 1.5;
   color: rgba(255,255,255,.92);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .vip__meta {
-  margin: 9px 0 0; display: flex; align-items: center; gap: 6px;
+  margin: 9px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
   font-size: 12.5px; color: rgba(255,255,255,.85);
 }
 .vip__meta svg { width: 13px; height: 13px; flex: none; }
 .vip__sep { color: rgba(255,255,255,.5); }
 
-.vip__acciones { display: flex; flex-wrap: wrap; gap: 8px; }
-.btn--vip { background: #fff; color: #1b1b18; border-color: transparent; }
-@media (hover: hover) { .btn--vip:hover { background: rgba(255,255,255,.86); } }
+/* Misma fila de iconos circulares que las tarjetas: se reutiliza `.act` tal
+   cual, para que el color de marca al pasar el cursor y el atenuado táctil
+   se comporten igual en toda la página. */
+.vip__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 
 /* El botón es de 22px para que el dedo lo alcance; el punto visible va
    dentro, así el área táctil no depende del tamaño del indicador. */

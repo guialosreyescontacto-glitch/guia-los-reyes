@@ -177,7 +177,6 @@
      la fija la más alta y el cambio no mueve el resto de la página. */
   function diapositivaVip(neg, i) {
     const [c1, c2] = neg.cat.banner;
-    const web = (neg.redes || {}).web;
     return `
       <article class="vip__slide ${i === 0 ? 'is-active' : ''}"
                style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
@@ -188,12 +187,9 @@
           <p class="vip__meta">${icon(ICONS.pin)} ${esc(neg.zona)}
              <span class="vip__sep">·</span> ${esc(neg.cat.nombre)}</p>
         </div>
-        <div class="vip__acciones">
-          ${web ? `<a class="btn btn--vip" href="${esc(REDES.web.url(web))}" target="_blank" rel="noopener">
-                     ${icon(ICONS.globo)} Ver sitio web</a>` : ''}
-          <a class="btn btn--wa" href="${waLink(neg.tel, neg.nombre)}" target="_blank" rel="noopener">
-            <span class="wa-ico" aria-hidden="true"></span> WhatsApp</a>
-        </div>
+        <!-- Misma fila de botones que las tarjetas: hasta seis según lo que
+             el negocio tenga registrado. -->
+        <div class="vip__acciones">${botonesContacto(neg)}</div>
       </article>`;
   }
 
