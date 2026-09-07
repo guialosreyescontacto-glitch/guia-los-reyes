@@ -291,10 +291,15 @@
       </article>`;
   }
 
-  /* Velocidad del desfile, en píxeles por segundo. La duración se calcula a
-     partir del ancho real de una tanda, así el carrusel corre igual de rápido
-     con tres negocios que con diez. */
+  /* Velocidad del desfile, en píxeles por segundo. Se avanza cuadro a cuadro
+     desde el JS, no con una animación de CSS: las flechas y el arrastre tienen
+     que poder tomar el carrusel donde va y devolverlo sin saltos, y para eso
+     hace falta una sola posición que todos muevan. */
   const DEST_VEL = 42;
+  /* Cuánto espera antes de retomar el desfile después de que el usuario suelta. */
+  const DEST_ESPERA = 2500;
+  /* Cuánto dura el empujón de una flecha. */
+  const DEST_TIRON = 420;
 
   function renderDestacados() {
     const caja  = $('#destBanner');
@@ -302,41 +307,196 @@
     caja.hidden = lista.length === 0;
     if (caja.hidden) return;
 
-    const pista  = $('#destPista');
-    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const tanda  = lista.map(tarjetaDestacada).join('');
+    const pista = $('#destPista');
+    const izq   = $('#destPrev');
+    const der   = $('#destNext');
+    const tanda = lista.map(tarjetaDestacada).join('');
 
-    /* Con animaciones reducidas no hay desfile ni copia: una sola tanda que el
-       usuario recorre con el dedo o la rueda. */
-    if (quieto.matches) {
-      pista.classList.add('is-manual');
-      pista.innerHTML = `<div class="dest__cinta"><div class="dest__grupo">${tanda}</div></div>`;
-      return;
-    }
+    /* Con animaciones reducidas el carrusel no arranca solo. Las flechas y el
+       dedo siguen sirviendo —ese movimiento lo pide el usuario— pero sin
+       suavizado: van derecho al destino. */
+    const solo = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    pista.classList.toggle('is-manual', solo);
 
-    /* Dos tandas idénticas: cuando la primera termina de salir, la segunda está
-       justo donde arrancó la primera, así que el ciclo se reinicia sin salto
-       visible. La copia se esconde del lector de pantalla y sus enlaces salen
-       del tabulador, para no anunciar ni recorrer dos veces los mismos diez. */
-    pista.innerHTML =
-      `<div class="dest__cinta">` +
-        `<div class="dest__grupo">${tanda}</div>` +
-        `<div class="dest__grupo" aria-hidden="true">${tanda}</div>` +
-      `</div>`;
-    $$('.dest__grupo[aria-hidden] a', pista).forEach((a) => { a.tabIndex = -1; });
-
+    pista.innerHTML = `<div class="dest__cinta"><div class="dest__grupo">${tanda}</div></div>`;
     const cinta = $('.dest__cinta', pista);
     const grupo = $('.dest__grupo', pista);
+    izq.hidden = false;
+    der.hidden = false;
 
-    /* El recorrido es el ancho de una tanda más la separación que la sigue: con
-       eso la segunda cae exactamente en el punto de partida de la primera. */
+    let dist = 0;   // ancho de una tanda más su separación: el ciclo completo
+    let paso = 0;   // cuánto avanza un clic de flecha
+
     const medir = () => {
-      const gap  = parseFloat(getComputedStyle(cinta).columnGap) || 0;
-      const dist = grupo.getBoundingClientRect().width + gap;
-      cinta.style.setProperty('--dist', dist + 'px');
-      cinta.style.setProperty('--dur', (dist / DEST_VEL) + 's');
+      const gap   = parseFloat(getComputedStyle(cinta).columnGap) || 0;
+      const ancho = grupo.getBoundingClientRect().width;
+      if (!ancho) return;
+
+      /* Al recorrer justo esto, la tanda siguiente cae exactamente donde
+         arrancó la anterior, así que el reinicio del ciclo no se ve. */
+      dist = ancho + gap;
+
+      /* La flecha avanza las tarjetas enteras que caben a la vista, para que el
+         usuario nunca se quede con media tarjeta pegada al borde. */
+      const carta = grupo.firstElementChild.getBoundingClientRect().width + gap;
+      paso = Math.max(1, Math.floor(pista.clientWidth / carta)) * carta;
+
+      /* Copias de la tanda: pasado el ciclo la cinta tiene que seguir cubriendo
+         la ventana, o la cola aparecería en blanco. Con pocos negocios en
+         pantalla ancha hacen falta varias. La copia se esconde del lector de
+         pantalla y sus enlaces salen del tabulador, para no anunciar ni
+         recorrer dos veces los mismos negocios. */
+      let n = cinta.children.length;
+      while (n * dist - gap - dist < pista.clientWidth && n < 12) {
+        const copia = grupo.cloneNode(true);
+        copia.setAttribute('aria-hidden', 'true');
+        $$('a', copia).forEach((a) => { a.tabIndex = -1; });
+        cinta.appendChild(copia);
+        n++;
+      }
     };
-    medir();
+
+    let pos    = 0;      // píxeles recorridos hacia la izquierda
+    let corre  = !solo;  // ¿avanza por su cuenta?
+    let tiron  = null;   // empujón en curso: { desde, hasta, t0 }
+    let agarre = null;   // arrastre en curso
+    let jalado = false;  // el clic que sigue a un arrastre no cuenta
+    let espera = 0;      // temporizador para retomar el desfile
+    let previo = 0;      // marca de tiempo del cuadro anterior
+    let raf    = 0;
+
+    /* Lo que se pinta se queda siempre dentro de una tanda: el recorrido crece
+       sin parar, pero al pintarlo vuelve al principio en cada vuelta. */
+    const pintar = () => {
+      const p = dist ? ((pos % dist) + dist) % dist : 0;
+      cinta.style.transform = `translate3d(${-p}px, 0, 0)`;
+    };
+
+    const cuadro = (t) => {
+      raf = 0;
+      const dt = previo ? Math.min(64, t - previo) / 1000 : 0;
+      previo = t;
+
+      if (tiron) {
+        const k = Math.min(1, (t - tiron.t0) / DEST_TIRON);
+        /* Frena al llegar en vez de cortar en seco. */
+        pos = tiron.desde + (tiron.hasta - tiron.desde) * (1 - Math.pow(1 - k, 3));
+        if (k === 1) tiron = null;
+      } else if (!agarre && corre) {
+        /* Por tiempo, no por cuadro: en una pantalla de 120 Hz corre igual de
+           rápido que en una de 60. */
+        pos += DEST_VEL * dt;
+      }
+
+      pintar();
+      if (tiron || agarre || corre) raf = requestAnimationFrame(cuadro);
+      else previo = 0;
+    };
+    /* Quieto no pide cuadros: no gasta batería mientras nadie lo mueve. */
+    const andar = () => { if (!raf) raf = requestAnimationFrame(cuadro); };
+
+    const parar = () => { corre = false; clearTimeout(espera); };
+    const seguir = (ms) => {
+      clearTimeout(espera);
+      if (solo) return;
+      espera = setTimeout(() => {
+        /* Sólo retoma si ya no hay nadie encima: con el puntero sobre una
+           tarjeta o el foco en un botón, moverse le quitaría el blanco. */
+        if (agarre || caja.matches(':hover') || caja.contains(document.activeElement)) return;
+        corre = true;
+        andar();
+      }, ms);
+    };
+
+    ['mouseenter', 'focusin'].forEach((e) => caja.addEventListener(e, parar));
+    ['mouseleave', 'focusout'].forEach((e) => caja.addEventListener(e, () => seguir(0)));
+
+    /* Empujón de flecha: detiene el desfile, desliza un bloque de tarjetas y lo
+       retoma cuando el usuario se retira. */
+    const empujar = (signo) => {
+      parar();
+      if (solo) { pos += signo * paso; pintar(); return; }
+      tiron = { desde: pos, hasta: pos + signo * paso, t0: performance.now() };
+      andar();
+      seguir(DEST_ESPERA);
+    };
+    izq.addEventListener('click', () => empujar(-1));
+    der.addEventListener('click', () => empujar(1));
+
+    /* Arrastre con el dedo o con el ratón. `setPointerCapture` sigue recibiendo
+       los eventos aunque el puntero se salga de la pista a media jalada. */
+    pista.addEventListener('pointerdown', (e) => {
+      if (e.button > 0) return;
+      parar();
+      tiron  = null;
+      jalado = false;
+      agarre = { x: e.clientX, pos, ux: e.clientX, t: e.timeStamp, vel: 0, movido: false };
+      pista.classList.add('is-agarrada');
+      andar();
+      /* Al final y protegida: si el navegador ya dio por terminado ese puntero
+         la captura truena, y no vale la pena perder el arrastre por eso. */
+      try { pista.setPointerCapture(e.pointerId); } catch (_) { /* sin captura */ }
+    });
+
+    pista.addEventListener('pointermove', (e) => {
+      if (!agarre) return;
+      const dx = e.clientX - agarre.x;
+      /* Menos de seis píxeles todavía puede ser el pulso de un clic y no un
+         arrastre; sin ese margen, tocar un botón movería el carrusel. */
+      if (!agarre.movido && Math.abs(dx) < 6) return;
+      agarre.movido = true;
+
+      const dt = e.timeStamp - agarre.t;
+      if (dt > 0) {
+        agarre.vel = (e.clientX - agarre.ux) / dt;   // píxeles por milisegundo
+        agarre.ux  = e.clientX;
+        agarre.t   = e.timeStamp;
+      }
+      pos = agarre.pos - dx;
+    });
+
+    const soltar = () => {
+      if (!agarre) return;
+      const { movido, vel } = agarre;
+      agarre = null;
+      pista.classList.remove('is-agarrada');
+      /* El clic que viene detrás de un arrastre no es una visita al negocio,
+         es el final del jalón: se traga más abajo. */
+      jalado = movido;
+
+      /* Un impulso al soltar, como el desplazamiento de toda la vida: si venía
+         rápido, sigue un poco de largo antes de quedarse. */
+      if (movido && !solo && Math.abs(vel) > 0.35) {
+        tiron = { desde: pos, hasta: pos - vel * 220, t0: performance.now() };
+      }
+      seguir(DEST_ESPERA);
+      andar();
+    };
+    ['pointerup', 'pointercancel'].forEach((e) => pista.addEventListener(e, soltar));
+
+    pista.addEventListener('click', (e) => {
+      if (!jalado) return;
+      jalado = false;
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
+
+    /* La rueda o el trackpad de lado también lo mueven. El movimiento vertical
+       se deja pasar: secuestrarlo dejaría al usuario atorado sin poder bajar. */
+    pista.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      parar();
+      tiron = null;
+      pos += e.deltaX;
+      pintar();
+      seguir(DEST_ESPERA);
+    }, { passive: false });
+
+    /* Al enfocar con el tabulador una tarjeta que quedó fuera de la ventana, el
+       navegador intenta correr la caja aunque esté recortada; como el recorrido
+       real lo lleva el `transform`, se devuelve a cero para que no se descuadre. */
+    pista.addEventListener('scroll', () => { pista.scrollLeft = 0; });
 
     /* Sólo se vuelve a medir si cambió el ancho: en el teléfono el `resize`
        también salta al esconderse la barra de direcciones, que sólo cambia el
@@ -346,21 +506,12 @@
       if (window.innerWidth === anchoPrev) return;
       anchoPrev = window.innerWidth;
       medir();
+      pintar();
     });
 
-    /* Se detiene con el puntero o el foco encima, y también mientras el dedo
-       toca: en pantalla táctil no hay cursor que se retire, así que hace falta
-       una pausa para poder apuntarle a un botón sin que se mueva. */
-    const parar  = () => pista.classList.add('is-quieta');
-    const seguir = () => pista.classList.remove('is-quieta');
-
-    ['mouseenter', 'focusin', 'pointerdown'].forEach(e => caja.addEventListener(e, parar));
-    ['mouseleave', 'focusout'].forEach(e => caja.addEventListener(e, seguir));
-    caja.addEventListener('pointerup', () => setTimeout(() => {
-      /* Al soltar solo se reanuda si el puntero ya salió y no quedó nada
-         enfocado dentro; si no, con el ratón encima volvería a moverse. */
-      if (!caja.matches(':hover') && !caja.contains(document.activeElement)) seguir();
-    }, 2500));
+    medir();
+    pintar();
+    if (corre) andar();
   }
 
   /* -------------------------------------------------------- Vista: inicio */
