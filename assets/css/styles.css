@@ -480,32 +480,56 @@ button { font: inherit; color: inherit; }
 /* ==========================================================================
    CARRUSEL DE DESTACADOS  (portada, arriba de las categorías)
    ========================================================================== */
-
-/* La pista es el propio contenedor que se desplaza, no una cinta empujada por
-   una animación: así el dedo y la rueda funcionan igual esté avanzando sola o
-   detenida, y los botones de contacto no son un blanco en movimiento. Sale del
-   `.container` con márgenes negativos para que las tarjetas lleguen al borde de
-   la pantalla —se ve que hay más a la derecha— y el relleno lateral devuelve la
-   primera a la alineación del resto de la página. */
+/* La pista es la ventana por la que pasa el desfile, y mide exactamente lo
+   mismo que la caja de contenido: empieza y termina donde el título de la
+   sección y la cuadrícula de categorías, para que el carrusel respete el mismo
+   margen que el resto de la página. El desvanecido de los costados marca ese
+   límite sin cortar las tarjetas en seco. */
 .dest__pista {
-  display: flex; gap: 12px;
-  margin-inline: -16px;
-  padding: 6px 16px 12px;
+  position: relative;
+  overflow: hidden;
+  padding-block: 6px 12px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px,
+                                      #000 calc(100% - 24px), transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 24px,
+                                      #000 calc(100% - 24px), transparent);
+}
+
+/* La cinta lleva las dos tandas y es lo único que se mueve. `max-content` la
+   deja crecer todo lo que necesite en vez de encogerse a la pista. */
+.dest__cinta {
+  display: flex; gap: 12px; width: max-content;
+  animation: desfile var(--dur, 60s) linear infinite;
+}
+.dest__grupo { display: flex; gap: 12px; }
+@media (min-width: 768px) {
+  .dest__cinta, .dest__grupo { gap: 14px; }
+}
+
+/* Un solo recorrido, sin frenadas: al desplazarse el ancho exacto de una tanda
+   la segunda queda justo donde arrancó la primera, así que el reinicio del
+   ciclo no se ve. `--dist` y `--dur` los calcula el JS con el ancho real, para
+   que la velocidad en píxeles por segundo no dependa de cuántas tarjetas haya. */
+@keyframes desfile {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(calc(var(--dist, 0px) * -1), 0, 0); }
+}
+.dest__pista.is-quieta .dest__cinta { animation-play-state: paused; }
+
+/* Con animaciones reducidas no hay desfile ni copia: una sola tanda que se
+   recorre con el dedo o la rueda. Sin movimiento la primera tarjeta se queda
+   quieta en el borde y el desvanecido parecería un defecto, así que ahí se
+   apaga. */
+.dest__pista.is-manual {
+  -webkit-mask-image: none; mask-image: none;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  scroll-padding-inline-start: 16px;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
-  /* Sin barra a la vista: el propio avance ya anuncia que hay más tarjetas. */
   scrollbar-width: none;
 }
-.dest__pista::-webkit-scrollbar { display: none; }
-@media (min-width: 768px) {
-  .dest__pista {
-    gap: 14px;
-    margin-inline: -28px; padding-inline: 28px; scroll-padding-inline-start: 28px;
-  }
-}
+.dest__pista.is-manual::-webkit-scrollbar { display: none; }
+.dest__pista.is-manual .dest__cinta { animation: none; }
 
 /* Ancho fijo: mediana, más chica que el banner Premium. El tope de 280px deja
    los seis botones de contacto en un solo renglón, y el 82vw hace que en el

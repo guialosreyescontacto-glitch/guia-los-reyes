@@ -291,53 +291,76 @@
       </article>`;
   }
 
+  /* Velocidad del desfile, en píxeles por segundo. La duración se calcula a
+     partir del ancho real de una tanda, así el carrusel corre igual de rápido
+     con tres negocios que con diez. */
+  const DEST_VEL = 42;
+
   function renderDestacados() {
     const caja  = $('#destBanner');
     const lista = alAzar(TODOS.filter(esDestacado), DEST_MAX);
     caja.hidden = lista.length === 0;
     if (caja.hidden) return;
 
-    const pista = $('#destPista');
-    pista.innerHTML = lista.map(tarjetaDestacada).join('');
-
-    /* Un paso es el ancho de una tarjeta más la separación. Se mide en vivo
-       porque el ancho de la tarjeta cambia con el de la ventana. */
-    const paso = () => {
-      const card = pista.firstElementChild;
-      if (!card) return 0;
-      return card.getBoundingClientRect().width +
-             (parseFloat(getComputedStyle(pista).columnGap) || 0);
-    };
-
-    /* `scrollWidth - clientWidth` es el tope del recorrido; el margen de 4px
-       absorbe los redondeos del navegador para que el final sí se detecte. */
-    const desborda = () => pista.scrollWidth > pista.clientWidth + 4;
-    const avanzar  = () => {
-      if (!desborda()) return;
-      if (pista.scrollLeft >= pista.scrollWidth - pista.clientWidth - 4) {
-        pista.scrollTo({ left: 0, behavior: 'smooth' });
-      } else {
-        pista.scrollBy({ left: paso(), behavior: 'smooth' });
-      }
-    };
-
-    /* Igual que el banner VIP: no se mueve solo con animaciones reducidas ni
-       mientras el puntero o el foco están dentro. El arrastre y la rueda
-       siguen funcionando siempre, se mueva solo o no. */
+    const pista  = $('#destPista');
     const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let reloj = null;
-    const parar     = () => { clearInterval(reloj); reloj = null; };
-    const reiniciar = () => {
-      parar();
-      if (!quieto.matches) reloj = setInterval(avanzar, 3500);
+    const tanda  = lista.map(tarjetaDestacada).join('');
+
+    /* Con animaciones reducidas no hay desfile ni copia: una sola tanda que el
+       usuario recorre con el dedo o la rueda. */
+    if (quieto.matches) {
+      pista.classList.add('is-manual');
+      pista.innerHTML = `<div class="dest__cinta"><div class="dest__grupo">${tanda}</div></div>`;
+      return;
+    }
+
+    /* Dos tandas idénticas: cuando la primera termina de salir, la segunda está
+       justo donde arrancó la primera, así que el ciclo se reinicia sin salto
+       visible. La copia se esconde del lector de pantalla y sus enlaces salen
+       del tabulador, para no anunciar ni recorrer dos veces los mismos diez. */
+    pista.innerHTML =
+      `<div class="dest__cinta">` +
+        `<div class="dest__grupo">${tanda}</div>` +
+        `<div class="dest__grupo" aria-hidden="true">${tanda}</div>` +
+      `</div>`;
+    $$('.dest__grupo[aria-hidden] a', pista).forEach((a) => { a.tabIndex = -1; });
+
+    const cinta = $('.dest__cinta', pista);
+    const grupo = $('.dest__grupo', pista);
+
+    /* El recorrido es el ancho de una tanda más la separación que la sigue: con
+       eso la segunda cae exactamente en el punto de partida de la primera. */
+    const medir = () => {
+      const gap  = parseFloat(getComputedStyle(cinta).columnGap) || 0;
+      const dist = grupo.getBoundingClientRect().width + gap;
+      cinta.style.setProperty('--dist', dist + 'px');
+      cinta.style.setProperty('--dur', (dist / DEST_VEL) + 's');
     };
+    medir();
+
+    /* Sólo se vuelve a medir si cambió el ancho: en el teléfono el `resize`
+       también salta al esconderse la barra de direcciones, que sólo cambia el
+       alto, y remedir ahí le daría un tirón al carrusel sin motivo. */
+    let anchoPrev = window.innerWidth;
+    window.addEventListener('resize', () => {
+      if (window.innerWidth === anchoPrev) return;
+      anchoPrev = window.innerWidth;
+      medir();
+    });
+
+    /* Se detiene con el puntero o el foco encima, y también mientras el dedo
+       toca: en pantalla táctil no hay cursor que se retire, así que hace falta
+       una pausa para poder apuntarle a un botón sin que se mueva. */
+    const parar  = () => pista.classList.add('is-quieta');
+    const seguir = () => pista.classList.remove('is-quieta');
 
     ['mouseenter', 'focusin', 'pointerdown'].forEach(e => caja.addEventListener(e, parar));
-    ['mouseleave', 'focusout'].forEach(e => caja.addEventListener(e, reiniciar));
-    /* Tras soltar el arrastre se espera un poco: si no, el temporizador pelea
-       con el desplazamiento por inercia del propio dedo. */
-    caja.addEventListener('pointerup', () => setTimeout(reiniciar, 1500));
-    reiniciar();
+    ['mouseleave', 'focusout'].forEach(e => caja.addEventListener(e, seguir));
+    caja.addEventListener('pointerup', () => setTimeout(() => {
+      /* Al soltar solo se reanuda si el puntero ya salió y no quedó nada
+         enfocado dentro; si no, con el ratón encima volvería a moverse. */
+      if (!caja.matches(':hover') && !caja.contains(document.activeElement)) seguir();
+    }, 2500));
   }
 
   /* -------------------------------------------------------- Vista: inicio */
