@@ -312,7 +312,7 @@ button { font: inherit; color: inherit; }
   align-items: center;
 }
 @media (min-width: 940px) {
-  .hero__inner { grid-template-columns: minmax(0, 1fr) minmax(360px, 440px); gap: 36px; }
+  .hero__inner { grid-template-columns: minmax(0, 1fr) minmax(400px, 520px); gap: 36px; }
 }
 
 .hero__eyebrow {
@@ -360,9 +360,10 @@ button { font: inherit; color: inherit; }
 .vip__slide {
   grid-area: 1 / 1;
   position: relative;
-  /* En columna: el texto arriba y la fila de iconos abajo a la derecha. La
-     altura la fija la diapositiva más alta, así que todas comparten alto. */
-  display: flex; flex-direction: column; justify-content: space-between; gap: 14px;
+  /* Dos filas: arriba el cuerpo (texto + foto) y abajo la barra de
+     contacto. La altura la fija la diapositiva más alta, así que todas
+     comparten alto. */
+  display: flex; flex-direction: column; justify-content: space-between; gap: 12px;
   padding: 18px;
   background: var(--banner, linear-gradient(135deg, #0f766e, #115e59));
   color: #fff;
@@ -378,11 +379,18 @@ button { font: inherit; color: inherit; }
     radial-gradient(80% 120% at 12% 0%, rgba(255,255,255,.18), transparent 62%),
     linear-gradient(180deg, transparent 40%, rgba(0,0,0,.3));
 }
-.vip__texto, .vip__acciones { position: relative; z-index: 1; }
+.vip__cuerpo, .vip__acciones { position: relative; z-index: 1; }
+
+/* Fila superior. Apilada en pantallas chicas —texto, luego foto centrada—,
+   y en dos columnas a partir de 560px. */
+.vip__cuerpo { display: flex; flex-direction: column; gap: 14px; }
+@media (min-width: 560px) {
+  .vip__cuerpo { flex-direction: row; align-items: center; gap: 16px; }
+}
 
 /* `min-width: 0` deja que el texto largo se corte en vez de estirar la
    diapositiva y desbordar la columna del hero. */
-.vip__texto { min-width: 0; }
+.vip__texto { flex: 1; min-width: 0; }
 .vip__nombre {
   overflow-wrap: break-word;
   margin: 9px 0 5px; font-size: 20px; font-weight: 700; letter-spacing: -.025em;
@@ -403,10 +411,44 @@ button { font: inherit; color: inherit; }
 .vip__meta svg { width: 13px; height: 13px; flex: none; }
 .vip__sep { color: rgba(255,255,255,.5); }
 
-/* Misma fila de iconos circulares que las tarjetas: se reutiliza `.act` tal
-   cual, para que el color de marca al pasar el cursor y el atenuado táctil
-   se comporten igual en toda la página. */
-.vip__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+/* Columna derecha de la fila superior: foto o logotipo del negocio. Cuadrada,
+   con `object-fit: cover` para que una imagen de cualquier proporción llene el
+   recuadro sin deformarse. Sin `foto`, el mismo recurso que las tarjetas: las
+   iniciales sobre el glifo de la categoría. */
+.vip__foto {
+  position: relative; flex: none;
+  width: 128px; aspect-ratio: 1;
+  align-self: center;
+  border-radius: 14px; overflow: hidden;
+  background: rgba(255,255,255,.13);
+  border: 1px solid rgba(255,255,255,.22);
+  display: grid; place-items: center;
+}
+.vip__foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vip__foto-ini {
+  position: relative; z-index: 1;
+  font-size: 27px; font-weight: 700; letter-spacing: -.04em;
+  color: rgba(255,255,255,.95); text-shadow: 0 2px 10px rgba(0,0,0,.25);
+}
+.vip__foto-glifo {
+  position: absolute; right: -12px; bottom: -14px; width: 74px; height: 74px;
+  color: rgba(255,255,255,.16);
+}
+@media (min-width: 560px) { .vip__foto { width: 118px; } }
+@media (min-width: 1180px) { .vip__foto { width: 132px; } }
+
+/* Fila inferior: barra de contacto a todo lo ancho de la tarjeta. Los
+   márgenes negativos cancelan el relleno de la diapositiva para que llegue
+   a los bordes, y se reutiliza `.act` tal cual, para que el color de marca
+   al pasar el cursor y el atenuado táctil se comporten igual en toda la
+   página. Alineados a la derecha y no repartidos: con `space-between` un
+   negocio de dos enlaces los dejaría en las esquinas opuestas. */
+.vip__acciones {
+  margin: 4px -18px -18px; padding: 12px 18px;
+  background: rgba(0,0,0,.2);
+  border-top: 1px solid rgba(255,255,255,.14);
+  display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px;
+}
 
 /* El botón es de 22px para que el dedo lo alcance; el punto visible va
    dentro, así el área táctil no depende del tamaño del indicador. */

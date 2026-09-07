@@ -177,18 +177,30 @@
      la fija la más alta y el cambio no mueve el resto de la página. */
   function diapositivaVip(neg, i) {
     const [c1, c2] = neg.cat.banner;
+    /* La fila superior lleva el texto y el recuadro de la foto; la inferior,
+       la barra de contacto con los botones que ya usan las tarjetas. Sin
+       `foto` el recuadro dibuja las iniciales sobre el glifo de la
+       categoría, igual que el banner de las tarjetas. Ojo: dentro de la
+       plantilla no caben comillas invertidas, cierran el literal. */
     return `
       <article class="vip__slide ${i === 0 ? 'is-active' : ''}"
                style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
-        <div class="vip__texto">
-          <span class="badge badge--vip">${icon(ICONS.corona)} Premium</span>
-          <h3 class="vip__nombre">${esc(neg.nombre)}</h3>
-          <p class="vip__desc">${esc(neg.desc)}</p>
-          <p class="vip__meta">${icon(ICONS.pin)} ${esc(neg.zona)}
-             <span class="vip__sep">·</span> ${esc(neg.cat.nombre)}</p>
+        <div class="vip__cuerpo">
+          <div class="vip__texto">
+            <span class="badge badge--vip">${icon(ICONS.corona)} Premium</span>
+            <h3 class="vip__nombre">${esc(neg.nombre)}</h3>
+            <p class="vip__desc">${esc(neg.desc)}</p>
+            <p class="vip__meta">${icon(ICONS.pin)} ${esc(neg.zona)}
+               <span class="vip__sep">·</span> ${esc(neg.cat.nombre)}</p>
+          </div>
+
+          <div class="vip__foto">
+            ${neg.foto
+              ? `<img src="${esc(neg.foto)}" alt="" loading="lazy">`
+              : `<span class="vip__foto-ini">${esc(iniciales(neg.nombre))}</span>` +
+                `<span class="vip__foto-glifo">${icon(neg.cat.icono)}</span>`}
+          </div>
         </div>
-        <!-- Misma fila de botones que las tarjetas: hasta seis según lo que
-             el negocio tenga registrado. -->
         <div class="vip__acciones">${botonesContacto(neg)}</div>
       </article>`;
   }

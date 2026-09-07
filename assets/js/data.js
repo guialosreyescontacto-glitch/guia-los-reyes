@@ -61,12 +61,17 @@ const CIUDAD = 'Los Reyes de Salgado, Michoacán, México';
 /* --- Catálogo ------------------------------------------------------------
    categoria: { id, nombre, color, soft, icono, banner, filtros[], negocios[] }
    negocio:   { nombre, plan: 'premium'|'destacado'|'basico', filtro, tags[], desc,
-                zona, horario, abierto, rating, tel, redes{}, mapa? }
+                zona, horario, abierto, rating, tel, redes{}, mapa?, foto? }
 
    plan   manda en el orden: los premium van arriba de todo, después los
           destacados y al final los básicos; dentro de cada grupo, por
           calificación. Los premium además rotan en el banner VIP de la
           portada, así que conviene que traigan `redes.web`.
+   foto   OPCIONAL. Ruta o URL de la foto o el logotipo que se muestra en el
+          banner VIP de la portada. Se recorta con `object-fit: cover` a un
+          cuadro, así que conviene una imagen ya cuadrada o centrada. Sin
+          `foto` se dibujan las iniciales sobre el glifo de la categoría.
+          Solo la usan los premium; en los demás planes se ignora.
    zona   texto de la dirección que se muestra en la tarjeta.
    mapa   OPCIONAL. Dirección exacta o coordenadas 'lat,lng' para el enlace de
           Google Maps. Si se omite, el enlace usa `zona` + la ciudad, que basta
