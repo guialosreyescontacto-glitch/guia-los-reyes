@@ -84,11 +84,17 @@
     cat.negocios.map(n => Object.assign({}, n, { cat: cat }))
   );
 
+  /* Jerarquía de planes. El número es la posición en el listado: cuanto más
+     chico, más arriba. Un plan desconocido cae al fondo, con los básicos. */
+  const RANGO = { premium: 0, destacado: 1, basico: 2 };
+  const rango = (n) => (n.plan in RANGO) ? RANGO[n.plan] : RANGO.basico;
+
+  const esPremium   = (n) => n.plan === 'premium';
   const esDestacado = (n) => n.plan === 'destacado';
 
-  /** Destacados primero; dentro de cada grupo, por calificación. */
+  /** Por plan y, dentro de cada plan, por calificación. */
   const ordenar = (lista) => lista.slice().sort((a, b) => {
-    if (esDestacado(a) !== esDestacado(b)) return esDestacado(a) ? -1 : 1;
+    if (rango(a) !== rango(b)) return rango(a) - rango(b);
     return (b.rating || 0) - (a.rating || 0);
   });
 
@@ -113,19 +119,24 @@
 
   function tarjetaNegocio(neg, idx) {
     const cat  = neg.cat;
+    const vip  = esPremium(neg);
     const dest = esDestacado(neg);
+    /* El anillo de la tarjeta y el badge del plan comparten variante. */
+    const variante = vip ? 'vip' : (dest ? 'featured' : 'basic');
     const [c1, c2] = cat.banner;
     const tags = (neg.tags || []).slice(0, 4)
       .map(t => `<li class="tag">${esc(t)}</li>`).join('');
 
     return `
-      <article class="card ${dest ? 'card--featured' : ''}" style="animation-delay:${Math.min(idx, 8) * 35}ms">
+      <article class="card card--${variante}" style="animation-delay:${Math.min(idx, 8) * 35}ms">
 
         <div class="card__banner" style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
           <span class="card__initials">${esc(iniciales(neg.nombre))}</span>
           <span class="card__glyph">${icon(cat.icono)}</span>
           <div class="card__badges">
-            ${dest
+            ${vip
+              ? `<span class="badge badge--vip">${icon(ICONS.corona)} Premium</span>`
+              : dest
               ? `<span class="badge badge--featured">${icon(ICONS.star)} Destacado</span>`
               : `<span class="badge badge--basic">Básico</span>`}
             <span class="badge ${neg.abierto ? 'badge--open' : 'badge--closed'}">
@@ -159,6 +170,75 @@
     el.innerHTML = ordenar(lista).map(tarjetaNegocio).join('');
   };
 
+  /* ----------------------------------------------------- Banner VIP (home) */
+
+  /* Rotación exclusiva de los negocios con plan Premium, arriba de la portada.
+     Las diapositivas se apilan en la misma celda de la retícula: así la altura
+     la fija la más alta y el cambio no mueve el resto de la página. */
+  function diapositivaVip(neg, i) {
+    const [c1, c2] = neg.cat.banner;
+    const web = (neg.redes || {}).web;
+    return `
+      <article class="vip__slide ${i === 0 ? 'is-active' : ''}"
+               style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
+        <div class="vip__texto">
+          <span class="badge badge--vip">${icon(ICONS.corona)} Premium</span>
+          <h3 class="vip__nombre">${esc(neg.nombre)}</h3>
+          <p class="vip__desc">${esc(neg.desc)}</p>
+          <p class="vip__meta">${icon(ICONS.pin)} ${esc(neg.zona)}
+             <span class="vip__sep">·</span> ${esc(neg.cat.nombre)}</p>
+        </div>
+        <div class="vip__acciones">
+          ${web ? `<a class="btn btn--vip" href="${esc(REDES.web.url(web))}" target="_blank" rel="noopener">
+                     ${icon(ICONS.globo)} Ver sitio web</a>` : ''}
+          <a class="btn btn--wa" href="${waLink(neg.tel, neg.nombre)}" target="_blank" rel="noopener">
+            <span class="wa-ico" aria-hidden="true"></span> WhatsApp</a>
+        </div>
+      </article>`;
+  }
+
+  function renderVip() {
+    const caja = $('#vipBanner');
+    const vips = ordenar(TODOS.filter(esPremium));
+    caja.hidden = vips.length === 0;
+    if (caja.hidden) return;
+
+    caja.innerHTML =
+      `<div class="vip__slides">${vips.map(diapositivaVip).join('')}</div>` +
+      `<div class="vip__dots">${vips.map((n, i) =>
+        `<button class="vip__dot ${i === 0 ? 'is-active' : ''}" type="button" data-i="${i}"
+                 aria-label="Ver ${esc(n.nombre)}"></button>`).join('')}</div>`;
+
+    const slides = $$('.vip__slide', caja);
+    const dots   = $$('.vip__dot', caja);
+    let actual = 0;
+
+    const mostrar = (i) => {
+      actual = (i + slides.length) % slides.length;
+      slides.forEach((s, k) => s.classList.toggle('is-active', k === actual));
+      dots.forEach((d, k) => d.classList.toggle('is-active', k === actual));
+    };
+
+    dots.forEach((d) => d.addEventListener('click', () => {
+      mostrar(Number(d.dataset.i));
+      reiniciar();   /* el toque manual reinicia la cuenta */
+    }));
+
+    /* Con animaciones reducidas no se rota sola: el usuario cambia con los
+       puntos. Tampoco corre mientras el puntero o el foco están dentro. */
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let reloj = null;
+    const parar     = () => { clearInterval(reloj); reloj = null; };
+    const reiniciar = () => {
+      parar();
+      if (!quieto.matches && slides.length > 1) reloj = setInterval(() => mostrar(actual + 1), 6000);
+    };
+
+    ['mouseenter', 'focusin'].forEach(e => caja.addEventListener(e, parar));
+    ['mouseleave', 'focusout'].forEach(e => caja.addEventListener(e, reiniciar));
+    reiniciar();
+  }
+
   /* -------------------------------------------------------- Vista: inicio */
 
   function renderHome() {
@@ -172,7 +252,10 @@
       `<span class="stat">${icon(ICONS.check, 'stat__ico')}${txt}</span>`
     ).join('');
 
-    pintarLista($('#featuredList'), TODOS.filter(esDestacado).slice(0, 6));
+    renderVip();
+    /* Esta sección es el beneficio que compra el plan Destacado; los premium
+       tienen su propio banner arriba, así que no se repiten aquí. */
+    pintarLista($('#featuredList'), ordenar(TODOS.filter(esDestacado)).slice(0, 6));
   }
 
   /* ----------------------------------------------------- Vista: categoría */

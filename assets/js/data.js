@@ -23,6 +23,7 @@ const ICONS = {
 
   /* Utilitarios */
   star:       '<path d="m12 2 2.9 6.3 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.3 1.3-6.6L2.5 9.1l6.6-.8z"/>',
+  corona:     '<path d="M11.56 3.27a.5.5 0 0 1 .88 0l2.95 5.6a1 1 0 0 0 1.51.3l4.28-3.67a.5.5 0 0 1 .8.52l-2.84 10.25a1 1 0 0 1-.95.73H5.81a1 1 0 0 1-.96-.73L2.02 6.02a.5.5 0 0 1 .8-.52L7.1 9.17a1 1 0 0 0 1.51-.3z"/><path d="M5 21h14"/>',
   pin:        '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
   clock:      '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
   phone:      '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
@@ -59,9 +60,13 @@ const CIUDAD = 'Los Reyes de Salgado, Michoacán, México';
 
 /* --- Catálogo ------------------------------------------------------------
    categoria: { id, nombre, color, soft, icono, banner, filtros[], negocios[] }
-   negocio:   { nombre, plan: 'destacado'|'basico', filtro, tags[], desc,
+   negocio:   { nombre, plan: 'premium'|'destacado'|'basico', filtro, tags[], desc,
                 zona, horario, abierto, rating, tel, redes{}, mapa? }
 
+   plan   manda en el orden: los premium van arriba de todo, después los
+          destacados y al final los básicos; dentro de cada grupo, por
+          calificación. Los premium además rotan en el banner VIP de la
+          portada, así que conviene que traigan `redes.web`.
    zona   texto de la dirección que se muestra en la tarjeta.
    mapa   OPCIONAL. Dirección exacta o coordenadas 'lat,lng' para el enlace de
           Google Maps. Si se omite, el enlace usa `zona` + la ciudad, que basta
@@ -85,7 +90,7 @@ const CATEGORIAS = [
       { id: 'especialistas', label: 'Especialistas' }
     ],
     negocios: [
-      { nombre: 'Clínica Santa Cecilia', plan: 'destacado', filtro: 'especialistas', rating: 4.8,
+      { nombre: 'Clínica Santa Cecilia', plan: 'premium', filtro: 'especialistas', rating: 4.8,
         tags: ['Urgencias 24h', 'Ginecología', 'Pediatría'], zona: 'Centro',
         mapa: 'Portal Hidalgo 14, Centro, Los Reyes de Salgado, Michoacán',
         horario: 'Abierto 24 horas', abierto: true, tel: '523541000101',
@@ -132,7 +137,7 @@ const CATEGORIAS = [
       { id: 'grua', label: 'Grúas' }
     ],
     negocios: [
-      { nombre: 'Taller Mecánico El Aguacate', plan: 'destacado', filtro: 'general', rating: 4.9,
+      { nombre: 'Taller Mecánico El Aguacate', plan: 'premium', filtro: 'general', rating: 4.9,
         tags: ['Afinación', 'Suspensión', 'Diagnóstico por escáner'], zona: 'Salida a Tingüindín',
         horario: 'Lun a Sáb · 8:00 – 19:00', abierto: true, tel: '523541000201',
         redes: { web: 'tallermecanicoelaguacate.example', facebook: 'demo.tallermecanicoelaguacate', instagram: 'demo.tallermecanicoelaguacate', tiktok: 'demo.tallermecanicoelaguacate' },
@@ -219,7 +224,7 @@ const CATEGORIAS = [
       { id: 'cafe', label: 'Cafés y postres' }
     ],
     negocios: [
-      { nombre: 'Birriería Doña Chuy', plan: 'destacado', filtro: 'mexicana', rating: 4.9,
+      { nombre: 'Birriería Doña Chuy', plan: 'premium', filtro: 'mexicana', rating: 4.9,
         tags: ['Birria de res', 'Desayunos', 'Para llevar'], zona: 'Mercado Municipal',
         horario: 'Mar a Dom · 7:00 – 14:00', abierto: true, tel: '523541000401',
         redes: { web: 'birrieriadonachuy.example', facebook: 'demo.birrieriadonachuy', instagram: 'demo.birrieriadonachuy', tiktok: 'demo.birrieriadonachuy' },
@@ -429,7 +434,7 @@ const CATEGORIAS = [
       { id: 'renta', label: 'Renta de mobiliario' }
     ],
     negocios: [
-      { nombre: 'Jardín de Eventos Los Sauces', plan: 'destacado', filtro: 'salones', rating: 4.8,
+      { nombre: 'Jardín de Eventos Los Sauces', plan: 'premium', filtro: 'salones', rating: 4.8,
         tags: ['Hasta 400 personas', 'Estacionamiento', 'Alberca'], zona: 'Salida a Tingüindín',
         horario: 'Citas: Lun a Sáb · 10:00 – 19:00', abierto: true, tel: '523541000901',
         redes: { web: 'jardindeeventoslossauces.example', facebook: 'demo.jardindeeventoslossauces', instagram: 'demo.jardindeeventoslossauces', tiktok: 'demo.jardindeeventoslossauces' },
@@ -511,7 +516,7 @@ const CATEGORIAS = [
       { id: 'agentes', label: 'Asesores' }
     ],
     negocios: [
-      { nombre: 'Inmobiliaria Raíces de Michoacán', plan: 'destacado', filtro: 'agentes', rating: 4.7,
+      { nombre: 'Inmobiliaria Raíces de Michoacán', plan: 'premium', filtro: 'agentes', rating: 4.7,
         tags: ['Compra-venta', 'Crédito Infonavit', 'Avalúos'], zona: 'Av. Madero',
         horario: 'Lun a Sáb · 9:00 – 19:00', abierto: true, tel: '523541001101',
         redes: { web: 'inmobiliariaraicesdemichoacan.example', facebook: 'demo.inmobiliariaraicesdemichoacan', instagram: 'demo.inmobiliariaraicesdemichoacan', tiktok: 'demo.inmobiliariaraicesdemichoacan' },

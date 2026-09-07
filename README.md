@@ -15,7 +15,8 @@ Salgado, Michoacán. Sitio estático, mobile-first, sin dependencias ni paso de 
 - **Encabezado** con la marca y buscador central (busca por nombre, giro, colonia y etiquetas; ignora acentos).
 - **Cuadrícula de 12 categorías**: 2 columnas en móvil, 3 en tablet y 4 en escritorio. Cada tarjeta muestra icono, nombre y las especialidades que contiene (no conteos).
 - **Vista de categoría** con barra de filtros por especialidad (`Todos`, `Cerrajeros`, `Fontaneros`, …) que filtra sin recargar la página.
-- **Jerarquía de planes**: los negocios `destacado` aparecen siempre arriba, con badge dorado; los `basico` después. Dentro de cada grupo se ordenan por calificación.
+- **Jerarquía de planes**: los `premium` van hasta arriba con badge de corona, después los `destacado` con badge dorado y al final los `basico`. Dentro de cada grupo se ordenan por calificación.
+- **Banner VIP en la portada**: los negocios con plan Premium rotan cada 6 segundos en un banner exclusivo debajo del hero, con enlace a su sitio web y a WhatsApp. Se puede cambiar a mano con los puntos; no rota solo si el sistema pide menos animación, ni mientras el cursor o el foco están encima.
 - **Tarjetas de negocio** con banner, etiqueta de plan, estado abierto/cerrado, calificación, horario y etiquetas.
 - **Dirección enlazada a Google Maps**: al tocarla abre la ruta de "cómo llegar" al negocio.
 - **Botones circulares de contacto** al pie de cada tarjeta: WhatsApp, teléfono, sitio web, Facebook, Instagram y TikTok. En escritorio parten en gris y toman el color de su marca al pasar el cursor; en pantallas táctiles ya salen en color al 50% de opacidad y suben al 100% al tocarlos. Solo se dibuja el icono de los enlaces que el negocio tenga registrados.
@@ -58,7 +59,7 @@ Para agregar un negocio, añade un objeto al arreglo `negocios` de su categoría
 ```js
 {
   nombre: 'Nombre del comercio',
-  plan: 'destacado',          // 'destacado' (arriba, con badge) o 'basico'
+  plan: 'destacado',          // 'premium' (banner VIP), 'destacado' o 'basico'
   filtro: 'fontaneros',       // debe coincidir con un id de `filtros` de la categoría
   rating: 4.8,
   tags: ['Fugas', 'Boiler'],  // hasta 4 etiquetas visibles
@@ -126,5 +127,3 @@ sin *Build Command* y con *Output Directory* vacío (la raíz).
 - Sustituir los banners de color por fotos reales (`<img>` dentro de `.card__banner`).
 - Mover `data.js` a una API o CMS cuando el catálogo crezca.
 - Calcular el estado *Abierto / Cerrado* a partir de horarios reales en vez del campo fijo `abierto`.
-- Implementar el plan **Premium** en el listado: `data.js` hoy solo distingue `destacado` y `basico`;
-  falta un `plan: 'premium'` que quede por encima de los destacados y alimente el banner VIP de la portada.

@@ -331,6 +331,81 @@ button { font: inherit; color: inherit; }
 .stat__ico { width: 14px; height: 14px; flex: none; color: var(--accent); }
 
 /* ==========================================================================
+   BANNER VIP  (rotación de los negocios con plan Premium, en la portada)
+   ========================================================================== */
+
+.vip { margin-top: 22px; }
+
+/* Todas las diapositivas ocupan la misma celda: la altura la fija la más
+   alta y el cambio no empuja el resto de la página. */
+.vip__slides {
+  display: grid;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.vip__slide {
+  grid-area: 1 / 1;
+  position: relative;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
+  justify-content: space-between;
+  padding: 20px;
+  background: var(--banner, linear-gradient(135deg, #0f766e, #115e59));
+  color: #fff;
+  /* `visibility` saca la diapositiva oculta del tabulador y del lector de
+     pantalla; la opacidad sola la dejaría enfocable por debajo. */
+  opacity: 0; visibility: hidden;
+  transition: opacity .45s ease, visibility .45s;
+}
+.vip__slide.is-active { opacity: 1; visibility: visible; }
+.vip__slide::before {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(80% 120% at 12% 0%, rgba(255,255,255,.18), transparent 62%),
+    linear-gradient(180deg, transparent 40%, rgba(0,0,0,.3));
+}
+.vip__texto, .vip__acciones { position: relative; z-index: 1; }
+
+/* Crece para quedarse con el ancho que no usan los botones, y puede encogerse
+   hasta 300px antes de que estos bajen a la línea siguiente. */
+.vip__texto { flex: 1 1 300px; min-width: 0; }
+.vip__nombre {
+  margin: 9px 0 5px; font-size: 20px; font-weight: 700; letter-spacing: -.025em;
+  line-height: 1.2;
+}
+@media (min-width: 768px) { .vip__nombre { font-size: 24px; } }
+.vip__desc {
+  margin: 0; max-width: 56ch; font-size: 13.5px; line-height: 1.5;
+  color: rgba(255,255,255,.92);
+}
+.vip__meta {
+  margin: 9px 0 0; display: flex; align-items: center; gap: 6px;
+  font-size: 12.5px; color: rgba(255,255,255,.85);
+}
+.vip__meta svg { width: 13px; height: 13px; flex: none; }
+.vip__sep { color: rgba(255,255,255,.5); }
+
+.vip__acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn--vip { background: #fff; color: #1b1b18; border-color: transparent; }
+@media (hover: hover) { .btn--vip:hover { background: rgba(255,255,255,.86); } }
+
+/* El botón es de 22px para que el dedo lo alcance; el punto visible va
+   dentro, así el área táctil no depende del tamaño del indicador. */
+.vip__dots { display: flex; justify-content: center; gap: 4px; margin-top: 8px; }
+.vip__dot {
+  width: 22px; height: 22px; padding: 0; border: 0; background: none;
+  display: grid; place-items: center; cursor: pointer;
+}
+.vip__dot::before {
+  content: ""; width: 8px; height: 8px; border-radius: 999px;
+  background: var(--line-strong); transition: all .2s ease;
+}
+.vip__dot.is-active::before { width: 20px; background: var(--accent); }
+@media (hover: hover) {
+  .vip__dot:hover::before { background: var(--ink-3); }
+  .vip__dot.is-active:hover::before { background: var(--accent); }
+}
+/* ==========================================================================
    ENCABEZADOS DE SECCIÓN
    ========================================================================== */
 
@@ -484,10 +559,15 @@ button { font: inherit; color: inherit; }
   *, *::before, *::after { transition-duration: .01ms !important; }
 }
 
-/* Destacado */
+/* Anillos por plan: dorado para el destacado, del color de acento para el
+   premium. Los básicos se quedan con el borde neutro de `.card`. */
 .card--featured {
   border-color: color-mix(in srgb, var(--gold) 38%, var(--line));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 18%, transparent), var(--shadow-md);
+}
+.card--vip {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent), var(--shadow-md);
 }
 
 /* --- Banner --- */
@@ -535,6 +615,7 @@ button { font: inherit; color: inherit; }
 }
 /* La estrella del badge va sólida; la de la calificación se queda de trazo. */
 .badge--featured svg { fill: currentColor; }
+.badge--vip svg { fill: currentColor; }
 .badge--vip {
   background: linear-gradient(135deg, var(--accent), var(--accent-ink));
   color: #ffffff;
@@ -578,6 +659,7 @@ button { font: inherit; color: inherit; }
   padding: 3px 9px; border-radius: 7px;
 }
 .card--featured .tag { background: var(--gold-soft); border-color: color-mix(in srgb, var(--gold) 22%, transparent); color: var(--gold); }
+.card--vip .tag { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--accent-ink); }
 
 /* --- Dirección enlazada a Google Maps --- */
 .card__mapa {
