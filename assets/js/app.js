@@ -98,6 +98,22 @@
     return (b.rating || 0) - (a.rating || 0);
   });
 
+
+  /** Copia barajada (Fisher-Yates); la lista original no se toca. */
+  function barajar(lista) {
+    const a = lista.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  /* Selección al azar de hasta `n` elementos. Barajar entero y después cortar
+     reparte parejo: en cada carga todos los negocios del plan tienen la misma
+     probabilidad de salir, y ninguno queda siempre fuera por su orden. */
+  const alAzar = (lista, n) => barajar(lista).slice(0, n);
+
   /* ---------------------------------------------------- Plantillas (HTML) */
 
   function tarjetaCategoria(cat) {
@@ -247,6 +263,83 @@
     reiniciar();
   }
 
+  /* ------------------------------------------- Carrusel de destacados (home) */
+
+  /* Cuántos negocios del plan Destacado entran al carrusel en cada carga. */
+  const DEST_MAX = 10;
+
+  /* Tarjeta mediana del carrusel: más chica que el banner Premium, pero con
+     presencia propia. Sin `foto` se dibujan las iniciales sobre el glifo de la
+     categoría, igual que en las tarjetas del listado. Ojo: dentro de la
+     plantilla no caben comillas invertidas, cierran el literal. */
+  function tarjetaDestacada(neg) {
+    const [c1, c2] = neg.cat.banner;
+    return `
+      <article class="dest__card">
+        <div class="dest__foto" style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
+          ${neg.foto
+            ? `<img src="${esc(neg.foto)}" alt="" loading="lazy">`
+            : `<span class="dest__ini">${esc(iniciales(neg.nombre))}</span>` +
+              `<span class="dest__glifo">${icon(neg.cat.icono)}</span>`}
+          <span class="badge badge--featured">${icon(ICONS.star)} Destacado</span>
+        </div>
+        <div class="dest__cuerpo">
+          <h3 class="dest__nombre">${esc(neg.nombre)}</h3>
+          <p class="dest__cat">${icon(neg.cat.icono)} ${esc(neg.cat.nombre)}</p>
+          <div class="dest__acciones">${botonesContacto(neg)}</div>
+        </div>
+      </article>`;
+  }
+
+  function renderDestacados() {
+    const caja  = $('#destBanner');
+    const lista = alAzar(TODOS.filter(esDestacado), DEST_MAX);
+    caja.hidden = lista.length === 0;
+    if (caja.hidden) return;
+
+    const pista = $('#destPista');
+    pista.innerHTML = lista.map(tarjetaDestacada).join('');
+
+    /* Un paso es el ancho de una tarjeta más la separación. Se mide en vivo
+       porque el ancho de la tarjeta cambia con el de la ventana. */
+    const paso = () => {
+      const card = pista.firstElementChild;
+      if (!card) return 0;
+      return card.getBoundingClientRect().width +
+             (parseFloat(getComputedStyle(pista).columnGap) || 0);
+    };
+
+    /* `scrollWidth - clientWidth` es el tope del recorrido; el margen de 4px
+       absorbe los redondeos del navegador para que el final sí se detecte. */
+    const desborda = () => pista.scrollWidth > pista.clientWidth + 4;
+    const avanzar  = () => {
+      if (!desborda()) return;
+      if (pista.scrollLeft >= pista.scrollWidth - pista.clientWidth - 4) {
+        pista.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        pista.scrollBy({ left: paso(), behavior: 'smooth' });
+      }
+    };
+
+    /* Igual que el banner VIP: no se mueve solo con animaciones reducidas ni
+       mientras el puntero o el foco están dentro. El arrastre y la rueda
+       siguen funcionando siempre, se mueva solo o no. */
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let reloj = null;
+    const parar     = () => { clearInterval(reloj); reloj = null; };
+    const reiniciar = () => {
+      parar();
+      if (!quieto.matches) reloj = setInterval(avanzar, 3500);
+    };
+
+    ['mouseenter', 'focusin', 'pointerdown'].forEach(e => caja.addEventListener(e, parar));
+    ['mouseleave', 'focusout'].forEach(e => caja.addEventListener(e, reiniciar));
+    /* Tras soltar el arrastre se espera un poco: si no, el temporizador pelea
+       con el desplazamiento por inercia del propio dedo. */
+    caja.addEventListener('pointerup', () => setTimeout(reiniciar, 1500));
+    reiniciar();
+  }
+
   /* -------------------------------------------------------- Vista: inicio */
 
   function renderHome() {
@@ -261,9 +354,9 @@
     ).join('');
 
     renderVip();
-    /* Esta sección es el beneficio que compra el plan Destacado; los premium
+    /* El carrusel es el beneficio que compra el plan Destacado; los premium
        tienen su propio banner arriba, así que no se repiten aquí. */
-    pintarLista($('#featuredList'), ordenar(TODOS.filter(esDestacado)).slice(0, 6));
+    renderDestacados();
   }
 
   /* ----------------------------------------------------- Vista: categoría */

@@ -13,7 +13,7 @@
   <meta property="og:locale" content="es_MX">
 
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/css/styles.css?v=15">
+  <link rel="stylesheet" href="assets/css/styles.css?v=16">
 
   <script>
     /* Aplica el tema guardado antes del primer pintado, para que no haya un
@@ -102,17 +102,21 @@
       </div>
 
       <div class="container">
-        <div class="section-head">
+        <!-- Carrusel de destacados: selección aleatoria de los negocios con
+             plan Destacado, distinta en cada carga. -->
+        <section class="dest" id="destBanner" aria-label="Negocios con plan Destacado" hidden>
+          <div class="section-head">
+            <h2 class="section-head__title">Negocios destacados</h2>
+            <p class="section-head__sub">Una selección distinta cada vez que entras</p>
+          </div>
+          <div class="dest__pista" id="destPista"></div>
+        </section>
+
+        <div class="section-head section-head--mt">
           <h2 class="section-head__title">Explora por categoría</h2>
           <p class="section-head__sub">Toca una categoría para ver los negocios y filtrar por especialidad.</p>
         </div>
         <ul class="grid" id="categoryGrid" role="list"></ul>
-
-        <div class="section-head section-head--mt">
-          <h2 class="section-head__title">Recomendados de la semana</h2>
-          <p class="section-head__sub">Negocios con plan destacado</p>
-        </div>
-        <div class="cards" id="featuredList"></div>
       </div>
     </section>
 
@@ -248,7 +252,7 @@
     </div>
   </footer>
 
-  <script src="assets/js/data.js?v=15"></script>
-  <script src="assets/js/app.js?v=15"></script>
+  <script src="assets/js/data.js?v=16"></script>
+  <script src="assets/js/app.js?v=16"></script>
 </body>
 </html>

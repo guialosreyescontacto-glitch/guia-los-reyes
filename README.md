@@ -17,6 +17,7 @@ Salgado, Michoacán. Sitio estático, mobile-first, sin dependencias ni paso de 
 - **Vista de categoría** con barra de filtros por especialidad (`Todos`, `Cerrajeros`, `Fontaneros`, …) que filtra sin recargar la página.
 - **Jerarquía de planes**: los `premium` van hasta arriba con badge de corona, después los `destacado` con badge dorado y al final los `basico`. Dentro de cada grupo se ordenan por calificación.
 - **Banner VIP en la portada**: los negocios con plan Premium rotan cada 6 segundos en un banner exclusivo, al lado derecho del texto del hero en escritorio y debajo de él en móvil. La tarjeta va en dos filas: arriba el texto con el recuadro de la foto o el logotipo del negocio, y abajo una barra a todo lo ancho con los mismos iconos circulares de contacto que las tarjetas. Se puede cambiar a mano con los puntos; no rota solo si el sistema pide menos animación, ni mientras el cursor o el foco están encima.
+- **Carrusel de destacados en la portada**: arriba de las categorías, una fila horizontal de tarjetas medianas —badge dorado, foto o logotipo, nombre, categoría y los iconos de contacto— que avanza sola cada 3.5 segundos y vuelve al principio al llegar al final. En cada carga se sortean hasta 10 de los negocios con plan Destacado, así que la rotación es pareja entre todos los clientes del plan y nadie queda siempre fuera. Se puede arrastrar o deslizar con el dedo; no avanza solo si el sistema pide menos animación, ni mientras el cursor, el foco o el dedo están encima.
 - **Tarjetas de negocio** con banner, etiqueta de plan, estado abierto/cerrado, calificación, horario y etiquetas.
 - **Dirección enlazada a Google Maps**: al tocarla abre la ruta de "cómo llegar" al negocio.
 - **Botones circulares de contacto** al pie de cada tarjeta: WhatsApp, teléfono, sitio web, Facebook, Instagram y TikTok. En escritorio parten en gris y toman el color de su marca al pasar el cursor; en pantallas táctiles ya salen en color al 50% de opacidad y suben al 100% al tocarlos. Solo se dibuja el icono de los enlaces que el negocio tenga registrados.
@@ -69,7 +70,7 @@ Para agregar un negocio, añade un objeto al arreglo `negocios` de su categoría
   abierto: true,
   tel: '523541234567',        // formato WhatsApp: 52 + 10 dígitos, sin espacios ni signos
   redes: { web: 'tunegocio.com', facebook: 'usuario', instagram: 'usuario', tiktok: 'usuario' },
-  foto: 'assets/img/tunegocio.jpg',   // opcional, solo para el banner VIP
+  foto: 'assets/img/tunegocio.jpg',   // opcional, para el banner VIP y el carrusel
   desc: 'Una línea describiendo el servicio.'
 }
 ```
@@ -79,10 +80,11 @@ Para agregar un negocio, añade un objeto al arreglo `negocios` de su categoría
 que la ruta sea exacta pon la dirección completa o, mejor aún, las coordenadas que copies
 de Google Maps (`'19.5871,-102.4745'`).
 
-**`foto`** es la imagen del banner VIP y solo la usan los negocios `premium`. Se
-recorta con `object-fit: cover` a un cuadro, así que conviene subirla ya cuadrada o
-con el motivo centrado. Si el negocio no tiene foto, el recuadro dibuja sus iniciales
-sobre el glifo de la categoría, igual que el banner de las tarjetas.
+**`foto`** la usa la portada: el banner VIP de los `premium` (recuadro cuadrado) y el
+carrusel de destacados de los `destacado` (recuadro 16:9). En los dos se recorta con
+`object-fit: cover`, así que conviene subirla con el motivo centrado. Si el negocio no
+tiene foto, el recuadro dibuja sus iniciales sobre el glifo de la categoría, igual que
+el banner de las tarjetas. Los `basico` no salen en la portada, así que la ignoran.
 
 **`redes`** también es opcional. Las redes llevan el **usuario**, no la URL completa;
 `web` lleva el dominio (`'tunegocio.com'`) o la URL entera. Cada entrada que falte

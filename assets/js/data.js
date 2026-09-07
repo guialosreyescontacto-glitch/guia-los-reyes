@@ -67,11 +67,12 @@ const CIUDAD = 'Los Reyes de Salgado, Michoacán, México';
           destacados y al final los básicos; dentro de cada grupo, por
           calificación. Los premium además rotan en el banner VIP de la
           portada, así que conviene que traigan `redes.web`.
-   foto   OPCIONAL. Ruta o URL de la foto o el logotipo que se muestra en el
-          banner VIP de la portada. Se recorta con `object-fit: cover` a un
-          cuadro, así que conviene una imagen ya cuadrada o centrada. Sin
+   foto   OPCIONAL. Ruta o URL de la foto o el logotipo del negocio. La usan el
+          banner VIP de la portada (recuadro cuadrado) y el carrusel de
+          destacados (recuadro 16:9); en ambos se recorta con `object-fit:
+          cover`, así que conviene una imagen con el motivo centrado. Sin
           `foto` se dibujan las iniciales sobre el glifo de la categoría.
-          Solo la usan los premium; en los demás planes se ignora.
+          Los básicos la ignoran: no salen en la portada.
    zona   texto de la dirección que se muestra en la tarjeta.
    mapa   OPCIONAL. Dirección exacta o coordenadas 'lat,lng' para el enlace de
           Google Maps. Si se omite, el enlace usa `zona` + la ciudad, que basta
