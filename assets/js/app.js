@@ -191,14 +191,17 @@
       </article>`;
   }
 
-  /* `primero` es la seña de un negocio que debe encabezar la lista pase lo que
-     pase: es el que el usuario acaba de tocar en el carrusel de destacados, y
-     lo trae aquí para verlo, no para buscarlo. El resto conserva su orden. */
+  /* `primero` es la seña del negocio que el usuario acaba de tocar en el
+     carrusel de destacados: lo trae aquí para verlo, no para buscarlo, así que
+     sube al principio de la lista. Pero no por encima de los Premium de esa
+     misma categoría —ese lugar está pagado y no lo cede un destacado—, sino
+     justo debajo de ellos. El resto conserva su orden. */
   const pintarLista = (el, lista, primero) => {
-    let orden = ordenar(lista);
+    const orden = ordenar(lista);
     if (primero) {
       const i = orden.findIndex(n => seña(n) === primero);
-      if (i > 0) orden = [orden[i]].concat(orden.slice(0, i), orden.slice(i + 1));
+      const tope = orden.filter(esPremium).length;   // dónde terminan los Premium
+      if (i > tope) orden.splice(tope, 0, orden.splice(i, 1)[0]);
     }
     el.innerHTML = orden.map(tarjetaNegocio).join('');
   };
@@ -527,19 +530,23 @@
     izq.addEventListener('click', () => empujar(-1));
     der.addEventListener('click', () => empujar(1));
 
-    /* Arrastre con el dedo o con el ratón. `setPointerCapture` sigue recibiendo
-       los eventos aunque el puntero se salga de la pista a media jalada. */
+    /* Arrastre con el dedo o con el ratón.
+
+       La captura del puntero NO se pide aquí, aunque sea lo natural: mientras
+       la pista tiene capturado un puntero de ratón, el navegador le manda a
+       ella el `mousedown` y el `mouseup`, y el `click` que arma con los dos
+       termina en la pista en vez de en el banner. El enlace nunca se enteraba
+       del clic y en escritorio no pasaba nada. Se pide cuando el arrastre
+       empieza de verdad (más abajo, al pasar el umbral), que es cuando sirve:
+       seguir recibiendo eventos aunque el puntero se salga de la pista. */
     pista.addEventListener('pointerdown', (e) => {
       if (e.button > 0) return;
       parar();
       tiron  = null;
       jalado = false;
-      agarre = { x: e.clientX, pos, ux: e.clientX, t: e.timeStamp, vel: 0, movido: false };
-      pista.classList.add('is-agarrada');
+      agarre = { id: e.pointerId, x: e.clientX, pos, ux: e.clientX,
+                 t: e.timeStamp, vel: 0, movido: false };
       andar();
-      /* Al final y protegida: si el navegador ya dio por terminado ese puntero
-         la captura truena, y no vale la pena perder el arrastre por eso. */
-      try { pista.setPointerCapture(e.pointerId); } catch (_) { /* sin captura */ }
     });
 
     pista.addEventListener('pointermove', (e) => {
@@ -548,7 +555,13 @@
       /* Menos de seis píxeles todavía puede ser el pulso de un clic y no un
          arrastre; sin ese margen, tocar un botón movería el carrusel. */
       if (!agarre.movido && Math.abs(dx) < 6) return;
-      agarre.movido = true;
+      if (!agarre.movido) {
+        agarre.movido = true;
+        pista.classList.add('is-agarrada');
+        /* Protegida: si el navegador ya dio por terminado ese puntero la
+           captura truena, y no vale la pena perder el arrastre por eso. */
+        try { pista.setPointerCapture(agarre.id); } catch (_) { /* sin captura */ }
+      }
 
       const dt = e.timeStamp - agarre.t;
       if (dt > 0) {
@@ -561,9 +574,10 @@
 
     const soltar = () => {
       if (!agarre) return;
-      const { movido, vel } = agarre;
+      const { id, movido, vel } = agarre;
       agarre = null;
       pista.classList.remove('is-agarrada');
+      try { pista.releasePointerCapture(id); } catch (_) { /* ya no la tenía */ }
       /* El clic que viene detrás de un arrastre no es una visita al negocio,
          es el final del jalón: se traga más abajo. */
       jalado = movido;
@@ -576,7 +590,14 @@
       seguir(DEST_ESPERA);
       andar();
     };
-    ['pointerup', 'pointercancel'].forEach((e) => pista.addEventListener(e, soltar));
+    /* También en la ventana: mientras el arrastre no arranca no hay captura, y
+       si el puntero se sale de la pista de un tirón y se suelta afuera, el
+       `pointerup` no pasaría por aquí y el carrusel se quedaría agarrado. La
+       función se protege sola, así que oírlo dos veces no hace nada. */
+    ['pointerup', 'pointercancel'].forEach((e) => {
+      pista.addEventListener(e, soltar);
+      window.addEventListener(e, soltar);
+    });
 
     pista.addEventListener('click', (e) => {
       if (!jalado) return;
@@ -679,10 +700,9 @@
 
     mostrarVista('category');
 
-    /* Si se llegó tocando un banner del carrusel, se baja hasta su ficha y se
-       le deja un anillo para que el usuario reconozca cuál venía a ver. La
-       cuenta descuenta el encabezado y la barra de la categoría, que van
-       pegados arriba y taparían la tarjeta. */
+    /* Si se llegó tocando un banner del carrusel, se baja hasta su ficha —sin
+       tirones, y sin que el encabezado pegado la tape— y se le deja un anillo
+       para que el usuario reconozca cuál venía a ver. */
     if (negocio) resaltar(negocio);
   }
 
@@ -693,13 +713,16 @@
 
     /* Al cuadro siguiente: la vista acaba de dejar de estar oculta y hasta que
        el navegador no rehace la maqueta, la posición de la tarjeta es la de
-       antes. */
+       antes.
+
+       El descuento del encabezado pegado ya no se calcula aquí: lo pone el
+       `scroll-margin-top` de la ficha en el CSS, que además sabe si la barra
+       de categorías va pegada o no según el ancho de la pantalla. */
     requestAnimationFrame(() => {
-      const pegado = $('.header').offsetHeight + $('.catbar').offsetHeight;
-      window.scrollTo({
-        top: Math.max(0, tarjeta.getBoundingClientRect().top + window.scrollY - pegado - 12),
-        behavior: 'instant'
-      });
+      /* Se remiden las barras primero: la de categorías estaba oculta hasta
+         hace un instante, y oculta mide cero. */
+      syncHeaderHeight();
+      tarjeta.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
 
@@ -823,11 +846,16 @@
     irA('#/');
   });
 
-  /* Alto real del header para posicionar la barra de filtros pegajosa */
+  /* Altos reales de las dos barras de arriba: el header posiciona la barra de
+     filtros pegajosa, y las dos juntas dicen cuánto tapan de la ventana, que es
+     lo que descuenta el `scroll-margin-top` de las fichas. Se miden en vez de
+     darlas por sentadas porque cambian con el ancho y con el tamaño de letra
+     del navegador. */
   const syncHeaderHeight = () => {
-    document.documentElement.style.setProperty(
-      '--header-h', $('#header').offsetHeight + 'px'
-    );
+    const raiz = document.documentElement;
+    raiz.style.setProperty('--header-h', $('#header').offsetHeight + 'px');
+    const barra = $('.catbar');
+    if (barra) raiz.style.setProperty('--catbar-h', barra.offsetHeight + 'px');
   };
   window.addEventListener('resize', syncHeaderHeight);
 
