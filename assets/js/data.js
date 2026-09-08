@@ -67,11 +67,15 @@ const CIUDAD = 'Los Reyes de Salgado, Michoacán, México';
           destacados y al final los básicos; dentro de cada grupo, por
           calificación. Los premium además rotan en el banner VIP de la
           portada, así que conviene que traigan `redes.web`.
-   foto   OPCIONAL. Ruta o URL de la foto o el logotipo del negocio. La usan el
-          banner VIP de la portada (recuadro cuadrado) y el carrusel de
-          destacados (banda apaisada); en ambos se recorta con `object-fit:
-          cover`, así que conviene una imagen con el motivo centrado. Sin
-          `foto` se dibujan las iniciales sobre el glifo de la categoría.
+   foto   OPCIONAL, pero clave para los destacados. Ruta o URL de la foto, el
+          logotipo o el banner promocional del negocio. La usan el banner VIP
+          de la portada (recuadro cuadrado) y el carrusel de destacados, donde
+          la imagen es lo único que se ve —sin nombre ni textos—, así que ahí
+          conviene un banner que ya traiga el nombre del negocio. Proporción del
+          carrusel: 3:2 en escritorio y 4:3 en el teléfono. En todos los casos
+          se recorta con `object-fit: cover`, así que el motivo va centrado. Sin
+          `foto` se dibujan las iniciales sobre el glifo de la categoría, que
+          sirve de relleno pero no dice de quién es el banner.
           Los básicos la ignoran: no salen en la portada.
    zona   texto de la dirección que se muestra en la tarjeta.
    mapa   OPCIONAL. Dirección exacta o coordenadas 'lat,lng' para el enlace de

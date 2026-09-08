@@ -36,6 +36,14 @@
     .split(/\s+/).filter(w => w.length > 2).slice(0, 2)
     .map(w => w[0].toUpperCase()).join('');
 
+  /* Identificador de un negocio para la dirección: su nombre sin acentos ni
+     signos. Se calcula, no se guarda, así que no hay que agregarle un campo a
+     cada negocio del catálogo; a cambio, si a un negocio le cambian el nombre,
+     el enlace viejo deja de apuntarle. */
+  const seña = (neg) => norm(neg.nombre)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
   const waLink = (tel, nombre) =>
     `https://wa.me/${tel}?text=${encodeURIComponent(WA_TEMPLATE(nombre))}`;
 
@@ -144,7 +152,8 @@
       .map(t => `<li class="tag">${esc(t)}</li>`).join('');
 
     return `
-      <article class="card card--${variante}" style="animation-delay:${Math.min(idx, 8) * 35}ms">
+      <article class="card card--${variante}" data-neg="${seña(neg)}"
+               style="animation-delay:${Math.min(idx, 8) * 35}ms">
 
         <div class="card__banner" style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
           <span class="card__initials">${esc(iniciales(neg.nombre))}</span>
@@ -182,8 +191,16 @@
       </article>`;
   }
 
-  const pintarLista = (el, lista) => {
-    el.innerHTML = ordenar(lista).map(tarjetaNegocio).join('');
+  /* `primero` es la seña de un negocio que debe encabezar la lista pase lo que
+     pase: es el que el usuario acaba de tocar en el carrusel de destacados, y
+     lo trae aquí para verlo, no para buscarlo. El resto conserva su orden. */
+  const pintarLista = (el, lista, primero) => {
+    let orden = ordenar(lista);
+    if (primero) {
+      const i = orden.findIndex(n => seña(n) === primero);
+      if (i > 0) orden = [orden[i]].concat(orden.slice(0, i), orden.slice(i + 1));
+    }
+    el.innerHTML = orden.map(tarjetaNegocio).join('');
   };
 
   /* ----------------------------------------------------- Banner VIP (home) */
@@ -338,27 +355,27 @@
   /* Cuántos negocios del plan Destacado entran al carrusel en cada carga. */
   const DEST_MAX = 10;
 
-  /* Tarjeta mediana del carrusel: más chica que el banner Premium, pero con
-     presencia propia. Sin `foto` se dibujan las iniciales sobre el glifo de la
-     categoría, igual que en las tarjetas del listado. Ojo: dentro de la
-     plantilla no caben comillas invertidas, cierran el literal. */
+  /* Banner del carrusel: sólo la imagen del negocio y el sello de Destacado.
+     Nada de nombre, categoría ni botones —para eso está la ficha completa, a
+     la que lleva el propio banner—. Sin `foto` quedan las iniciales sobre el
+     glifo de la categoría, para que no sea un rectángulo de color a secas.
+     La tarjeta entera es el enlace: el nombre del negocio viaja en el
+     `aria-label`, que es lo único que anuncia un lector de pantalla cuando la
+     imagen es todo el contenido. Ojo: dentro de la plantilla no caben comillas
+     invertidas, cierran el literal. */
   function tarjetaDestacada(neg) {
     const [c1, c2] = neg.cat.banner;
     return `
-      <article class="dest__card">
-        <div class="dest__foto" style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
-          ${neg.foto
-            ? `<img src="${esc(neg.foto)}" alt="" loading="lazy">`
-            : `<span class="dest__ini">${esc(iniciales(neg.nombre))}</span>` +
-              `<span class="dest__glifo">${icon(neg.cat.icono)}</span>`}
-          <span class="badge badge--featured">${icon(ICONS.star)} Destacado</span>
-        </div>
-        <div class="dest__cuerpo">
-          <h3 class="dest__nombre">${esc(neg.nombre)}</h3>
-          <p class="dest__cat">${icon(neg.cat.icono)} ${esc(neg.cat.nombre)}</p>
-          <div class="dest__acciones">${botonesContacto(neg)}</div>
-        </div>
-      </article>`;
+      <a class="dest__card" href="#/c/${neg.cat.id}/todos/${seña(neg)}"
+         title="${esc(neg.nombre)}"
+         aria-label="${esc(neg.nombre)}, ver su ficha en ${esc(neg.cat.nombre)}"
+         style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
+        ${neg.foto
+          ? `<img src="${esc(neg.foto)}" alt="" loading="lazy">`
+          : `<span class="dest__ini">${esc(iniciales(neg.nombre))}</span>` +
+            `<span class="dest__glifo">${icon(neg.cat.icono)}</span>`}
+        <span class="badge badge--featured">${icon(ICONS.star)} Destacado</span>
+      </a>`;
   }
 
   /* Velocidad del desfile, en píxeles por segundo. Se avanza cuadro a cuadro
@@ -397,21 +414,21 @@
     let dist   = 0;   // ancho de una tanda más su separación: el ciclo completo
     let avance = 0;   // lo que ocupa una tarjeta con su separación
 
-    /* Cuántas tarjetas se ven a la vez. Son los mismos cortes que la
-       cuadrícula de categorías —2, 3 y 4 columnas—, para que las tarjetas del
-       carrusel midan lo mismo que las de "Explora por categoría" y las dos
-       secciones se lean como una sola retícula. */
+    /* Cuántos banners se ven a la vez. En el teléfono se deja uno a medias a
+       propósito: el borde cortado avisa de que hay más de lado y que el
+       carrusel se puede arrastrar. */
     const porVista = () =>
-      window.innerWidth >= 900 ? 4 : window.innerWidth >= 560 ? 3 : 2;
+      window.innerWidth >= 900 ? 4 : window.innerWidth >= 560 ? 3 : 2.5;
 
     const medir = () => {
       const gap = parseFloat(getComputedStyle(cinta).columnGap) || 0;
       const n   = porVista();
 
-      /* El ancho sale de la cuenta, no de un número fijo: así entran justo `n`
-         tarjetas entre los dos bordes de la página, sin sobrantes ni recortes
-         en reposo. */
-      const carta = (pista.clientWidth - (n - 1) * gap) / n;
+      /* El ancho sale de la cuenta, no de un número fijo, para que entren justo
+         `n` banners entre los dos bordes de la página. Los huecos que se ven
+         son uno menos que los banners empezados: con 2.5 a la vista hay tres
+         banners tocando la pista y dos separaciones entre ellos. */
+      const carta = (pista.clientWidth - (Math.ceil(n) - 1) * gap) / n;
       if (carta <= 0) return;
       pista.style.setProperty('--dest-w', carta + 'px');
       avance = carta + gap;
@@ -624,7 +641,7 @@
 
   let categoriaActual = null;
 
-  function renderCategoria(catId, filtroId) {
+  function renderCategoria(catId, filtroId, negocio) {
     const cat = CATEGORIAS.find(c => c.id === catId);
     if (!cat) { irA('#/'); return; }
 
@@ -652,7 +669,7 @@
       : cat.negocios.filter(n => n.filtro === filtro);
 
     const conCat = lista.map(n => Object.assign({}, n, { cat: cat }));
-    pintarLista($('#businessList'), conCat);
+    pintarLista($('#businessList'), conCat, negocio);
 
     $('#resultCount').textContent = filtro === 'todos'
       ? 'Todos los negocios de la categoría'
@@ -661,6 +678,29 @@
     $('#emptyState').hidden = lista.length > 0;
 
     mostrarVista('category');
+
+    /* Si se llegó tocando un banner del carrusel, se baja hasta su ficha y se
+       le deja un anillo para que el usuario reconozca cuál venía a ver. La
+       cuenta descuenta el encabezado y la barra de la categoría, que van
+       pegados arriba y taparían la tarjeta. */
+    if (negocio) resaltar(negocio);
+  }
+
+  function resaltar(negocio) {
+    const tarjeta = $(`.card[data-neg="${negocio}"]`, $('#businessList'));
+    if (!tarjeta) return;
+    tarjeta.classList.add('is-resaltada');
+
+    /* Al cuadro siguiente: la vista acaba de dejar de estar oculta y hasta que
+       el navegador no rehace la maqueta, la posición de la tarjeta es la de
+       antes. */
+    requestAnimationFrame(() => {
+      const pegado = $('.header').offsetHeight + $('.catbar').offsetHeight;
+      window.scrollTo({
+        top: Math.max(0, tarjeta.getBoundingClientRect().top + window.scrollY - pegado - 12),
+        behavior: 'instant'
+      });
+    });
   }
 
   /* ------------------------------------------------------ Vista: búsqueda */
@@ -712,7 +752,7 @@
     const parts = raw.split('/').filter(Boolean).map(decodeURIComponent);
 
     if (parts[0] === 'c' && parts[1]) {
-      renderCategoria(parts[1], parts[2]);
+      renderCategoria(parts[1], parts[2], parts[3]);
     } else if (parts[0] === 'buscar' && parts[1]) {
       $('#searchInput').value = parts[1];
       $('#searchClear').hidden = false;
