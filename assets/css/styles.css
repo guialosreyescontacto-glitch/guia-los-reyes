@@ -605,10 +605,15 @@ button { font: inherit; color: inherit; }
   display: grid; place-items: center;
   aspect-ratio: 4 / 3;
   background: var(--banner, linear-gradient(135deg, #0f766e, #115e59));
-  border: 1px solid color-mix(in srgb, var(--gold) 38%, var(--line));
+  /* El marco del plan, del mismo grosor que el de los Premium de la portada:
+     dos píxeles macizos, ahí del acento y aquí del ámbar de Destacado, para
+     que los dos banners se lean como marcos de plan y no uno como marco y el
+     otro como un filo. El filo blanco por dentro lo despega de la imagen o del
+     degradado de la categoría, que cambia de color en cada negocio. */
+  border: 2px solid var(--gold);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 18%, transparent), var(--shadow-sm);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.24), var(--shadow-sm);
   transition: box-shadow .16s, transform .16s cubic-bezier(.2,.8,.3,1);
 }
 @media (min-width: 560px) { .dest__card { aspect-ratio: 3 / 2; } }
@@ -616,7 +621,7 @@ button { font: inherit; color: inherit; }
 @media (hover: hover) {
   .dest__card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 40%, transparent), var(--shadow-md);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.3), var(--shadow-md);
   }
 }
 
