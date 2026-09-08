@@ -348,22 +348,14 @@ button { font: inherit; color: inherit; }
 }
 @media (min-width: 768px) { .hero__lead { margin-top: 14px; font-size: 16.5px; } }
 
-.hero__stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-@media (min-width: 768px) { .hero__stats { margin-top: 22px; } }
+.hero__stats { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; }
+@media (min-width: 768px) { .hero__stats { margin-top: 20px; } }
+/* Sin píldora: son promesas de la portada, no botones. Encerradas en un óvalo
+   con fondo y borde se leían como algo en lo que se puede tocar, así que se
+   quedan en texto con su palomita. */
 .stat {
   display: inline-flex; align-items: center; gap: 7px;
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: 999px; padding: 7px 14px 7px 11px;
-  font-size: 12.5px; font-weight: 550; color: var(--ink-2);
-  box-shadow: var(--shadow-sm);
-}
-/* Mientras el hero va en una sola columna, los sellos se estiran hasta llenar
-   su renglón: en el teléfono ninguna pareja cabe junta, así que cada uno se
-   quedaba solo con media pantalla vacía a su derecha. Estirados, la columna
-   de texto termina con el mismo ancho que el título. */
-@media (max-width: 939.98px) {
-  .hero__stats { gap: 7px; }
-  .stat { flex: 1 1 auto; justify-content: center; padding: 7px 12px; }
+  font-size: 13px; font-weight: 550; color: var(--ink-2);
 }
 .stat__ico { width: 14px; height: 14px; flex: none; color: var(--accent); }
 
