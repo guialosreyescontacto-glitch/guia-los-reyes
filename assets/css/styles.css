@@ -376,6 +376,9 @@ button { font: inherit; color: inherit; }
 .vip__pista {
   display: flex; align-items: stretch; gap: 14px;
   will-change: transform;
+  /* Los .45s van de la mano con `VIP_DESLIZ` en el JS: al dar la vuelta, ése
+     es el tiempo que espera antes de cambiar la copia del final por el
+     original. Si se cambia aquí, se cambia allá. */
   transition: transform .45s cubic-bezier(.2,.8,.3,1);
 }
 /* Sin animaciones no hay deslizamiento: el cambio de página es instantáneo. */
@@ -415,7 +418,25 @@ button { font: inherit; color: inherit; }
     radial-gradient(80% 120% at 12% 0%, rgba(255,255,255,.18), transparent 62%),
     linear-gradient(180deg, transparent 40%, rgba(0,0,0,.3));
 }
-.vip__cuerpo, .vip__acciones { position: relative; z-index: 1; }
+/* El manto: un enlace transparente tendido sobre toda la tarjeta, que la lleva
+   entera a la ficha del negocio dentro de su categoría. Va por debajo del
+   contenido para no taparlo, y el contenido deja pasar el clic —salvo lo que
+   de verdad es otro enlace, que lo dice él mismo—. Envolverlo todo en un solo
+   enlace no se puede: dentro hay otros, y un enlace dentro de otro no vale. */
+.vip__manto {
+  position: absolute; inset: 0; z-index: 1;
+  border-radius: inherit; cursor: pointer;
+}
+/* Con cursor, la tarjeta se levanta un poco al pasar por encima: es lo que
+   avisa de que lleva a algún lado. En táctil no hay `hover` que valga. */
+@media (hover: hover) {
+  .vip__slide:has(.vip__manto:hover) {
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.3), var(--shadow-lg);
+  }
+}
+.vip__cuerpo, .vip__acciones { position: relative; z-index: 2; }
+.vip__cuerpo { pointer-events: none; }
+.vip__mapa   { pointer-events: auto; }
 
 /* Fila superior: texto a la izquierda, foto a la derecha. */
 .vip__cuerpo { display: flex; flex-direction: row; align-items: center; gap: 12px; }
@@ -446,6 +467,19 @@ button { font: inherit; color: inherit; }
   font-size: 11.5px; color: rgba(255,255,255,.85);
 }
 .vip__meta svg { width: 13px; height: 13px; flex: none; }
+/* La dirección lleva a la aplicación de mapas del aparato, así que se comporta
+   como enlace: subraya al pasar el cursor. Sin color propio, que sobre el
+   degradado de la categoría cualquiera desentona. */
+.vip__mapa {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: inherit; text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color .15s;
+}
+@media (hover: hover) {
+  .vip__mapa:hover { border-bottom-color: currentColor; }
+}
+.vip__mapa:focus-visible { border-bottom-color: currentColor; }
 .vip__sep { color: rgba(255,255,255,.5); }
 
 /* Foto o logotipo del negocio, a la derecha del texto. Cuadrada, con
@@ -815,34 +849,41 @@ button { font: inherit; color: inherit; }
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent), var(--shadow-md);
 }
 
-/* La ficha a la que llevó un banner del carrusel. La página abre desde arriba,
-   como cualquier categoría, así que lo primero que se ve es de qué categoría se
-   trata; para no perder de vista cuál era el negocio, su ficha late tres veces
-   al llegar. El anillo dorado se queda después de los latidos: el banner no
-   traía nombre y sin esa marca habría que adivinar. */
+/* La ficha a la que llevó un banner —el del carrusel de destacados o el de la
+   portada de un Premium—. La página abre desde arriba, como cualquier
+   categoría, así que lo primero que se ve es de qué categoría se trata; para no
+   perder de vista cuál era el negocio, su ficha late tres veces al llegar. El
+   anillo se queda después de los latidos: el banner no traía nombre y sin esa
+   marca habría que adivinar.
+
+   El color del aro es el del plan del negocio: dorado para un destacado, el de
+   acento para un Premium. Marcarlos a todos de dorado le quitaría al Premium
+   justo lo que lo distingue en el listado. */
 .card.is-resaltada {
-  border-color: color-mix(in srgb, var(--gold) 70%, var(--line));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 45%, transparent), var(--shadow-lg);
+  --aro: var(--gold);
+  border-color: color-mix(in srgb, var(--aro) 70%, var(--line));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--aro) 45%, transparent), var(--shadow-lg);
   /* Se repite `rise` porque el atajo `animation` de `.card` se pierde al
      redeclararlo aquí, y sin él la tarjeta no haría su entrada. */
   animation: rise .3s cubic-bezier(.2,.8,.3,1) backwards,
              latido .85s ease-out 3;
 }
-/* Tres aros dorados que salen de la ficha y se desvanecen. Sólo mueven la
-   sombra: el `transform` es de `rise`, que corre a la vez —las tarjetas llevan
-   su retraso de entrada en el atributo `style`, y ese retraso pisa cualquiera
-   que se ponga aquí, así que las dos animaciones se solapan por fuerza—. */
+.card--vip.is-resaltada { --aro: var(--accent); }
+/* Tres aros que salen de la ficha y se desvanecen. Sólo mueven la sombra: el
+   `transform` es de `rise`, que corre a la vez —las tarjetas llevan su retraso
+   de entrada en el atributo `style`, y ese retraso pisa cualquiera que se ponga
+   aquí, así que las dos animaciones se solapan por fuerza—. */
 @keyframes latido {
   0% {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 45%, transparent),
-                0 0 0 0 color-mix(in srgb, var(--gold) 55%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--aro) 45%, transparent),
+                0 0 0 0 color-mix(in srgb, var(--aro) 55%, transparent);
   }
   55% {
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 80%, transparent),
-                0 0 0 20px color-mix(in srgb, var(--gold) 0%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--aro) 80%, transparent),
+                0 0 0 20px color-mix(in srgb, var(--aro) 0%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 45%, transparent),
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--aro) 45%, transparent),
                 0 0 0 0 transparent;
   }
 }

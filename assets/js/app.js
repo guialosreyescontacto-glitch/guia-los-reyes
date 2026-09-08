@@ -54,11 +54,25 @@
     `mailto:${correo}?subject=${encodeURIComponent(CORREO_ASUNTO)}` +
     `&body=${encodeURIComponent(WA_TEMPLATE(nombre))}`;
 
-  /* Enlace de "cómo llegar" en Google Maps. Usa `mapa` (dirección exacta o
-     coordenadas) y, si el negocio no la tiene, la zona más la ciudad. */
-  const mapaLink = (neg) =>
-    'https://www.google.com/maps/dir/?api=1&destination=' +
-    encodeURIComponent(neg.mapa || `${neg.zona}, ${CIUDAD}`);
+  /* ¿El aparato es de Apple? Los iPhone y iPad no traen Google Maps de fábrica,
+     así que un enlace de Google Maps les abre el navegador en vez del mapa. Con
+     `maps.apple.com` se abre Mapas, que sí está siempre. El iPad moderno se
+     hace pasar por Mac en el `userAgent`, y por eso se le pregunta además si la
+     pantalla es táctil. No es infalible —husmear el `userAgent` nunca lo es—,
+     pero el peor caso es abrir el mapa en el navegador, que funciona igual. */
+  const ESAPPLE = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1) ||
+    /Mac/.test(navigator.platform || '');
+
+  /* Enlace de "cómo llegar" en la aplicación de mapas del aparato. Usa `mapa`
+     (dirección exacta o coordenadas) y, si el negocio no la tiene, la zona más
+     la ciudad. */
+  const mapaLink = (neg) => {
+    const destino = encodeURIComponent(neg.mapa || `${neg.zona}, ${CIUDAD}`);
+    return ESAPPLE
+      ? `https://maps.apple.com/?daddr=${destino}&dirflg=d`
+      : `https://www.google.com/maps/dir/?api=1&destination=${destino}`;
+  };
 
   /* Enlaces opcionales de la ficha. `web` guarda un dominio o una URL; las
      redes guardan el usuario, no la dirección completa. El sitio web usa un
@@ -233,16 +247,27 @@
        la barra de contacto con los botones que ya usan las tarjetas. Sin
        `foto` el recuadro dibuja las iniciales sobre el glifo de la
        categoría, igual que el banner de las tarjetas. Ojo: dentro de la
-       plantilla no caben comillas invertidas, cierran el literal. */
+       plantilla no caben comillas invertidas, cierran el literal.
+
+       El `manto` es un enlace transparente del tamaño de la tarjeta: la lleva
+       entera a la ficha del negocio dentro de su categoría, igual que los
+       banners del carrusel. No puede envolver a la tarjeta porque dentro hay
+       otros enlaces —la dirección y los botones— y un enlace dentro de otro no
+       es válido; así, tendido por encima, cada quien conserva el suyo. */
     return `
       <article class="vip__slide" style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
+        <a class="vip__manto" href="#/c/${neg.cat.id}/todos/${seña(neg)}"
+           title="${esc(neg.nombre)}"
+           aria-label="${esc(neg.nombre)}, ver su ficha en ${esc(neg.cat.nombre)}"></a>
         <div class="vip__cuerpo">
           <div class="vip__texto">
             <span class="badge badge--vip">${icon(ICONS.corona)} Premium</span>
             <h3 class="vip__nombre">${esc(neg.nombre)}</h3>
             <p class="vip__desc">${esc(neg.desc)}</p>
-            <p class="vip__meta">${icon(ICONS.pin)} ${esc(neg.zona)}
-               <span class="vip__sep">·</span> ${esc(neg.cat.nombre)}</p>
+            <p class="vip__meta">
+              <a class="vip__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener"
+                 title="Cómo llegar a ${esc(neg.nombre)}">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
+              <span class="vip__sep">·</span> ${esc(neg.cat.nombre)}</p>
           </div>
 
           <div class="vip__foto">
@@ -260,6 +285,11 @@
      vista la vuelta completa se da en la mitad de los cambios, así que el
      banner alcanza a enseñarlos todos sin que la espera se haga larga. */
   const VIP_MS = 4000;
+
+  /* Lo que tarda el deslizamiento de una página a la siguiente. Tiene que ir
+     de la mano con la transición de `.vip__pista` en la hoja de estilos: es el
+     tiempo que se espera antes de cambiar la copia del final por el original. */
+  const VIP_DESLIZ = 450;
 
   /* Cuántos Premium van en cada página. Dos en escritorio, uno encima del
      otro: apiladas, las tarjetas se ven anchas —a lo largo, no a lo alto— y el
@@ -284,15 +314,26 @@
     const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
     caja.classList.toggle('vip--quieto', quieto.matches);
 
-    let porPagina = 0, paso = 0, paginas = 0, pagina = 0;
+    /* `ranura` es la columna que se está enseñando y `pagina`, cuál de los
+       grupos reales es. Casi siempre valen lo mismo; se separan al final de la
+       vuelta, cuando lo que se ve es la copia del primer grupo. */
+    let porPagina = 0, paso = 0, paginas = 0, pagina = 0, ranura = 0, vuelta = 0;
 
     /* Cada página es una columna del ancho de la ventana con sus negocios
        apilados. La pista lleva las columnas en fila, así que el recorrido
-       sigue siendo horizontal aunque las tarjetas se acomoden a lo alto. */
+       sigue siendo horizontal aunque las tarjetas se acomoden a lo alto.
+
+       Al final se cuelga una copia del primer grupo. Sirve para que la vuelta
+       se dé hacia adelante: en vez de devolverse de la última página a la
+       primera —un barrido hacia atrás de toda la tira, que se ve como un
+       rebobinado—, avanza un paso más hasta la copia y ahí, ya sin nada que
+       animar, se salta en seco al principio de verdad. El salto no se ve
+       porque la copia y el original son idénticos. */
     const construir = () => {
       const grupos = [];
       for (let i = 0; i < vips.length; i += porPagina) grupos.push(vips.slice(i, i + porPagina));
       paginas = grupos.length;
+      if (paginas > 1) grupos.push(grupos[0]);
 
       pista.innerHTML = grupos.map((g) =>
         `<div class="vip__grupo">${g.map(diapositivaVip).join('')}</div>`).join('');
@@ -306,22 +347,36 @@
       }));
     };
 
-    const ir = (p, seco) => {
-      pagina = (p + paginas) % paginas;
+    const ir = (r, seco) => {
+      clearTimeout(vuelta);
+      /* Las columnas son las páginas más la copia del final; con una sola
+         página no hay copia y no hay nada que recorrer. */
+      const columnas = paginas > 1 ? paginas + 1 : 1;
+      ranura = (r + columnas) % columnas;
+      pagina = ranura % paginas;
 
       if (seco) pista.style.transition = 'none';
-      pista.style.transform = `translate3d(${-pagina * paso}px, 0, 0)`;
+      pista.style.transform = `translate3d(${-ranura * paso}px, 0, 0)`;
       if (seco) { void pista.offsetWidth; pista.style.transition = ''; }
 
       /* Las páginas que quedaron fuera de la ventana salen del tabulador y del
          lector de pantalla: están recortadas, no ocultas, y sin esto se podría
          llegar con el tabulador a un negocio que no se ve. */
       $$('.vip__grupo', pista).forEach((g, i) => {
-        const dentro = i === pagina;
+        const dentro = i === ranura;
         g.setAttribute('aria-hidden', dentro ? 'false' : 'true');
         $$('a', g).forEach((a) => { a.tabIndex = dentro ? 0 : -1; });
       });
       $$('.vip__dot', cajaDots).forEach((d, i) => d.classList.toggle('is-active', i === pagina));
+    };
+
+    /* Un paso adelante. Si el paso cae en la copia, en cuanto termina de
+       deslizarse se cambia en seco por el original. El margen sobre la
+       duración de la transición es para que el cambio no se coma el final del
+       movimiento. */
+    const avanzar = () => {
+      ir(ranura + 1);
+      if (ranura === paginas) vuelta = setTimeout(() => ir(0, true), VIP_DESLIZ + 90);
     };
 
     const medir = () => {
@@ -349,7 +404,7 @@
     const parar     = () => { clearInterval(reloj); reloj = null; };
     const reiniciar = () => {
       parar();
-      if (!quieto.matches && paginas > 1) reloj = setInterval(() => ir(pagina + 1), VIP_MS);
+      if (!quieto.matches && paginas > 1) reloj = setInterval(avanzar, VIP_MS);
     };
 
     ['mouseenter', 'focusin'].forEach(e => caja.addEventListener(e, parar));
