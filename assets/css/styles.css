@@ -302,7 +302,7 @@ button { font: inherit; color: inherit; }
    ========================================================================== */
 
 .hero {
-  padding: 34px 0 30px;
+  padding: 24px 0 22px;
   background:
     radial-gradient(120% 120% at 85% -10%, color-mix(in srgb, var(--accent) 14%, transparent) 0%, transparent 55%),
     linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
@@ -314,7 +314,7 @@ button { font: inherit; color: inherit; }
    derecha. Debajo de 940px la retícula cae a una sola columna y el carrusel
    pasa abajo por orden del documento, sin reglas extra. */
 .hero__inner {
-  display: grid; gap: 26px;
+  display: grid; gap: 20px;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
 }
@@ -326,18 +326,17 @@ button { font: inherit; color: inherit; }
 }
 
 .hero__eyebrow {
-  margin: 0 0 10px; font-size: 11px; font-weight: 700; letter-spacing: .13em;
+  margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: .13em;
   text-transform: uppercase; color: var(--accent);
 }
+/* Sin tope de ancho: el título ocupa toda la columna. El tope de 15ch que
+   tenía antes lo dejaba en una franja angosta a la izquierda, con un hueco
+   a la derecha y una línea de más que empujaba el banner Premium fuera de
+   la pantalla del teléfono. En dos columnas el tope tampoco hacía falta:
+   la propia columna limita la línea. */
 .hero__title {
   margin: 0; font-size: clamp(26px, 6.2vw, 44px); line-height: 1.12;
-  letter-spacing: -.03em; font-weight: 700; max-width: 15ch;
-}
-@media (min-width: 940px) {
-  /* En dos columnas el título deja de tener tope propio y llena el ancho
-     de su columna: así lo único que lo separa del carrusel es el gap de
-     la retícula, sin el hueco que dejaba el tope de 15ch. */
-  .hero__title { max-width: none; }
+  letter-spacing: -.03em; font-weight: 700;
 }
 
 .hero__title span {
@@ -345,17 +344,26 @@ button { font: inherit; color: inherit; }
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .hero__lead {
-  margin: 14px 0 0; color: var(--ink-2); font-size: 15px; max-width: 52ch;
+  margin: 10px 0 0; color: var(--ink-2); font-size: 15px; max-width: 52ch;
 }
-@media (min-width: 768px) { .hero__lead { font-size: 16.5px; } }
+@media (min-width: 768px) { .hero__lead { margin-top: 14px; font-size: 16.5px; } }
 
-.hero__stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.hero__stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+@media (min-width: 768px) { .hero__stats { margin-top: 22px; } }
 .stat {
   display: inline-flex; align-items: center; gap: 7px;
   background: var(--surface); border: 1px solid var(--line);
   border-radius: 999px; padding: 7px 14px 7px 11px;
   font-size: 12.5px; font-weight: 550; color: var(--ink-2);
   box-shadow: var(--shadow-sm);
+}
+/* Mientras el hero va en una sola columna, los sellos se estiran hasta llenar
+   su renglón: en el teléfono ninguna pareja cabe junta, así que cada uno se
+   quedaba solo con media pantalla vacía a su derecha. Estirados, la columna
+   de texto termina con el mismo ancho que el título. */
+@media (max-width: 939.98px) {
+  .hero__stats { gap: 7px; }
+  .stat { flex: 1 1 auto; justify-content: center; padding: 7px 12px; }
 }
 .stat__ico { width: 14px; height: 14px; flex: none; color: var(--accent); }
 
