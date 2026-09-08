@@ -47,6 +47,13 @@
   const waLink = (tel, nombre) =>
     `https://wa.me/${tel}?text=${encodeURIComponent(WA_TEMPLATE(nombre))}`;
 
+  /* Correo con asunto y recado ya escritos, igual que el de WhatsApp. Sin
+     `target="_blank"`: `mailto:` abre el gestor de correo, y la pestaña en
+     blanco que dejaría atrás no sirve de nada. */
+  const correoLink = (correo, nombre) =>
+    `mailto:${correo}?subject=${encodeURIComponent(CORREO_ASUNTO)}` +
+    `&body=${encodeURIComponent(WA_TEMPLATE(nombre))}`;
+
   /* Enlace de "cómo llegar" en Google Maps. Usa `mapa` (dirección exacta o
      coordenadas) y, si el negocio no la tiene, la zona más la ciudad. */
   const mapaLink = (neg) =>
@@ -72,6 +79,14 @@
       `<a class="act act--tel" href="tel:+${esc(neg.tel)}"
           title="Llamar" aria-label="Llamar a ${esc(neg.nombre)}">${logo(LOGOS.telefono)}</a>`
     ];
+
+    /* El correo va junto al teléfono y antes de las redes: es contacto directo
+       con el negocio, no un perfil que haya que ir a visitar. Sale sólo si el
+       negocio dio uno. */
+    if (neg.correo) botones.push(
+      `<a class="act act--correo" href="${esc(correoLink(neg.correo, neg.nombre))}"
+          title="Correo" aria-label="Enviar un correo a ${esc(neg.nombre)}">${icon(ICONS.sobre)}</a>`
+    );
 
     Object.keys(REDES).forEach((red) => {
       const usuario = (neg.redes || {})[red];
@@ -700,29 +715,29 @@
 
     mostrarVista('category');
 
-    /* Si se llegó tocando un banner del carrusel, se baja hasta su ficha —sin
-       tirones, y sin que el encabezado pegado la tape— y se le deja un anillo
-       para que el usuario reconozca cuál venía a ver. */
+    /* Si se llegó tocando un banner del carrusel, su ficha —que ya quedó
+       arriba, debajo de los Premium— se marca para que lata al aparecer. */
     if (negocio) resaltar(negocio);
   }
 
+  /* La ficha del negocio que se tocó en el carrusel. Late tres veces al
+     aparecer, que es lo que dice cuál de todas era: el banner no traía nombre.
+
+     La página abre desde arriba, como cualquier categoría, para que se vea de
+     cuál se trata. Con `nearest` sólo se mueve si la ficha no cabe entera: en
+     escritorio va en la primera fila y no hace falta bajar nada; en el teléfono,
+     donde las fichas van en una sola columna y arriba puede haber un Premium,
+     baja lo justo, y la barra de categorías —que ahí va pegada— sigue diciendo
+     en qué categoría está. */
   function resaltar(negocio) {
     const tarjeta = $(`.card[data-neg="${negocio}"]`, $('#businessList'));
     if (!tarjeta) return;
     tarjeta.classList.add('is-resaltada');
-
-    /* Al cuadro siguiente: la vista acaba de dejar de estar oculta y hasta que
-       el navegador no rehace la maqueta, la posición de la tarjeta es la de
-       antes.
-
-       El descuento del encabezado pegado ya no se calcula aquí: lo pone el
-       `scroll-margin-top` de la ficha en el CSS, que además sabe si la barra
-       de categorías va pegada o no según el ancho de la pantalla. */
     requestAnimationFrame(() => {
       /* Se remiden las barras primero: la de categorías estaba oculta hasta
          hace un instante, y oculta mide cero. */
       syncHeaderHeight();
-      tarjeta.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      tarjeta.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     });
   }
 
@@ -786,8 +801,12 @@
       mostrarVista('home');
     }
 
-    /* Al cambiar de vista, subir al inicio (salvo al filtrar dentro de una categoría) */
-    if (!(parts[0] === 'c' && parts[2])) window.scrollTo({ top: 0, behavior: 'instant' });
+    /* Al cambiar de vista, subir al inicio. La excepción es cambiar de filtro
+       dentro de una categoría, donde quedarse en su lugar es lo cómodo. Llegar
+       desde un banner del carrusel sí sube: trae un cuarto tramo con el
+       negocio, y la idea es abrir la categoría completa desde arriba. */
+    const filtrando = parts[0] === 'c' && parts[2] && !parts[3];
+    if (!filtrando) window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
   /* ------------------------------------------------------------- Eventos */
@@ -849,8 +868,8 @@
   /* Altos reales de las dos barras de arriba: el header posiciona la barra de
      filtros pegajosa, y las dos juntas dicen cuánto tapan de la ventana, que es
      lo que descuenta el `scroll-margin-top` de las fichas. Se miden en vez de
-     darlas por sentadas porque cambian con el ancho y con el tamaño de letra
-     del navegador. */
+     darlas por sentadas porque cambian con el ancho y con el largo del nombre
+     de la categoría. */
   const syncHeaderHeight = () => {
     const raiz = document.documentElement;
     raiz.style.setProperty('--header-h', $('#header').offsetHeight + 'px');

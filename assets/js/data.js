@@ -28,6 +28,10 @@ const ICONS = {
   clock:      '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
   phone:      '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
   check:      '<path d="M20 6 9 17l-5-5"/>',
+  /* El sobre: la solapa se dibuja aparte para que no se cierre en punta y
+     pese lo mismo que el resto de los glifos de trazo de la fila. */
+  sobre:      '<rect x="2" y="4.5" width="20" height="15" rx="2.5"/>' +
+              '<path d="m2.9 6.3 7.9 5.9a2 2 0 0 0 2.4 0l7.9-5.9"/>',
 
   /* WhatsApp de trazo: la burbuja con la cola y, dentro, el auricular de
      `phone` relleno. La burbuja usa radio 9.6 para pesar lo mismo que el
@@ -52,6 +56,10 @@ const LOGOS = {
 const WA_TEMPLATE = (negocio) =>
   `Hola ${negocio}, los encontré en Guía Los Reyes y quiero pedir informes.`;
 
+/* Asunto del correo. El cuerpo reaprovecha el mensaje de WhatsApp: es el mismo
+   recado, sólo cambia por dónde llega. */
+const CORREO_ASUNTO = 'Informes desde Guía Los Reyes';
+
 /* Número de contacto del directorio (para altas de negocios) */
 const WA_DIRECTORIO = '523541000000';
 
@@ -61,7 +69,7 @@ const CIUDAD = 'Los Reyes de Salgado, Michoacán, México';
 /* --- Catálogo ------------------------------------------------------------
    categoria: { id, nombre, color, soft, icono, banner, filtros[], negocios[] }
    negocio:   { nombre, plan: 'premium'|'destacado'|'basico', filtro, tags[], desc,
-                zona, horario, abierto, rating, tel, redes{}, mapa?, foto? }
+                zona, horario, abierto, rating, tel, correo?, redes{}, mapa?, foto? }
 
    plan   manda en el orden: los premium van arriba de todo, después los
           destacados y al final los básicos; dentro de cada grupo, por
@@ -81,6 +89,9 @@ const CIUDAD = 'Los Reyes de Salgado, Michoacán, México';
    mapa   OPCIONAL. Dirección exacta o coordenadas 'lat,lng' para el enlace de
           Google Maps. Si se omite, el enlace usa `zona` + la ciudad, que basta
           para una referencia aproximada pero no para llegar a la puerta.
+   correo OPCIONAL. Correo del negocio. Dibuja el botón del sobre junto al del
+          teléfono, antes de las redes, y lo abre con el asunto y el recado ya
+          escritos. Sin correo, ese botón simplemente no sale.
    redes  OPCIONAL. Enlaces extra de la ficha: { web, facebook, instagram,
           tiktok }. Las redes llevan el usuario, no la URL; `web` lleva el
           dominio ('tunegocio.com') o la URL completa. Solo se dibuja el
@@ -104,11 +115,13 @@ const CATEGORIAS = [
         tags: ['Urgencias 24h', 'Ginecología', 'Pediatría'], zona: 'Centro',
         mapa: 'Portal Hidalgo 14, Centro, Los Reyes de Salgado, Michoacán',
         horario: 'Abierto 24 horas', abierto: true, tel: '523541000101',
+        correo: 'contacto@clinicasantacecilia.example',
         redes: { web: 'clinicasantacecilia.example', facebook: 'demo.clinicasantacecilia', instagram: 'demo.clinicasantacecilia', tiktok: 'demo.clinicasantacecilia' },
         desc: 'Consulta general y especialidades con hospitalización y urgencias las 24 horas.' },
       { nombre: 'Dental Sonrisa Los Reyes', plan: 'destacado', filtro: 'dental', rating: 4.9,
         tags: ['Ortodoncia', 'Blanqueamiento', 'Pago en parcialidades'], zona: 'Av. Morelos',
         horario: 'Lun a Sáb · 9:00 – 20:00', abierto: true, tel: '523541000102',
+        correo: 'contacto@dentalsonrisalosreyes.example',
         redes: { web: 'dentalsonrisalosreyes.example', facebook: 'demo.dentalsonrisalosreyes', instagram: 'demo.dentalsonrisalosreyes', tiktok: 'demo.dentalsonrisalosreyes' },
         desc: 'Odontología general, ortodoncia y estética dental. Primera valoración sin costo.' },
       { nombre: 'Laboratorio Clínico del Valle', plan: 'basico', filtro: 'lab', rating: 4.6,
@@ -150,11 +163,13 @@ const CATEGORIAS = [
       { nombre: 'Taller Mecánico El Aguacate', plan: 'premium', filtro: 'general', rating: 4.9,
         tags: ['Afinación', 'Suspensión', 'Diagnóstico por escáner'], zona: 'Salida a Tingüindín',
         horario: 'Lun a Sáb · 8:00 – 19:00', abierto: true, tel: '523541000201',
+        correo: 'contacto@tallermecanicoelaguacate.example',
         redes: { web: 'tallermecanicoelaguacate.example', facebook: 'demo.tallermecanicoelaguacate', instagram: 'demo.tallermecanicoelaguacate', tiktok: 'demo.tallermecanicoelaguacate' },
         desc: 'Servicio completo para auto y camioneta. Diagnóstico computarizado sin costo.' },
       { nombre: 'Grúas Los Reyes 24/7', plan: 'destacado', filtro: 'grua', rating: 4.7,
         tags: ['Servicio 24h', 'Carretera', 'Arrastre'], zona: 'Cobertura regional',
         horario: 'Disponible 24 horas', abierto: true, tel: '523541000202',
+        correo: 'contacto@gruaslosreyes247.example',
         redes: { web: 'gruaslosreyes247.example', facebook: 'demo.gruaslosreyes247', instagram: 'demo.gruaslosreyes247', tiktok: 'demo.gruaslosreyes247' },
         desc: 'Auxilio vial y arrastre a cualquier hora, dentro y fuera de la ciudad.' },
       { nombre: 'Llantera El Rayo', plan: 'basico', filtro: 'llantas', rating: 4.6,
@@ -196,11 +211,13 @@ const CATEGORIAS = [
       { nombre: 'Iron Fit Gym', plan: 'destacado', filtro: 'gym', rating: 4.8,
         tags: ['Pesas', 'Cardio', 'Rutinas personalizadas'], zona: 'Av. Juárez',
         horario: 'Lun a Sáb · 5:30 – 22:00', abierto: true, tel: '523541000301',
+        correo: 'contacto@ironfitgym.example',
         redes: { web: 'ironfitgym.example', facebook: 'demo.ironfitgym', instagram: 'demo.ironfitgym', tiktok: 'demo.ironfitgym' },
         desc: 'Equipo nuevo, área de pesas y cardio con entrenadores certificados.' },
       { nombre: 'Box Fit Los Reyes', plan: 'destacado', filtro: 'artes', rating: 4.7,
         tags: ['Boxeo', 'Kickboxing', 'Clase de prueba gratis'], zona: 'Col. Morelos',
         horario: 'Lun a Vie · 6:00 – 21:00', abierto: true, tel: '523541000302',
+        correo: 'contacto@boxfitlosreyes.example',
         redes: { web: 'boxfitlosreyes.example', facebook: 'demo.boxfitlosreyes', instagram: 'demo.boxfitlosreyes', tiktok: 'demo.boxfitlosreyes' },
         desc: 'Boxeo para principiantes y competencia, con horarios de mañana y tarde.' },
       { nombre: 'Cancha Los Aguacates', plan: 'basico', filtro: 'canchas', rating: 4.5,
@@ -237,11 +254,13 @@ const CATEGORIAS = [
       { nombre: 'Birriería Doña Chuy', plan: 'premium', filtro: 'mexicana', rating: 4.9,
         tags: ['Birria de res', 'Desayunos', 'Para llevar'], zona: 'Mercado Municipal',
         horario: 'Mar a Dom · 7:00 – 14:00', abierto: true, tel: '523541000401',
+        correo: 'contacto@birrieriadonachuy.example',
         redes: { web: 'birrieriadonachuy.example', facebook: 'demo.birrieriadonachuy', instagram: 'demo.birrieriadonachuy', tiktok: 'demo.birrieriadonachuy' },
         desc: 'Birria de res al estilo tradicional, consomé y tortillas hechas a mano.' },
       { nombre: 'Mariscos El Muelle', plan: 'destacado', filtro: 'mariscos', rating: 4.7,
         tags: ['Cocteles', 'Pescado zarandeado', 'Servicio a domicilio'], zona: 'Av. Madero',
         horario: 'Mar a Dom · 12:00 – 19:00', abierto: true, tel: '523541000402',
+        correo: 'contacto@mariscoselmuelle.example',
         redes: { web: 'mariscoselmuelle.example', facebook: 'demo.mariscoselmuelle', instagram: 'demo.mariscoselmuelle', tiktok: 'demo.mariscoselmuelle' },
         desc: 'Mariscos frescos, aguachiles y cocteles. Pedidos a domicilio en toda la ciudad.' },
       { nombre: 'Tacos El Güero', plan: 'basico', filtro: 'tacos', rating: 4.8,
@@ -283,11 +302,13 @@ const CATEGORIAS = [
       { nombre: 'Estética Glamour', plan: 'destacado', filtro: 'estetica', rating: 4.8,
         tags: ['Corte y color', 'Keratina', 'Peinados de novia'], zona: 'Centro',
         horario: 'Mar a Dom · 10:00 – 20:00', abierto: true, tel: '523541000501',
+        correo: 'contacto@esteticaglamour.example',
         redes: { web: 'esteticaglamour.example', facebook: 'demo.esteticaglamour', instagram: 'demo.esteticaglamour', tiktok: 'demo.esteticaglamour' },
         desc: 'Corte, color, tratamientos capilares y peinados para eventos con cita previa.' },
       { nombre: 'Barbería El Clásico', plan: 'destacado', filtro: 'barberia', rating: 4.9,
         tags: ['Corte clásico', 'Afeitado navaja', 'Sin cita'], zona: 'Av. Hidalgo',
         horario: 'Lun a Sáb · 10:00 – 21:00', abierto: true, tel: '523541000502',
+        correo: 'contacto@barberiaelclasico.example',
         redes: { web: 'barberiaelclasico.example', facebook: 'demo.barberiaelclasico', instagram: 'demo.barberiaelclasico', tiktok: 'demo.barberiaelclasico' },
         desc: 'Barbería tradicional: fades, arreglo de barba y afeitado con toalla caliente.' },
       { nombre: 'Nails Studio Ale', plan: 'basico', filtro: 'unas', rating: 4.7,
@@ -325,11 +346,13 @@ const CATEGORIAS = [
       { nombre: 'Cerrajería Rápida Los Reyes', plan: 'destacado', filtro: 'cerrajeros', rating: 4.9,
         tags: ['Emergencias 24h', 'Apertura de autos', 'Copias de llaves'], zona: 'Toda la ciudad',
         horario: 'Disponible 24 horas', abierto: true, tel: '523541000601',
+        correo: 'contacto@cerrajeriarapidalosreyes.example',
         redes: { web: 'cerrajeriarapidalosreyes.example', facebook: 'demo.cerrajeriarapidalosreyes', instagram: 'demo.cerrajeriarapidalosreyes', tiktok: 'demo.cerrajeriarapidalosreyes' },
         desc: 'Apertura de casas y autos, cambio de chapas y duplicado de llaves al momento.' },
       { nombre: 'Plomería Hermanos Ruiz', plan: 'destacado', filtro: 'fontaneros', rating: 4.7,
         tags: ['Fugas', 'Destape de drenaje', 'Boiler'], zona: 'Centro y colonias',
         horario: 'Lun a Dom · 7:00 – 21:00', abierto: true, tel: '523541000602',
+        correo: 'contacto@plomeriahermanosruiz.example',
         redes: { web: 'plomeriahermanosruiz.example', facebook: 'demo.plomeriahermanosruiz', instagram: 'demo.plomeriahermanosruiz', tiktok: 'demo.plomeriahermanosruiz' },
         desc: 'Detección de fugas, destape de drenajes e instalación de boilers y tinacos.' },
       { nombre: 'Electricista Juan Pablo', plan: 'basico', filtro: 'electricistas', rating: 4.8,
@@ -371,11 +394,13 @@ const CATEGORIAS = [
       { nombre: 'Despacho Contable Aguilar', plan: 'destacado', filtro: 'contadores', rating: 4.8,
         tags: ['Declaraciones SAT', 'Nóminas', 'Facturación'], zona: 'Centro',
         horario: 'Lun a Vie · 9:00 – 18:00', abierto: true, tel: '523541000701',
+        correo: 'contacto@despachocontableaguilar.example',
         redes: { web: 'despachocontableaguilar.example', facebook: 'demo.despachocontableaguilar', instagram: 'demo.despachocontableaguilar', tiktok: 'demo.despachocontableaguilar' },
         desc: 'Contabilidad para personas físicas y morales, declaraciones y trámites ante el SAT.' },
       { nombre: 'Bufete Jurídico Los Reyes', plan: 'destacado', filtro: 'abogados', rating: 4.6,
         tags: ['Familiar', 'Civil', 'Laboral'], zona: 'Av. Madero',
         horario: 'Lun a Vie · 9:00 – 19:00', abierto: true, tel: '523541000702',
+        correo: 'contacto@bufetejuridicolosreyes.example',
         redes: { web: 'bufetejuridicolosreyes.example', facebook: 'demo.bufetejuridicolosreyes', instagram: 'demo.bufetejuridicolosreyes', tiktok: 'demo.bufetejuridicolosreyes' },
         desc: 'Asesoría legal en derecho familiar, civil, laboral y trámites de sucesiones.' },
       { nombre: 'Gestoría Vehicular Express', plan: 'basico', filtro: 'notaria', rating: 4.5,
@@ -411,11 +436,13 @@ const CATEGORIAS = [
       { nombre: 'Veterinaria Huellitas', plan: 'destacado', filtro: 'veterinarias', rating: 4.9,
         tags: ['Consulta', 'Cirugía', 'Vacunas', 'Urgencias'], zona: 'Av. Juárez',
         horario: 'Lun a Sáb · 9:00 – 20:00', abierto: true, tel: '523541000801',
+        correo: 'contacto@veterinariahuellitas.example',
         redes: { web: 'veterinariahuellitas.example', facebook: 'demo.veterinariahuellitas', instagram: 'demo.veterinariahuellitas', tiktok: 'demo.veterinariahuellitas' },
         desc: 'Consulta veterinaria, cirugía, vacunación y esterilización a bajo costo.' },
       { nombre: 'Pet Spa Los Reyes', plan: 'destacado', filtro: 'estetica', rating: 4.8,
         tags: ['Baño y corte', 'Razas grandes', 'Servicio a domicilio'], zona: 'Col. Vista Hermosa',
         horario: 'Mar a Dom · 10:00 – 19:00', abierto: true, tel: '523541000802',
+        correo: 'contacto@petspalosreyes.example',
         redes: { web: 'petspalosreyes.example', facebook: 'demo.petspalosreyes', instagram: 'demo.petspalosreyes', tiktok: 'demo.petspalosreyes' },
         desc: 'Baño, corte de raza y desparasitación externa. Recolección a domicilio.' },
       { nombre: 'Agro Veterinaria El Campo', plan: 'basico', filtro: 'alimento', rating: 4.6,
@@ -447,11 +474,13 @@ const CATEGORIAS = [
       { nombre: 'Jardín de Eventos Los Sauces', plan: 'premium', filtro: 'salones', rating: 4.8,
         tags: ['Hasta 400 personas', 'Estacionamiento', 'Alberca'], zona: 'Salida a Tingüindín',
         horario: 'Citas: Lun a Sáb · 10:00 – 19:00', abierto: true, tel: '523541000901',
+        correo: 'contacto@jardindeeventoslossauces.example',
         redes: { web: 'jardindeeventoslossauces.example', facebook: 'demo.jardindeeventoslossauces', instagram: 'demo.jardindeeventoslossauces', tiktok: 'demo.jardindeeventoslossauces' },
         desc: 'Jardín para bodas y XV años con capacidad para 400 personas y área infantil.' },
       { nombre: 'Banquetes Doña Male', plan: 'destacado', filtro: 'banquetes', rating: 4.9,
         tags: ['Menú a elegir', 'Meseros', 'Degustación'], zona: 'Los Reyes y región',
         horario: 'Lun a Sáb · 9:00 – 19:00', abierto: true, tel: '523541000902',
+        correo: 'contacto@banquetesdonamale.example',
         redes: { web: 'banquetesdonamale.example', facebook: 'demo.banquetesdonamale', instagram: 'demo.banquetesdonamale', tiktok: 'demo.banquetesdonamale' },
         desc: 'Banquetes para todo tipo de evento, con servicio de meseros y degustación previa.' },
       { nombre: 'DJ Sonido Estelar', plan: 'basico', filtro: 'musica', rating: 4.7,
@@ -488,11 +517,13 @@ const CATEGORIAS = [
       { nombre: 'Instituto de Inglés Bridge', plan: 'destacado', filtro: 'idiomas', rating: 4.8,
         tags: ['Niños y adultos', 'Certificación', 'Grupos reducidos'], zona: 'Av. Morelos',
         horario: 'Lun a Vie · 15:00 – 21:00', abierto: true, tel: '523541001001',
+        correo: 'contacto@institutodeinglesbridge.example',
         redes: { web: 'institutodeinglesbridge.example', facebook: 'demo.institutodeinglesbridge', instagram: 'demo.institutodeinglesbridge', tiktok: 'demo.institutodeinglesbridge' },
         desc: 'Cursos de inglés por niveles con certificación y grupos de máximo 10 alumnos.' },
       { nombre: 'Academia de Música Do Re Mi', plan: 'destacado', filtro: 'musica', rating: 4.9,
         tags: ['Guitarra', 'Piano', 'Canto'], zona: 'Centro',
         horario: 'Lun a Sáb · 16:00 – 20:00', abierto: true, tel: '523541001002',
+        correo: 'contacto@academiademusicadoremi.example',
         redes: { web: 'academiademusicadoremi.example', facebook: 'demo.academiademusicadoremi', instagram: 'demo.academiademusicadoremi', tiktok: 'demo.academiademusicadoremi' },
         desc: 'Clases individuales y grupales de guitarra, piano, batería y canto.' },
       { nombre: 'Regularización Escolar Einstein', plan: 'basico', filtro: 'regularizacion', rating: 4.7,
@@ -529,11 +560,13 @@ const CATEGORIAS = [
       { nombre: 'Inmobiliaria Raíces de Michoacán', plan: 'premium', filtro: 'agentes', rating: 4.7,
         tags: ['Compra-venta', 'Crédito Infonavit', 'Avalúos'], zona: 'Av. Madero',
         horario: 'Lun a Sáb · 9:00 – 19:00', abierto: true, tel: '523541001101',
+        correo: 'contacto@inmobiliariaraicesdemichoacan.example',
         redes: { web: 'inmobiliariaraicesdemichoacan.example', facebook: 'demo.inmobiliariaraicesdemichoacan', instagram: 'demo.inmobiliariaraicesdemichoacan', tiktok: 'demo.inmobiliariaraicesdemichoacan' },
         desc: 'Asesoría completa en compra-venta de inmuebles, créditos y escrituración.' },
       { nombre: 'Rentas Los Reyes', plan: 'destacado', filtro: 'renta', rating: 4.6,
         tags: ['Casas amuebladas', 'Departamentos', 'Corta estancia'], zona: 'Varias colonias',
         horario: 'Lun a Dom · 9:00 – 20:00', abierto: true, tel: '523541001102',
+        correo: 'contacto@rentaslosreyes.example',
         redes: { web: 'rentaslosreyes.example', facebook: 'demo.rentaslosreyes', instagram: 'demo.rentaslosreyes', tiktok: 'demo.rentaslosreyes' },
         desc: 'Catálogo de casas y departamentos en renta por mes o estancia corta.' },
       { nombre: 'Huertas y Terrenos del Valle', plan: 'basico', filtro: 'terrenos', rating: 4.5,
@@ -571,11 +604,13 @@ const CATEGORIAS = [
       { nombre: 'Ferretería El Tornillo Feliz', plan: 'destacado', filtro: 'ferreteria', rating: 4.8,
         tags: ['Herramienta', 'Material eléctrico', 'Entrega a obra'], zona: 'Av. Juárez',
         horario: 'Lun a Sáb · 8:00 – 20:00', abierto: true, tel: '523541001201',
+        correo: 'contacto@ferreteriaeltornillofeliz.example',
         redes: { web: 'ferreteriaeltornillofeliz.example', facebook: 'demo.ferreteriaeltornillofeliz', instagram: 'demo.ferreteriaeltornillofeliz', tiktok: 'demo.ferreteriaeltornillofeliz' },
         desc: 'Herramienta, plomería, material eléctrico y pinturas. Entregamos en obra.' },
       { nombre: 'Boutique Aura', plan: 'destacado', filtro: 'ropa', rating: 4.7,
         tags: ['Ropa de dama', 'Novedades', 'Apartados'], zona: 'Portal Morelos',
         horario: 'Lun a Sáb · 10:00 – 20:00', abierto: true, tel: '523541001202',
+        correo: 'contacto@boutiqueaura.example',
         redes: { web: 'boutiqueaura.example', facebook: 'demo.boutiqueaura', instagram: 'demo.boutiqueaura', tiktok: 'demo.boutiqueaura' },
         desc: 'Ropa de dama y accesorios de temporada. Aparta con el 30% y paga a plazos.' },
       { nombre: 'Abarrotes La Central', plan: 'basico', filtro: 'abarrotes', rating: 4.5,

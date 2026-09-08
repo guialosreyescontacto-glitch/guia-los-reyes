@@ -3,12 +3,13 @@
 Prototipo web de un **directorio comunal de negocios y servicios** para Los Reyes de
 Salgado, Michoacán. Sitio estático, mobile-first, sin dependencias ni paso de compilación.
 
-> ⚠️ **Datos de demostración.** Los negocios, calificaciones, teléfonos, sitios web y
+> ⚠️ **Datos de demostración.** Los negocios, calificaciones, teléfonos, correos, sitios web y
 > redes sociales incluidos en `assets/js/data.js` son ficticios y sirven solo para probar
 > la interfaz. No corresponden a comercios reales de la ciudad. Los usuarios de redes
-> llevan el prefijo `demo.` y los dominios terminan en `.example` (un TLD reservado que
-> no resuelve) a propósito, para que ningún enlace caiga en la cuenta o el sitio de una
-> persona real. Sustitúyelos antes de publicar el sitio de verdad.
+> llevan el prefijo `demo.` y los dominios —los de la web y los de los correos— terminan
+> en `.example` (un TLD reservado que no resuelve) a propósito, para que ningún enlace ni
+> ningún correo caiga en la cuenta, el sitio o el buzón de una persona real. Sustitúyelos
+> antes de publicar el sitio de verdad.
 
 ## Qué incluye
 
@@ -17,11 +18,11 @@ Salgado, Michoacán. Sitio estático, mobile-first, sin dependencias ni paso de 
 - **Vista de categoría** con barra de filtros por especialidad (`Todos`, `Cerrajeros`, `Fontaneros`, …) que filtra sin recargar la página.
 - **Jerarquía de planes**: los `premium` van hasta arriba con badge de corona, después los `destacado` con badge dorado y al final los `basico`. Dentro de cada grupo se ordenan por calificación.
 - **Banner VIP en la portada**: los negocios con plan Premium rotan en un banner exclusivo, al lado derecho del texto del hero en escritorio y debajo de él en móvil. La tarjeta es apaisada —texto y foto lado a lado, con la barra de contacto cruzando abajo—, lleva el **marco del color de acento** que la identifica como Premium igual que sus fichas en los listados, y en escritorio van **dos, una encima de la otra**; en el teléfono, una. El paso de una página a la siguiente sigue siendo horizontal, cada 4 segundos: con el doble de negocios en pantalla y el cambio más seguido, una cartera de diez clientes Premium da la vuelta completa en veinte segundos. El nombre y la descripción ocupan dos renglones fijos para que las dos tarjetas de una misma columna midan exactamente lo mismo, y si el último grupo queda impar su única tarjeta se centra en vez de pegarse arriba. Los puntos de abajo cambian de página a mano. No rota sola si el sistema pide menos animación, ni mientras el cursor o el foco están encima.
-- **Carrusel de destacados en la portada**: arriba de las categorías, un desfile horizontal continuo de banners que avanza a velocidad constante, sin frenadas ni saltos. Cada banner es sólo la imagen del negocio —recortada con `object-fit: cover`, esquinas redondeadas— con un sello discreto de `★ Destacado` en la esquina; ni nombre, ni categoría, ni botones. **Al tocarlo lleva a su categoría, sube su ficha completa hasta arriba de la lista y baja la página hasta ella**, con un anillo dorado para reconocerla; ahí sí aparece todo: calificación, dirección enlazada a Maps, descripción, especialidades, horario e iconos de contacto. Arriba de esa ficha sólo quedan los **Premium de la misma categoría**: ese lugar está pagado y un destacado no lo desplaza, así que el orden al llegar es Premium → el destacado que se tocó → el resto. El descenso es suave y se detiene con la ficha justo debajo del encabezado pegado, porque las tarjetas llevan `scroll-margin-top` con el alto real de las barras de arriba (el encabezado siempre; la barra de categorías sólo mientras va pegada, abajo de 900px). Se ven 4 banners a la vez desde 900px, 3 desde 560px y 2.5 en el teléfono —el medio banner cortado avisa de que hay más de lado—. Empieza y termina en el margen de la página, con un corte limpio contra ese borde. Se dibujan dos tandas idénticas y la cinta recorre el ancho exacto de una, de modo que al reiniciar el ciclo la segunda queda justo donde arrancó la primera. En cada carga se sortean hasta 10 de los negocios con plan Destacado, así que la rotación es pareja entre todos los clientes del plan y nadie queda siempre fuera.
+- **Carrusel de destacados en la portada**: arriba de las categorías, un desfile horizontal continuo de banners que avanza a velocidad constante, sin frenadas ni saltos. Cada banner es sólo la imagen del negocio —recortada con `object-fit: cover`, esquinas redondeadas— con un sello discreto de `★ Destacado` en la esquina; ni nombre, ni categoría, ni botones. **Al tocarlo abre su categoría desde arriba, sube su ficha completa al principio de la lista y la hace latir tres veces**, con un anillo dorado que se queda para reconocerla; ahí sí aparece todo: calificación, dirección enlazada a Maps, descripción, especialidades, horario e iconos de contacto. Abre desde arriba a propósito: lo primero que se ve es de qué categoría se trata, y el latido es lo que dice cuál de los negocios era. Arriba de esa ficha sólo quedan los **Premium de la misma categoría**: ese lugar está pagado y un destacado no lo desplaza, así que el orden al llegar es Premium → el destacado que se tocó → el resto. La página sólo baja si la ficha no cabe entera —en el teléfono, donde van en una columna y arriba puede haber un Premium—, y entonces baja lo justo, con `scroll-margin-top` para no quedar debajo del encabezado pegado; ahí la barra de categorías, que en pantallas angostas va pegada, sigue diciendo dónde está uno. Se ven 4 banners a la vez desde 900px, 3 desde 560px y 2.5 en el teléfono —el medio banner cortado avisa de que hay más de lado—. Empieza y termina en el margen de la página, con un corte limpio contra ese borde. Se dibujan dos tandas idénticas y la cinta recorre el ancho exacto de una, de modo que al reiniciar el ciclo la segunda queda justo donde arrancó la primera. En cada carga se sortean hasta 10 de los negocios con plan Destacado, así que la rotación es pareja entre todos los clientes del plan y nadie queda siempre fuera.
 - **Control manual del carrusel**: en escritorio, dos flechas flotantes sobre los costados avanzan **un banner a la vez** y lo dejan alineado al filo —antes de moverse redondean al filo más cercano, así ninguno queda cortado a la mitad— y se encienden en el verde de la marca al pasar el cursor. En cualquier pantalla el carrusel también se lleva arrastrando con el ratón o deslizando con el dedo, con un impulso al soltar; en el teléfono las flechas se ocultan para no tapar los banners. Arrastrar no cuenta como tocar: el clic que va detrás de un jalón se traga, para no abrir la ficha sin querer. La captura del puntero se pide sólo cuando el arrastre arranca de verdad: pedirla desde el primer contacto le entregaba a la pista el clic entero y el enlace del banner nunca se enteraba, así que en escritorio no pasaba nada al hacer clic. El desfile automático se detiene mientras el cursor, el foco o el dedo están encima y lo retoma dos segundos y medio después de soltar. Si el sistema pide menos animación no hay desfile: las flechas y el dedo siguen sirviendo, pero sin suavizado.
 - **Tarjetas de negocio** con banner, etiqueta de plan, estado abierto/cerrado, calificación, horario y etiquetas.
 - **Dirección enlazada a Google Maps**: al tocarla abre la ruta de "cómo llegar" al negocio.
-- **Botones circulares de contacto** al pie de cada tarjeta: WhatsApp, teléfono, sitio web, Facebook, Instagram y TikTok. En escritorio parten en gris y toman el color de su marca al pasar el cursor; en pantallas táctiles ya salen en color al 50% de opacidad y suben al 100% al tocarlos. Solo se dibuja el icono de los enlaces que el negocio tenga registrados.
+- **Botones circulares de contacto** al pie de cada tarjeta: WhatsApp, teléfono, correo, sitio web, Facebook, Instagram y TikTok. El correo va junto al teléfono y antes de las redes —es contacto directo, no un perfil que haya que ir a visitar— y abre el gestor de correo con el asunto y el recado ya escritos, los mismos que lleva el mensaje de WhatsApp. En escritorio parten en gris y toman el color de su marca al pasar el cursor; en pantallas táctiles ya salen en color al 50% de opacidad y suben al 100% al tocarlos. Solo se dibuja el icono de los enlaces que el negocio tenga registrados.
 - **Página de registro** con los tres planes comerciales —Básico ($300 MXN/mes), Destacado ($500) y Premium ($1,000)—. Cada tarjeta lleva su propio botón que abre WhatsApp con el mensaje del plan elegido ya escrito.
 - **Modo claro y oscuro**: sigue la preferencia del sistema y el botón sol/luna del encabezado permite forzar uno u otro. La elección se guarda en `localStorage` y se aplica en un script del `<head>` para que no haya destello al cargar.
 - Navegación por URL (`#/c/hogar/fontaneros`) y soporte de teclado.
@@ -70,6 +71,7 @@ Para agregar un negocio, añade un objeto al arreglo `negocios` de su categoría
   horario: 'Lun a Sáb · 9:00 – 19:00',
   abierto: true,
   tel: '523541234567',        // formato WhatsApp: 52 + 10 dígitos, sin espacios ni signos
+  correo: 'contacto@tunegocio.com',   // opcional, dibuja el botón del sobre
   redes: { web: 'tunegocio.com', facebook: 'usuario', instagram: 'usuario', tiktok: 'usuario' },
   foto: 'assets/img/tunegocio.jpg',   // opcional, para el banner VIP y el carrusel
   desc: 'Una línea describiendo el servicio.'
@@ -89,6 +91,10 @@ los casos se recorta con `object-fit: cover`, así que el motivo va centrado. Si
 negocio no tiene foto se dibujan sus iniciales sobre el glifo de la categoría: sirve
 de relleno, pero no dice de quién es el banner. Los `basico` no salen en la portada,
 así que la ignoran.
+
+**`correo`** es opcional y dibuja el botón del sobre, junto al del teléfono y antes de
+las redes. Abre el gestor de correo del visitante con el asunto y el recado ya escritos.
+Sin `correo`, ese botón no aparece.
 
 **`redes`** también es opcional. Las redes llevan el **usuario**, no la URL completa;
 `web` lleva el dominio (`'tunegocio.com'`) o la URL entera. Cada entrada que falte

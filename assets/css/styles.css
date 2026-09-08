@@ -27,6 +27,7 @@
   --brand-web:     #2563eb;
   --brand-fb:      #1877f2;
   --brand-ig:      #d62976;
+  --brand-mail:    #7c3aed;   /* morado: el sobre no es de ninguna red */
 
   --radius:        14px;
   --radius-lg:     20px;
@@ -36,10 +37,9 @@
 
   --header-h:      64px;
   --catbar-h:      0px;
-  /* Cuánto tapa la parte de arriba de la ventana. El encabezado va pegado
-     siempre; la barra de categorías, sólo en pantallas angostas (arriba de
-     900px se queda quieta y deja de estorbar). Lo usa `scroll-margin-top`
-     para que al bajar a una ficha no quede metida debajo del menú. */
+  /* Cuánto tapa la parte de arriba de la ventana: el encabezado siempre, y la
+     barra de categorías sólo mientras va pegada (arriba de 900px se queda
+     quieta). Lo usa el `scroll-margin-top` de las fichas. */
   --pegado:        var(--header-h);
   --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
@@ -63,6 +63,7 @@
   --d-brand-web:   #60a5fa;   /* los azules y el rosa se aclaran para que */
   --d-brand-fb:    #4a9bff;   /* sigan siendo legibles sobre el fondo      */
   --d-brand-ig:    #f472b6;
+  --d-brand-mail:  #a78bfa;
   --d-shadow-sm:   0 1px 2px rgba(0,0,0,.5);
   --d-shadow-md:   0 4px 12px rgba(0,0,0,.55);
   --d-shadow-lg:   0 12px 32px rgba(0,0,0,.6);
@@ -81,7 +82,7 @@
     --accent-soft: var(--d-accent-soft);
     --gold: var(--d-gold);             --gold-soft: var(--d-gold-soft);
     --brand-web: var(--d-brand-web);   --brand-fb: var(--d-brand-fb);
-    --brand-ig: var(--d-brand-ig);
+    --brand-ig: var(--d-brand-ig); --brand-mail: var(--d-brand-mail);
     --shadow-sm: var(--d-shadow-sm);   --shadow-md: var(--d-shadow-md);
     --shadow-lg: var(--d-shadow-lg);
   }
@@ -98,7 +99,7 @@
   --accent-soft: var(--d-accent-soft);
   --gold: var(--d-gold);             --gold-soft: var(--d-gold-soft);
   --brand-web: var(--d-brand-web);   --brand-fb: var(--d-brand-fb);
-  --brand-ig: var(--d-brand-ig);
+  --brand-ig: var(--d-brand-ig); --brand-mail: var(--d-brand-mail);
   --shadow-sm: var(--d-shadow-sm);   --shadow-md: var(--d-shadow-md);
   --shadow-lg: var(--d-shadow-lg);
 }
@@ -778,9 +779,10 @@ button { font: inherit; color: inherit; }
 @media (min-width: 1080px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 .card {
-  /* Al llegar desde un banner del carrusel, la página baja sola hasta la ficha.
-     Este margen es el que evita que quede debajo del encabezado pegado: el
-     navegador lo descuenta al calcular dónde detenerse. */
+  /* Al llegar desde un banner del carrusel, la página abre desde arriba y sólo
+     baja si la ficha no cabe entera —en el teléfono, donde las fichas van en
+     una columna—. Este margen es el que evita que, cuando baja, quede metida
+     debajo del encabezado pegado. */
   scroll-margin-top: calc(var(--pegado) + 12px);
   display: flex; flex-direction: column;
   background: var(--surface);
@@ -813,19 +815,36 @@ button { font: inherit; color: inherit; }
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent), var(--shadow-md);
 }
 
-/* La ficha a la que llevó un banner del carrusel. El anillo se queda: el
-   usuario tocó un banner sin nombre y necesita reconocer cuál de todas es la
-   que venía a ver. El destello sólo llama la atención al llegar. */
+/* La ficha a la que llevó un banner del carrusel. La página abre desde arriba,
+   como cualquier categoría, así que lo primero que se ve es de qué categoría se
+   trata; para no perder de vista cuál era el negocio, su ficha late tres veces
+   al llegar. El anillo dorado se queda después de los latidos: el banner no
+   traía nombre y sin esa marca habría que adivinar. */
 .card.is-resaltada {
   border-color: color-mix(in srgb, var(--gold) 70%, var(--line));
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 45%, transparent), var(--shadow-lg);
   /* Se repite `rise` porque el atajo `animation` de `.card` se pierde al
      redeclararlo aquí, y sin él la tarjeta no haría su entrada. */
-  animation: rise .3s cubic-bezier(.2,.8,.3,1) backwards, llegada .9s ease-out;
+  animation: rise .3s cubic-bezier(.2,.8,.3,1) backwards,
+             latido .85s ease-out 3;
 }
-@keyframes llegada {
-  0%   { box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 45%, transparent), 0 0 0 12px color-mix(in srgb, var(--gold) 22%, transparent); }
-  100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 45%, transparent), 0 0 0 0 transparent; }
+/* Tres aros dorados que salen de la ficha y se desvanecen. Sólo mueven la
+   sombra: el `transform` es de `rise`, que corre a la vez —las tarjetas llevan
+   su retraso de entrada en el atributo `style`, y ese retraso pisa cualquiera
+   que se ponga aquí, así que las dos animaciones se solapan por fuerza—. */
+@keyframes latido {
+  0% {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 45%, transparent),
+                0 0 0 0 color-mix(in srgb, var(--gold) 55%, transparent);
+  }
+  55% {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 80%, transparent),
+                0 0 0 20px color-mix(in srgb, var(--gold) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 45%, transparent),
+                0 0 0 0 transparent;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .card.is-resaltada { animation: none; }
@@ -951,6 +970,7 @@ button { font: inherit; color: inherit; }
    entre el modo con cursor y el táctil. */
 .act--wa        { --marca: var(--wa); }
 .act--tel       { --marca: var(--accent); }
+.act--correo    { --marca: var(--brand-mail); }
 .act--web       { --marca: var(--brand-web); }
 .act--facebook  { --marca: var(--brand-fb); }
 .act--instagram { --marca: var(--brand-ig); }
