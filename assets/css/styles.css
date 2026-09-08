@@ -372,7 +372,17 @@ button { font: inherit; color: inherit; }
    y en el teléfono uno. El recorrido entre páginas siempre es horizontal. El
    relleno de abajo es para que la sombra de las tarjetas no se corte contra el
    borde de la ventana. */
-.vip__slides { overflow: hidden; padding-block: 2px 8px; }
+.vip__slides {
+  overflow: hidden; padding-block: 2px 8px;
+  /* El dedo se lleva el banner de lado; el movimiento vertical sigue siendo de
+     la página, si no el usuario quedaría atorado al querer bajar. */
+  touch-action: pan-y;
+  cursor: grab;
+}
+.vip__slides.is-agarrada { cursor: grabbing; }
+/* El manto y los botones traen su propio cursor de mano; la manita de arrastrar
+   es para los huecos entre tarjetas. */
+.vip__slides a { cursor: pointer; }
 .vip__pista {
   display: flex; align-items: stretch; gap: 14px;
   will-change: transform;
@@ -533,6 +543,9 @@ button { font: inherit; color: inherit; }
   background: var(--line-strong); transition: all .2s ease;
 }
 .vip__dot.is-active::before { width: 20px; background: var(--accent); }
+/* Con el dedo el punto se queda chico para atinarle: el botón crece aunque el
+   punto se vea igual. De todos modos el banner se puede arrastrar. */
+@media (pointer: coarse) { .vip__dot { width: 34px; height: 30px; } }
 @media (hover: hover) {
   .vip__dot:hover::before { background: var(--ink-3); }
   .vip__dot.is-active:hover::before { background: var(--accent); }

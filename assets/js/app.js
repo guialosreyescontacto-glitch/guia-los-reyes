@@ -342,6 +342,9 @@
         `<button class="vip__dot" type="button" data-i="${i}"
                  aria-label="Ver el grupo ${i + 1} de ${paginas}"></button>`).join('');
       $$('.vip__dot', cajaDots).forEach((d) => d.addEventListener('click', () => {
+        /* Nunca se parte desde la copia del final: desde ahí, ir a cualquier
+           página sería un barrido hacia atrás de toda la tira. */
+        if (ranura === paginas) ir(0, true);
         ir(Number(d.dataset.i));
         reiniciar();   /* el toque manual reinicia la cuenta */
       }));
@@ -370,13 +373,28 @@
       $$('.vip__dot', cajaDots).forEach((d, i) => d.classList.toggle('is-active', i === pagina));
     };
 
-    /* Un paso adelante. Si el paso cae en la copia, en cuanto termina de
-       deslizarse se cambia en seco por el original. El margen sobre la
-       duración de la transición es para que el cambio no se coma el final del
-       movimiento. */
-    const avanzar = () => {
-      ir(ranura + 1);
+    /* Deja el carrusel en la ranura pedida. Si cae en la copia del final, en
+       cuanto termina de deslizarse se cambia en seco por el original. El margen
+       sobre la duración de la transición es para que el cambio no se coma el
+       final del movimiento. */
+    const acomodar = (r) => {
+      ir(r);
       if (ranura === paginas) vuelta = setTimeout(() => ir(0, true), VIP_DESLIZ + 90);
+    };
+
+    /* Un paso adelante y un paso atrás. Hacia atrás desde la primera página no
+       hay nada a la izquierda que enseñar, así que primero se salta en seco a
+       la copia del final —idéntica, no se nota— y desde ahí sí se puede
+       retroceder a la última. Hacia adelante, al revés: parado en la copia se
+       vuelve al original antes de seguir, o el paso siguiente sería un barrido
+       hacia atrás de toda la tira. */
+    const avanzar = () => {
+      if (ranura === paginas) ir(0, true);
+      acomodar(ranura + 1);
+    };
+    const retroceder = () => {
+      if (ranura === 0) ir(paginas, true);
+      acomodar(ranura - 1);
     };
 
     const medir = () => {
@@ -418,6 +436,93 @@
       anchoPrev = window.innerWidth;
       medir();
     });
+
+    /* Arrastre lateral con el dedo o con el ratón, como en el carrusel de
+       destacados. En el teléfono los puntos quedan chicos para andar
+       apuntándoles, y el gesto natural sobre una tarjeta ancha es empujarla.
+
+       Mientras el dedo manda, la pista sigue su recorrido sin transición: la
+       tarjeta va pegada al dedo. Al soltar se decide de una vez si cambió de
+       página o si vuelve a su sitio, y ahí sí con el deslizamiento de siempre. */
+    let toque = null, jalado = false;
+
+    ventana.addEventListener('pointerdown', (e) => {
+      if (e.button > 0 || paginas < 2) return;
+      toque = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0,
+                ux: e.clientX, t: e.timeStamp, vel: 0, movido: false };
+    });
+
+    ventana.addEventListener('pointermove', (e) => {
+      if (!toque) return;
+      const dx = e.clientX - toque.x;
+
+      if (!toque.movido) {
+        /* Menos de ocho píxeles todavía puede ser el pulso de un clic; sin ese
+           margen, tocar un botón movería el banner. Y si el dedo va más a lo
+           alto que a lo ancho el gesto es de la página, no del carrusel: se
+           suelta para no dejar al usuario atorado sin poder bajar. */
+        if (Math.abs(dx) < 8) return;
+        if (Math.abs(dx) <= Math.abs(e.clientY - toque.y)) { toque = null; return; }
+        toque.movido = true;
+        parar();
+        clearTimeout(vuelta);
+        /* Para poder jalar hacia atrás desde la primera página hace falta algo
+           a la izquierda: la copia del final, que se ve igual. */
+        if (dx > 0 && ranura === 0) ir(paginas, true);
+        ventana.classList.add('is-agarrada');
+        /* Protegida: si el navegador ya dio por terminado ese puntero la
+           captura truena, y no vale la pena perder el arrastre por eso. */
+        try { ventana.setPointerCapture(toque.id); } catch (_) { /* sin captura */ }
+      }
+
+      const dt = e.timeStamp - toque.t;
+      if (dt > 0) {
+        toque.vel = (e.clientX - toque.ux) / dt;   // píxeles por milisegundo
+        toque.ux  = e.clientX;
+        toque.t   = e.timeStamp;
+      }
+      toque.dx = dx;
+      pista.style.transition = 'none';
+      pista.style.transform  = `translate3d(${-ranura * paso + dx}px, 0, 0)`;
+    });
+
+    const soltarVip = () => {
+      if (!toque) return;
+      const { id, movido, dx, vel } = toque;
+      toque = null;
+      ventana.classList.remove('is-agarrada');
+      try { ventana.releasePointerCapture(id); } catch (_) { /* ya no la tenía */ }
+      if (!movido) return;   /* fue un clic limpio: que lo atienda el enlace */
+
+      /* El clic que viene detrás de un arrastre no es una visita al negocio,
+         es el final del jalón: se traga más abajo. */
+      jalado = true;
+      pista.style.transition = '';
+
+      /* Cambia de página si el dedo salió rápido o si recorrió una quinta
+         parte del ancho. Con menos, la página se regresa a su lugar. */
+      const signo = Math.abs(vel) > 0.35 ? (vel < 0 ? 1 : -1)
+                  : Math.abs(dx) > paso * 0.2 ? (dx < 0 ? 1 : -1) : 0;
+      if (signo > 0) avanzar();
+      else if (signo < 0) retroceder();
+      else acomodar(ranura);
+      reiniciar();
+    };
+    /* También en la ventana del navegador: mientras el arrastre no arranca no
+       hay captura, y si el dedo se sale del banner y se suelta afuera, el
+       `pointerup` no pasaría por aquí y el carrusel se quedaría agarrado. La
+       función se protege sola, así que oírla dos veces no hace nada. */
+    ['pointerup', 'pointercancel'].forEach((e) => {
+      ventana.addEventListener(e, soltarVip);
+      window.addEventListener(e, soltarVip);
+    });
+
+    ventana.addEventListener('click', (e) => {
+      if (!jalado) return;
+      jalado = false;
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
 
     medir();
     reiniciar();
