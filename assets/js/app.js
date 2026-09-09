@@ -1139,11 +1139,8 @@
      precio vienen del HTML, junto al precio que se muestra, para que al
      cambiar una tarifa no haya que tocar dos archivos. */
   $$('.plan__cta').forEach((btn) => {
-    /* `data-mensaje` es para los botones que no son un plan, como el de los
-       servicios sueltos: ahí el recado de siempre no diría nada. */
-    const texto = btn.dataset.mensaje ||
-      `Hola, me interesa registrar mi negocio en Guía Los Reyes ` +
-      `con el Plan ${btn.dataset.plan} (${btn.dataset.precio}).`;
+    const texto = `Hola, me interesa registrar mi negocio en Guía Los Reyes ` +
+                  `con el Plan ${btn.dataset.plan} (${btn.dataset.precio}).`;
     btn.href = `https://wa.me/${WA_DIRECTORIO}?text=${encodeURIComponent(texto)}`;
   });
 
