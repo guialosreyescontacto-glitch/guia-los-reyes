@@ -13,7 +13,7 @@
   <meta property="og:locale" content="es_MX">
 
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/css/styles.css?v=29">
+  <link rel="stylesheet" href="assets/css/styles.css?v=30">
 
   <script>
     /* Aplica el tema guardado antes del primer pintado, para que no haya un
@@ -190,38 +190,61 @@
             Volver
           </button>
           <h1 class="panel__title">Registra tu negocio en Guía Los Reyes</h1>
-          <p class="panel__lead">Aparece frente a los vecinos que ya están buscando lo que ofreces. Elige el plan que te acomode.</p>
+          <p class="panel__lead">Aparecer es gratis. Lo que se paga es que te vean antes que a los demás, y que tu ficha se vea como negocio serio.</p>
 
           <div class="plans">
 
             <article class="plan">
-              <h2 class="plan__name">Básico</h2>
-              <p class="plan__price">$300 <small>MXN / mes</small></p>
+              <h2 class="plan__name">Ficha básica</h2>
+              <p class="plan__price">Gratis</p>
+              <p class="plan__anual">Para siempre, sin compromiso</p>
               <ul class="plan__list">
-                <li>Ficha comercial completa en su categoría</li>
-                <li>Enlace a tus redes sociales (WhatsApp, Facebook, Instagram, TikTok)</li>
-                <li>Datos esenciales: nombre, teléfono, dirección, horario y ubicación</li>
-                <li>Hasta 3 etiquetas de servicio para el buscador</li>
+                <li>Sales en tu categoría y en el buscador</li>
+                <li>Tu teléfono con botón para llamarte</li>
+                <li>Cómo llegar, abre el mapa del celular</li>
+                <li>Tu horario, con el aviso de abierto o cerrado</li>
               </ul>
-              <a class="btn btn--wa btn--block plan__cta" data-plan="Básico" data-precio="$300 MXN/mes"
+              <a class="btn btn--ghost btn--block plan__cta" data-plan="Ficha básica" data-precio="gratis"
+                 href="#" target="_blank" rel="noopener">
+                Quiero mi ficha gratis
+              </a>
+            </article>
+
+            <article class="plan">
+              <h2 class="plan__name">Ficha completa</h2>
+              <p class="plan__price">$150 <small>MXN / mes</small></p>
+              <p class="plan__anual">o <b>$1,500 al año</b> · dos meses gratis</p>
+              <p class="plan__incluye">Todo lo de la ficha básica, más:</p>
+              <ul class="plan__list">
+                <li>Foto real de tu negocio, tomada por nosotros</li>
+                <li>Descripción de lo que haces</li>
+                <li>Botón de WhatsApp con el mensaje ya escrito</li>
+                <li>Tus redes: Facebook, Instagram y TikTok</li>
+                <li>Correo con el asunto ya puesto</li>
+                <li>3 etiquetas para que te encuentren buscando tu servicio</li>
+                <li>Cambios en tus datos las veces que quieras</li>
+              </ul>
+              <a class="btn btn--wa btn--block plan__cta" data-plan="Ficha completa" data-precio="$150 MXN/mes"
                  href="#" target="_blank" rel="noopener">
                 <span class="wa-ico" aria-hidden="true"></span>
-                Elegir Plan Básico
+                Elegir Ficha completa
               </a>
             </article>
 
             <article class="plan plan--featured">
               <span class="badge badge--featured">Más popular</span>
               <h2 class="plan__name">Destacado</h2>
-              <p class="plan__price">$500 <small>MXN / mes</small></p>
-              <p class="plan__incluye">Incluye todo lo del Plan Básico, más:</p>
+              <p class="plan__price">$300 <small>MXN / mes</small></p>
+              <p class="plan__anual">o <b>$3,000 al año</b> · dos meses gratis</p>
+              <p class="plan__incluye">Todo lo de la ficha completa, más:</p>
               <ul class="plan__list">
-                <li>Posición prioritaria: siempre en los primeros lugares de tu categoría</li>
-                <li>Banner garantizado en la sección de destacados de la página</li>
-                <li>Distintivo dorado que resalta tu ficha sobre las básicas</li>
-                <li>Hasta 6 etiquetas de servicio para mayor presencia en búsquedas</li>
+                <li>Tu banner con foto en el carrusel de la portada</li>
+                <li>Primer lugar en tu categoría, arriba de los demás</li>
+                <li>Distintivo ámbar que resalta tu ficha</li>
+                <li>6 etiquetas en vez de 3</li>
+                <li>Reporte mensual: cuánta gente vio tu ficha y cuántos te contactaron</li>
               </ul>
-              <a class="btn btn--wa btn--block plan__cta" data-plan="Destacado" data-precio="$500 MXN/mes"
+              <a class="btn btn--wa btn--block plan__cta" data-plan="Destacado" data-precio="$300 MXN/mes"
                  href="#" target="_blank" rel="noopener">
                 <span class="wa-ico" aria-hidden="true"></span>
                 Elegir Plan Destacado
@@ -229,18 +252,20 @@
             </article>
 
             <article class="plan plan--premium">
-              <span class="badge badge--vip">VIP · Todo incluido</span>
+              <span class="badge badge--vip">Uno por giro</span>
               <h2 class="plan__name">Premium</h2>
-              <p class="plan__price">$1,000 <small>MXN / mes</small></p>
-              <p class="plan__incluye">Incluye todo lo del Plan Destacado, más:</p>
+              <p class="plan__price">$500 <small>MXN / mes</small></p>
+              <p class="plan__anual">o <b>$5,000 al año</b> · dos meses gratis</p>
+              <p class="plan__incluye">Todo lo del Plan Destacado, más:</p>
               <ul class="plan__list">
-                <li>Sitio web propio e independiente, exclusivo para tu marca</li>
-                <li>Dominio propio incluido (ejemplo: www.tunegocio.com)</li>
-                <li>Banner VIP en la portada principal, en rotación exclusiva</li>
-                <li>Posicionamiento VIP superior en todo el directorio</li>
-                <li>Soporte prioritario para actualizar tu información</li>
+                <li>Banner grande en la portada, en rotación exclusiva</li>
+                <li>Primer lugar en todo el directorio, no sólo en tu categoría</li>
+                <li><b>Un solo Premium por giro:</b> si lo tomas tú, tu competencia no puede</li>
+                <li>Reporte mensual entregado en persona</li>
+                <li>Soporte prioritario: tus cambios el mismo día</li>
+                <li>Una publicación al mes en las redes del directorio</li>
               </ul>
-              <a class="btn btn--wa btn--block plan__cta" data-plan="Premium" data-precio="$1,000 MXN/mes"
+              <a class="btn btn--wa btn--block plan__cta" data-plan="Premium" data-precio="$500 MXN/mes"
                  href="#" target="_blank" rel="noopener">
                 <span class="wa-ico" aria-hidden="true"></span>
                 Elegir Plan Premium
@@ -249,7 +274,24 @@
 
           </div>
 
-          <p class="fineprint">Te contactamos por WhatsApp para dar de alta tu ficha.</p>
+          <section class="servicios">
+            <h2 class="servicios__title">Servicios aparte</h2>
+            <p class="servicios__lead">Trabajos que se cobran una sola vez, tengas plan o no.</p>
+            <ul class="servicios__list">
+              <li><span>Alta y optimización en Google Maps</span> <b>$1,200</b></li>
+              <li><span>Sesión de fotos de tu negocio</span> <b>$800</b></li>
+              <li><span>Menú digital con código QR</span> <b>$900</b></li>
+              <li><span>Paquete de arranque: alta, fotos y Google Maps</span> <b>$1,800</b></li>
+              <li><span>Sitio web propio con dominio</span> <b>$4,500 + $250 al mes</b></li>
+            </ul>
+            <a class="btn btn--ghost btn--block plan__cta"
+               data-mensaje="Hola, quiero preguntar por los servicios de Guía Los Reyes."
+               href="#" target="_blank" rel="noopener">
+              Preguntar por un servicio
+            </a>
+          </section>
+
+          <p class="fineprint">Te contactamos por WhatsApp para dar de alta tu ficha. El pago anual equivale a dos meses gratis.</p>
         </div>
       </div>
     </section>
@@ -264,7 +306,7 @@
     </div>
   </footer>
 
-  <script src="assets/js/data.js?v=29"></script>
-  <script src="assets/js/app.js?v=29"></script>
+  <script src="assets/js/data.js?v=30"></script>
+  <script src="assets/js/app.js?v=30"></script>
 </body>
 </html>

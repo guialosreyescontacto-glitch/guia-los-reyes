@@ -87,6 +87,15 @@
 
   /** Fila de botones circulares: WhatsApp, teléfono y los enlaces que existan. */
   function botonesContacto(neg) {
+    /* La ficha gratuita se queda con el botón de llamar y nada más: el vecino
+       tiene cómo contactarlo, que es lo que hace útil al directorio, pero el
+       WhatsApp con el recado ya escrito, el correo y las redes son de la ficha
+       completa en adelante. */
+    if (esBasica(neg)) return (
+      `<a class="act act--tel" href="tel:+${esc(neg.tel)}"
+          title="Llamar" aria-label="Llamar a ${esc(neg.nombre)}">${logo(LOGOS.telefono)}</a>`
+    );
+
     const botones = [
       `<a class="act act--wa" href="${waLink(neg.tel, neg.nombre)}" target="_blank" rel="noopener"
           title="WhatsApp" aria-label="Escribir por WhatsApp a ${esc(neg.nombre)}">${icon(ICONS.whatsapp)}</a>`,
@@ -123,11 +132,15 @@
 
   /* Jerarquía de planes. El número es la posición en el listado: cuanto más
      chico, más arriba. Un plan desconocido cae al fondo, con los básicos. */
-  const RANGO = { premium: 0, destacado: 1, basico: 2 };
+  const RANGO = { premium: 0, destacado: 1, completa: 2, basico: 3 };
   const rango = (n) => (n.plan in RANGO) ? RANGO[n.plan] : RANGO.basico;
 
   const esPremium   = (n) => n.plan === 'premium';
   const esDestacado = (n) => n.plan === 'destacado';
+  /* La ficha gratuita: sale con lo indispensable para encontrar y llamar al
+     negocio. Todo lo demás —foto, descripción, etiquetas, correo y redes— es
+     lo que se compra al pasar a la ficha completa. */
+  const esBasica    = (n) => rango(n) === RANGO.basico;
 
   /** Por plan y, dentro de cada plan, por calificación. */
   const ordenar = (lista) => lista.slice().sort((a, b) => {
@@ -171,17 +184,24 @@
   }
 
   function tarjetaNegocio(neg, idx) {
-    const cat  = neg.cat;
-    const vip  = esPremium(neg);
-    const dest = esDestacado(neg);
+    const cat   = neg.cat;
+    const vip   = esPremium(neg);
+    const dest  = esDestacado(neg);
+    const magra = esBasica(neg);
     /* El anillo de la tarjeta y el badge del plan comparten variante. */
     const variante = vip ? 'vip' : (dest ? 'featured' : 'basic');
     const [c1, c2] = cat.banner;
     const tags = (neg.tags || []).slice(0, 4)
       .map(t => `<li class="tag">${esc(t)}</li>`).join('');
 
+    /* La ficha gratuita enseña lo indispensable: quién es, dónde está, a qué
+       hora abre y su teléfono. La descripción, las etiquetas, la calificación
+       y el resto de los botones son de la ficha completa en adelante, así que
+       aquí ni siquiera se pintan. El sello del plan sólo lo llevan los dos de
+       pago que compran posición; en la completa la diferencia se ve sola, en
+       todo lo que la básica no trae. */
     return `
-      <article class="card card--${variante}" data-neg="${seña(neg)}"
+      <article class="card card--${variante}${magra ? ' card--magra' : ''}" data-neg="${seña(neg)}"
                style="animation-delay:${Math.min(idx, 8) * 35}ms">
 
         <div class="card__banner" style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
@@ -192,7 +212,7 @@
               ? `<span class="badge badge--vip">${icon(ICONS.corona)} Premium</span>`
               : dest
               ? `<span class="badge badge--featured">${icon(ICONS.star)} Destacado</span>`
-              : `<span class="badge badge--basic">Básico</span>`}
+              : ''}
             <span class="badge ${neg.abierto ? 'badge--open' : 'badge--closed'}">
               ${neg.abierto ? 'Abierto ahora' : 'Cerrado'}
             </span>
@@ -203,15 +223,15 @@
           <h3 class="card__title">${esc(neg.nombre)}</h3>
 
           <p class="card__line">
-            <span class="card__rating">${icon(ICONS.star)}${neg.rating.toFixed(1)}</span>
-            <span class="card__sep">·</span>
+            ${magra ? '' : `<span class="card__rating">${icon(ICONS.star)}${neg.rating.toFixed(1)}</span>
+            <span class="card__sep">·</span>`}
             <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener"
                title="Cómo llegar en Google Maps">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
           </p>
 
-          <p class="card__desc">${esc(neg.desc)}</p>
+          ${magra ? '' : `<p class="card__desc">${esc(neg.desc)}</p>
 
-          <ul class="tags">${tags}</ul>
+          <ul class="tags">${tags}</ul>`}
 
           <p class="card__line">${icon(ICONS.clock)} ${esc(neg.horario)}</p>
 
@@ -907,9 +927,13 @@
     const term = norm(q.trim());
     $('#searchTerm').textContent = q;
 
+    /* La ficha gratuita se busca por lo que enseña: su nombre, su zona y su
+       giro. La descripción y las etiquetas de servicio —salir cuando alguien
+       teclea "frenos" o "urgencias"— son de la ficha completa en adelante. */
     const res = term.length < 2 ? [] : TODOS.filter(n => {
+      const propio = esBasica(n) ? [] : [n.desc, (n.tags || []).join(' ')];
       const heno = norm([
-        n.nombre, n.desc, n.zona, (n.tags || []).join(' '),
+        n.nombre, n.zona, ...propio,
         n.cat.nombre, (n.cat.filtros.find(f => f.id === n.filtro) || {}).label || ''
       ].join(' '));
       return term.split(/\s+/).every(w => heno.includes(w));
@@ -1062,8 +1086,11 @@
      precio vienen del HTML, junto al precio que se muestra, para que al
      cambiar una tarifa no haya que tocar dos archivos. */
   $$('.plan__cta').forEach((btn) => {
-    const texto = `Hola, me interesa registrar mi negocio en Guía Los Reyes ` +
-                  `con el Plan ${btn.dataset.plan} (${btn.dataset.precio}).`;
+    /* `data-mensaje` es para los botones que no son un plan, como el de los
+       servicios sueltos: ahí el recado de siempre no diría nada. */
+    const texto = btn.dataset.mensaje ||
+      `Hola, me interesa registrar mi negocio en Guía Los Reyes ` +
+      `con el Plan ${btn.dataset.plan} (${btn.dataset.precio}).`;
     btn.href = `https://wa.me/${WA_DIRECTORIO}?text=${encodeURIComponent(texto)}`;
   });
 

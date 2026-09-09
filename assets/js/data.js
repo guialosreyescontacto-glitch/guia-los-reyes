@@ -68,13 +68,25 @@ const CIUDAD = 'Los Reyes de Salgado, Michoacán, México';
 
 /* --- Catálogo ------------------------------------------------------------
    categoria: { id, nombre, color, soft, icono, banner, filtros[], negocios[] }
-   negocio:   { nombre, plan: 'premium'|'destacado'|'basico', filtro, tags[], desc,
-                zona, horario, abierto, rating, tel, correo?, redes{}, mapa?, foto? }
+   negocio:   { nombre, plan: 'premium'|'destacado'|'completa'|'basico', filtro,
+                tags[], desc, zona, horario, abierto, rating, tel, correo?,
+                redes{}, mapa?, foto? }
 
-   plan   manda en el orden: los premium van arriba de todo, después los
-          destacados y al final los básicos; dentro de cada grupo, por
-          calificación. Los premium además rotan en el banner VIP de la
-          portada, así que conviene que traigan `redes.web`.
+   plan   manda en el orden y en cuánto se enseña de cada negocio. De arriba
+          abajo: premium, destacado, completa y básica; dentro de cada grupo,
+          por calificación.
+
+          La ficha `basico` es la gratuita, la que se siembra sin que el
+          negocio la haya pedido: sale con lo indispensable para que el vecino
+          lo encuentre y lo llame —nombre, zona, horario y teléfono— y nada
+          más. Aunque el negocio traiga descripción, etiquetas, correo o redes,
+          no se pintan mientras siga en básica, y sus etiquetas tampoco cuentan
+          en el buscador: eso es justo lo que compra la ficha completa. Los
+          datos se quedan escritos aquí, así que subirlo de plan es cambiar una
+          palabra y ya.
+
+          Los premium además rotan en el banner VIP de la portada, así que
+          conviene que traigan `redes.web`.
    foto   OPCIONAL, pero clave para los destacados. Ruta o URL de la foto, el
           logotipo o el banner promocional del negocio. La usan el banner VIP
           de la portada (recuadro cuadrado) y el carrusel de destacados, donde
@@ -124,7 +136,7 @@ const CATEGORIAS = [
         correo: 'contacto@dentalsonrisalosreyes.example',
         redes: { web: 'dentalsonrisalosreyes.example', facebook: 'demo.dentalsonrisalosreyes', instagram: 'demo.dentalsonrisalosreyes', tiktok: 'demo.dentalsonrisalosreyes' },
         desc: 'Odontología general, ortodoncia y estética dental. Primera valoración sin costo.' },
-      { nombre: 'Laboratorio Clínico del Valle', plan: 'basico', filtro: 'lab', rating: 4.6,
+      { nombre: 'Laboratorio Clínico del Valle', plan: 'completa', filtro: 'lab', rating: 4.6,
         tags: ['Análisis clínicos', 'Resultados en línea'], zona: 'Col. Ferrocarril',
         horario: 'Lun a Sáb · 7:00 – 14:00', abierto: false, tel: '523541000103',
         redes: { facebook: 'demo.laboratorioclinicodelvalle', instagram: 'demo.laboratorioclinicodelvalle' },
@@ -134,7 +146,7 @@ const CATEGORIAS = [
         horario: 'Lun a Vie · 10:00 – 19:00', abierto: true, tel: '523541000104',
         redes: { instagram: 'demo.consultoriodrramirez', tiktok: 'demo.consultoriodrramirez' },
         desc: 'Medicina general para toda la familia, con visitas a domicilio por la tarde.' },
-      { nombre: 'Óptica Visión Clara', plan: 'basico', filtro: 'optica', rating: 4.7,
+      { nombre: 'Óptica Visión Clara', plan: 'completa', filtro: 'optica', rating: 4.7,
         tags: ['Examen de la vista gratis', 'Armazones'], zona: 'Portal Hidalgo',
         horario: 'Lun a Sáb · 10:00 – 20:00', abierto: true, tel: '523541000105',
         redes: { facebook: 'demo.opticavisionclara' },
@@ -172,7 +184,7 @@ const CATEGORIAS = [
         correo: 'contacto@gruaslosreyes247.example',
         redes: { web: 'gruaslosreyes247.example', facebook: 'demo.gruaslosreyes247', instagram: 'demo.gruaslosreyes247', tiktok: 'demo.gruaslosreyes247' },
         desc: 'Auxilio vial y arrastre a cualquier hora, dentro y fuera de la ciudad.' },
-      { nombre: 'Llantera El Rayo', plan: 'basico', filtro: 'llantas', rating: 4.6,
+      { nombre: 'Llantera El Rayo', plan: 'completa', filtro: 'llantas', rating: 4.6,
         tags: ['Montaje', 'Balanceo', 'Parches'], zona: 'Carretera a Jacona',
         horario: 'Lun a Dom · 8:00 – 21:00', abierto: true, tel: '523541000203',
         redes: { instagram: 'demo.llanteraelrayo', tiktok: 'demo.llanteraelrayo' },
@@ -182,7 +194,7 @@ const CATEGORIAS = [
         horario: 'Lun a Vie · 9:00 – 18:00', abierto: false, tel: '523541000204',
         redes: { facebook: 'demo.hojalateriaypinturamichoacan' },
         desc: 'Reparación de golpes, pintura de horno y trabajos con aseguradora.' },
-      { nombre: 'Auto Eléctrico Chávez', plan: 'basico', filtro: 'electrico', rating: 4.5,
+      { nombre: 'Auto Eléctrico Chávez', plan: 'completa', filtro: 'electrico', rating: 4.5,
         tags: ['Alternadores', 'Marchas', 'Instalaciones'], zona: 'Col. Zaragoza',
         horario: 'Lun a Sáb · 9:00 – 19:00', abierto: true, tel: '523541000205',
         redes: { facebook: 'demo.autoelectricochavez', instagram: 'demo.autoelectricochavez' },
@@ -220,7 +232,7 @@ const CATEGORIAS = [
         correo: 'contacto@boxfitlosreyes.example',
         redes: { web: 'boxfitlosreyes.example', facebook: 'demo.boxfitlosreyes', instagram: 'demo.boxfitlosreyes', tiktok: 'demo.boxfitlosreyes' },
         desc: 'Boxeo para principiantes y competencia, con horarios de mañana y tarde.' },
-      { nombre: 'Cancha Los Aguacates', plan: 'basico', filtro: 'canchas', rating: 4.5,
+      { nombre: 'Cancha Los Aguacates', plan: 'completa', filtro: 'canchas', rating: 4.5,
         tags: ['Fútbol 7', 'Pasto sintético', 'Renta por hora'], zona: 'Salida a Peribán',
         horario: 'Lun a Dom · 16:00 – 23:00', abierto: true, tel: '523541000303',
         redes: { facebook: 'demo.canchalosaguacates' },
@@ -230,7 +242,7 @@ const CATEGORIAS = [
         horario: 'Lun a Sáb · 7:00 – 20:00', abierto: true, tel: '523541000304',
         redes: { facebook: 'demo.estudiozenyoga', instagram: 'demo.estudiozenyoga' },
         desc: 'Clases de yoga y meditación en grupos reducidos para todos los niveles.' },
-      { nombre: 'Funcional Box 360', plan: 'basico', filtro: 'crossfit', rating: 4.6,
+      { nombre: 'Funcional Box 360', plan: 'completa', filtro: 'crossfit', rating: 4.6,
         tags: ['Entrenamiento funcional', 'Retos mensuales'], zona: 'Fracc. Los Laureles',
         horario: 'Lun a Vie · 6:00 – 21:00', abierto: true, tel: '523541000305',
         redes: { instagram: 'demo.funcionalbox360', tiktok: 'demo.funcionalbox360' },
@@ -268,7 +280,7 @@ const CATEGORIAS = [
         horario: 'Todos los días · 19:00 – 2:00', abierto: false, tel: '523541000403',
         redes: { facebook: 'demo.tacoselguero' },
         desc: 'Tacos al pastor, suadero y campechanos desde 1998, junto al jardín.' },
-      { nombre: 'Pizzería La Leña', plan: 'basico', filtro: 'pizza', rating: 4.5,
+      { nombre: 'Pizzería La Leña', plan: 'completa', filtro: 'pizza', rating: 4.5,
         tags: ['Horno de leña', 'Entrega a domicilio'], zona: 'Col. Vista Hermosa',
         horario: 'Mié a Dom · 17:00 – 23:00', abierto: true, tel: '523541000404',
         redes: { facebook: 'demo.pizzerialalena', instagram: 'demo.pizzerialalena' },
@@ -278,7 +290,7 @@ const CATEGORIAS = [
         horario: 'Lun a Sáb · 8:00 – 22:00', abierto: true, tel: '523541000405',
         redes: { instagram: 'demo.cafedealturamichoacan', tiktok: 'demo.cafedealturamichoacan' },
         desc: 'Café de productores de la sierra, postres caseros y espacio para trabajar.' },
-      { nombre: 'Cenaduría La Esquina', plan: 'basico', filtro: 'mexicana', rating: 4.6,
+      { nombre: 'Cenaduría La Esquina', plan: 'completa', filtro: 'mexicana', rating: 4.6,
         tags: ['Pozole', 'Enchiladas', 'Cenas'], zona: 'Col. Zaragoza',
         horario: 'Jue a Dom · 18:00 – 23:30', abierto: true, tel: '523541000406',
         redes: { facebook: 'demo.cenadurialaesquina' },
@@ -316,7 +328,7 @@ const CATEGORIAS = [
         horario: 'Lun a Sáb · 11:00 – 20:00', abierto: true, tel: '523541000503',
         redes: { facebook: 'demo.nailsstudioale', instagram: 'demo.nailsstudioale' },
         desc: 'Uñas acrílicas, gelish y diseños personalizados con productos de marca.' },
-      { nombre: 'Spa Renacer', plan: 'basico', filtro: 'spa', rating: 4.8,
+      { nombre: 'Spa Renacer', plan: 'completa', filtro: 'spa', rating: 4.8,
         tags: ['Masaje relajante', 'Faciales'], zona: 'Fracc. Los Laureles',
         horario: 'Lun a Sáb · 10:00 – 19:00', abierto: false, tel: '523541000504',
         redes: { instagram: 'demo.sparenacer', tiktok: 'demo.sparenacer' },
@@ -355,7 +367,7 @@ const CATEGORIAS = [
         correo: 'contacto@plomeriahermanosruiz.example',
         redes: { web: 'plomeriahermanosruiz.example', facebook: 'demo.plomeriahermanosruiz', instagram: 'demo.plomeriahermanosruiz', tiktok: 'demo.plomeriahermanosruiz' },
         desc: 'Detección de fugas, destape de drenajes e instalación de boilers y tinacos.' },
-      { nombre: 'Electricista Juan Pablo', plan: 'basico', filtro: 'electricistas', rating: 4.8,
+      { nombre: 'Electricista Juan Pablo', plan: 'completa', filtro: 'electricistas', rating: 4.8,
         tags: ['Instalaciones', 'Cortos', 'Presupuesto gratis'], zona: 'Col. Ferrocarril',
         horario: 'Lun a Sáb · 8:00 – 20:00', abierto: true, tel: '523541000603',
         redes: { facebook: 'demo.electricistajuanpablo', instagram: 'demo.electricistajuanpablo' },
@@ -365,7 +377,7 @@ const CATEGORIAS = [
         horario: 'Lun a Vie · 9:00 – 18:00', abierto: false, tel: '523541000604',
         redes: { instagram: 'demo.carpinterialamaderafina', tiktok: 'demo.carpinterialamaderafina' },
         desc: 'Muebles a medida, cocinas integrales y closets en madera de pino y encino.' },
-      { nombre: 'Construcciones Tarasco', plan: 'basico', filtro: 'albaniles', rating: 4.5,
+      { nombre: 'Construcciones Tarasco', plan: 'completa', filtro: 'albaniles', rating: 4.5,
         tags: ['Obra nueva', 'Remodelación', 'Impermeabilización'], zona: 'Los Reyes y región',
         horario: 'Lun a Sáb · 7:00 – 18:00', abierto: true, tel: '523541000605',
         redes: { facebook: 'demo.construccionestarasco' },
@@ -403,7 +415,7 @@ const CATEGORIAS = [
         correo: 'contacto@bufetejuridicolosreyes.example',
         redes: { web: 'bufetejuridicolosreyes.example', facebook: 'demo.bufetejuridicolosreyes', instagram: 'demo.bufetejuridicolosreyes', tiktok: 'demo.bufetejuridicolosreyes' },
         desc: 'Asesoría legal en derecho familiar, civil, laboral y trámites de sucesiones.' },
-      { nombre: 'Gestoría Vehicular Express', plan: 'basico', filtro: 'notaria', rating: 4.5,
+      { nombre: 'Gestoría Vehicular Express', plan: 'completa', filtro: 'notaria', rating: 4.5,
         tags: ['Placas', 'Refrendo', 'Licencias'], zona: 'Portal Hidalgo',
         horario: 'Lun a Vie · 9:00 – 17:00', abierto: false, tel: '523541000703',
         redes: { instagram: 'demo.gestoriavehicularexpress', tiktok: 'demo.gestoriavehicularexpress' },
@@ -413,7 +425,7 @@ const CATEGORIAS = [
         horario: 'Lun a Sáb · 10:00 – 20:00', abierto: true, tel: '523541000704',
         redes: { facebook: 'demo.tecnosoportepc' },
         desc: 'Mantenimiento de equipos, recuperación de datos, redes y cámaras de seguridad.' },
-      { nombre: 'Seguros y Fianzas del Bajío', plan: 'basico', filtro: 'seguros', rating: 4.4,
+      { nombre: 'Seguros y Fianzas del Bajío', plan: 'completa', filtro: 'seguros', rating: 4.4,
         tags: ['Auto', 'Gastos médicos', 'Vida'], zona: 'Centro',
         horario: 'Lun a Vie · 9:00 – 18:00', abierto: true, tel: '523541000705',
         redes: { facebook: 'demo.segurosyfianzasdelbajio', instagram: 'demo.segurosyfianzasdelbajio' },
@@ -450,7 +462,7 @@ const CATEGORIAS = [
         horario: 'Lun a Sáb · 8:00 – 19:00', abierto: true, tel: '523541000803',
         redes: { instagram: 'demo.agroveterinariaelcampo', tiktok: 'demo.agroveterinariaelcampo' },
         desc: 'Alimento para mascotas y ganado, medicamentos veterinarios e insumos agrícolas.' },
-      { nombre: 'Guardería Canina Patitas', plan: 'basico', filtro: 'guarderia', rating: 4.7,
+      { nombre: 'Guardería Canina Patitas', plan: 'completa', filtro: 'guarderia', rating: 4.7,
         tags: ['Hospedaje', 'Paseos', 'Adiestramiento'], zona: 'Salida a Tocumbo',
         horario: 'Lun a Dom · 7:00 – 20:00', abierto: true, tel: '523541000804',
         redes: { facebook: 'demo.guarderiacaninapatitas' },
@@ -488,7 +500,7 @@ const CATEGORIAS = [
         horario: 'Reservas todo el día', abierto: true, tel: '523541000903',
         redes: { facebook: 'demo.djsonidoestelar', instagram: 'demo.djsonidoestelar' },
         desc: 'Audio profesional, luces robóticas, pantallas y animación para tu fiesta.' },
-      { nombre: 'Foto y Video Momentos', plan: 'basico', filtro: 'foto', rating: 4.8,
+      { nombre: 'Foto y Video Momentos', plan: 'completa', filtro: 'foto', rating: 4.8,
         tags: ['Bodas', 'XV años', 'Dron'], zona: 'Centro',
         horario: 'Con cita previa', abierto: false, tel: '523541000904',
         redes: { instagram: 'demo.fotoyvideomomentos', tiktok: 'demo.fotoyvideomomentos' },
@@ -526,7 +538,7 @@ const CATEGORIAS = [
         correo: 'contacto@academiademusicadoremi.example',
         redes: { web: 'academiademusicadoremi.example', facebook: 'demo.academiademusicadoremi', instagram: 'demo.academiademusicadoremi', tiktok: 'demo.academiademusicadoremi' },
         desc: 'Clases individuales y grupales de guitarra, piano, batería y canto.' },
-      { nombre: 'Regularización Escolar Einstein', plan: 'basico', filtro: 'regularizacion', rating: 4.7,
+      { nombre: 'Regularización Escolar Einstein', plan: 'completa', filtro: 'regularizacion', rating: 4.7,
         tags: ['Primaria', 'Secundaria', 'Matemáticas'], zona: 'Col. Emiliano Zapata',
         horario: 'Lun a Vie · 16:00 – 20:00', abierto: true, tel: '523541001003',
         redes: { facebook: 'demo.regularizacionescolareinstein', instagram: 'demo.regularizacionescolareinstein' },
@@ -536,7 +548,7 @@ const CATEGORIAS = [
         horario: 'Lun a Sáb · 9:00 – 20:00', abierto: false, tel: '523541001004',
         redes: { instagram: 'demo.centrodecomputodigital', tiktok: 'demo.centrodecomputodigital' },
         desc: 'Cursos de computación básica, Office, diseño gráfico y redes sociales.' },
-      { nombre: 'Taller de Repostería Dulce Arte', plan: 'basico', filtro: 'oficios', rating: 4.8,
+      { nombre: 'Taller de Repostería Dulce Arte', plan: 'completa', filtro: 'oficios', rating: 4.8,
         tags: ['Pasteles', 'Fondant', 'Cupos limitados'], zona: 'Col. Morelos',
         horario: 'Sáb · 10:00 – 14:00', abierto: true, tel: '523541001005',
         redes: { facebook: 'demo.tallerdereposteriadulcearte' },
@@ -574,7 +586,7 @@ const CATEGORIAS = [
         horario: 'Lun a Sáb · 8:00 – 18:00', abierto: true, tel: '523541001103',
         redes: { facebook: 'demo.huertasyterrenosdelvalle', instagram: 'demo.huertasyterrenosdelvalle' },
         desc: 'Venta de huertas de aguacate en producción y terrenos con acceso a riego.' },
-      { nombre: 'Locales Centro Comercial Plaza', plan: 'basico', filtro: 'locales', rating: 4.3,
+      { nombre: 'Locales Centro Comercial Plaza', plan: 'completa', filtro: 'locales', rating: 4.3,
         tags: ['Locales', 'Bodegas', 'Estacionamiento'], zona: 'Centro',
         horario: 'Lun a Vie · 10:00 – 18:00', abierto: false, tel: '523541001104',
         redes: { instagram: 'demo.localescentrocomercialplaza', tiktok: 'demo.localescentrocomercialplaza' },
@@ -613,7 +625,7 @@ const CATEGORIAS = [
         correo: 'contacto@boutiqueaura.example',
         redes: { web: 'boutiqueaura.example', facebook: 'demo.boutiqueaura', instagram: 'demo.boutiqueaura', tiktok: 'demo.boutiqueaura' },
         desc: 'Ropa de dama y accesorios de temporada. Aparta con el 30% y paga a plazos.' },
-      { nombre: 'Abarrotes La Central', plan: 'basico', filtro: 'abarrotes', rating: 4.5,
+      { nombre: 'Abarrotes La Central', plan: 'completa', filtro: 'abarrotes', rating: 4.5,
         tags: ['Mayoreo', 'Recargas', 'Reparto'], zona: 'Mercado Municipal',
         horario: 'Lun a Dom · 7:00 – 21:00', abierto: true, tel: '523541001203',
         redes: { facebook: 'demo.abarroteslacentral', instagram: 'demo.abarroteslacentral' },
@@ -623,7 +635,7 @@ const CATEGORIAS = [
         horario: 'Lun a Sáb · 9:00 – 20:00', abierto: true, tel: '523541001204',
         redes: { instagram: 'demo.mueblesylineablancahogar', tiktok: 'demo.mueblesylineablancahogar' },
         desc: 'Salas, comedores, refrigeradores y lavadoras con crédito propio y entrega gratis.' },
-      { nombre: 'Papelería El Estudiante', plan: 'basico', filtro: 'papeleria', rating: 4.6,
+      { nombre: 'Papelería El Estudiante', plan: 'completa', filtro: 'papeleria', rating: 4.6,
         tags: ['Copias', 'Impresiones', 'Útiles escolares'], zona: 'Col. Zaragoza',
         horario: 'Lun a Sáb · 8:00 – 20:00', abierto: false, tel: '523541001205',
         redes: { facebook: 'demo.papeleriaelestudiante' },
