@@ -1054,6 +1054,48 @@ button { font: inherit; color: inherit; }
 .card__line svg { width: 13px; height: 13px; flex: none; }
 .card__sep { color: var(--line-strong); }
 
+/* --- Horario desplegable ---
+   A la vista queda sólo lo de hoy; la semana entera vive detrás del "Ver
+   horario". Los negocios que cierran a comer necesitan cuatro renglones para
+   decir su horario, y cuatro renglones en cada tarjeta dejarían la lista
+   ilegible. Es un <details>, así que abre y cierra sin una línea de JS y el
+   lector de pantalla lo anuncia solo. */
+.horario { font-size: 12.5px; color: var(--ink-3); }
+.horario__hoy {
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer; list-style: none;
+}
+/* El triangulito que trae el navegador estorba: hay uno propio a la derecha. */
+.horario__hoy::-webkit-details-marker { display: none; }
+.horario__hoy svg { width: 13px; height: 13px; flex: none; }
+.horario__hoy:hover .horario__ver { color: var(--accent-ink); }
+.horario__ver {
+  margin-left: auto; flex: none;
+  font-size: 11.5px; font-weight: 600; color: var(--accent);
+}
+.horario__ver::after {
+  content: '▾'; display: inline-block; margin-left: 4px;
+  transition: transform .18s ease;
+}
+.horario[open] .horario__ver::after { transform: rotate(180deg); }
+.horario[open] .horario__ver { font-size: 0; }        /* abierto ya no hay qué decir */
+.horario[open] .horario__ver::after { font-size: 11.5px; }
+
+.horario__semana {
+  width: 100%; margin: 7px 0 0; border-collapse: collapse;
+  font-size: 12px; font-variant-numeric: tabular-nums;
+}
+.horario__semana th {
+  text-align: left; font-weight: 600; color: var(--ink-2);
+  padding: 4px 12px 4px 0; white-space: nowrap;
+}
+.horario__semana td { text-align: right; color: var(--ink-3); padding: 4px 0; }
+.horario__semana tr + tr th,
+.horario__semana tr + tr td { border-top: 1px solid var(--line); }
+/* El día de hoy se marca: es el renglón que la persona vino a buscar. */
+.horario__semana .es-hoy th,
+.horario__semana .es-hoy td { color: var(--ink); font-weight: 650; }
+
 .card__rating { display: inline-flex; align-items: center; gap: 4px; font-weight: 650; color: var(--gold); }
 .card__rating svg { width: 13px; height: 13px; }
 

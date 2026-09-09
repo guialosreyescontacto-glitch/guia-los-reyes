@@ -97,16 +97,33 @@ const CIUDAD = 'Los Reyes de Salgado, Michoacán, México';
           `foto` se dibujan las iniciales sobre el glifo de la categoría, que
           sirve de relleno pero no dice de quién es el banner.
           Los básicos la ignoran: no salen en la portada.
-   horario texto libre, y de ahí sale solo el aviso de abierto o cerrado: no hay
-          que escribirlo aparte ni mantenerlo al día. Se entiende el formato
-          'Lun a Sáb · 9:00 – 20:00' —también 'Todos los días', un día suelto
-          como 'Sáb · 10:00 – 14:00' y los que cierran pasada la medianoche,
-          '19:00 – 2:00'—, además de 'Abierto 24 horas' y 'Disponible 24
-          horas', que salen siempre abiertos. Si no trae horas ('Con cita
-          previa', 'Visitas con cita') el aviso dice "Con cita": de un negocio
-          así no se puede decir que esté cerrado. La hora es la de Los Reyes,
-          no la del teléfono del visitante, para que a los paisanos de allá no
-          se les vea todo cerrado.
+   horario de aquí sale solo el aviso de abierto o cerrado y el desplegable de
+          la semana: no hay que escribirlo aparte ni mantenerlo al día. Se
+          puede escribir de dos maneras.
+
+          La sencilla, un renglón, para el que abre y cierra una sola vez:
+
+              horario: 'Lun a Sáb · 9:00 – 20:00'
+
+          Y la de jornada partida, un renglón por grupo de días, para el que
+          cierra a comer o el que el sábado trabaja distinto —que en el pueblo
+          son casi todos—:
+
+              horario: { 'Lun a Vie': '9:00 – 14:00, 16:30 – 20:00',
+                         'Sáb':       '9:00 – 15:00' }
+
+          Los días que no se nombran quedan cerrados; si se prefiere decirlo,
+          'Dom': 'Cerrado' hace lo mismo. Se pueden poner los tramos que hagan
+          falta, separados por coma.
+
+          En cualquiera de las dos formas se entiende 'Todos los días', un día
+          suelto como 'Sáb · 10:00 – 14:00', los rangos que dan la vuelta a la
+          semana y los que cierran pasada la medianoche ('19:00 – 2:00');
+          'Abierto 24 horas' y 'Disponible 24 horas' salen siempre abiertos. Si
+          no trae horas ('Con cita previa', 'Visitas con cita') el aviso dice
+          "Con cita": de un negocio así no se puede decir que esté cerrado. La
+          hora es la de Los Reyes, no la del teléfono del visitante, para que a
+          los paisanos de allá no se les vea todo cerrado.
    zona   texto de la dirección que se muestra en la tarjeta.
    mapa   OPCIONAL. Dirección exacta o coordenadas 'lat,lng' para el enlace de
           Google Maps. Si se omite, el enlace usa `zona` + la ciudad, que basta
@@ -142,7 +159,9 @@ const CATEGORIAS = [
         desc: 'Consulta general y especialidades con hospitalización y urgencias las 24 horas.' },
       { nombre: 'Dental Sonrisa Los Reyes', plan: 'destacado', filtro: 'dental', rating: 4.9,
         tags: ['Ortodoncia', 'Blanqueamiento', 'Pago en parcialidades'], zona: 'Av. Morelos',
-        horario: 'Lun a Sáb · 9:00 – 20:00', tel: '523541000102',
+        horario: { 'Lun a Vie': '9:00 – 14:00, 16:00 – 20:00',
+                   'Sáb':       '9:00 – 13:00' },
+        tel: '523541000102',
         correo: 'contacto@dentalsonrisalosreyes.example',
         redes: { web: 'dentalsonrisalosreyes.example', facebook: 'demo.dentalsonrisalosreyes', instagram: 'demo.dentalsonrisalosreyes', tiktok: 'demo.dentalsonrisalosreyes' },
         desc: 'Odontología general, ortodoncia y estética dental. Primera valoración sin costo.' },
@@ -158,7 +177,9 @@ const CATEGORIAS = [
         desc: 'Medicina general para toda la familia, con visitas a domicilio por la tarde.' },
       { nombre: 'Óptica Visión Clara', plan: 'completa', filtro: 'optica', rating: 4.7,
         tags: ['Examen de la vista gratis', 'Armazones'], zona: 'Portal Hidalgo',
-        horario: 'Lun a Sáb · 10:00 – 20:00', tel: '523541000105',
+        horario: { 'Lun a Vie': '10:00 – 14:00, 16:00 – 20:00',
+                   'Sáb':       '10:00 – 14:00' },
+        tel: '523541000105',
         redes: { facebook: 'demo.opticavisionclara' },
         desc: 'Lentes graduados, de contacto y examen de la vista computarizado sin costo.' },
       { nombre: 'Fisioterapia Movimiento', plan: 'basico', filtro: 'especialistas', rating: 4.8,
@@ -184,7 +205,9 @@ const CATEGORIAS = [
     negocios: [
       { nombre: 'Taller Mecánico El Aguacate', plan: 'premium', filtro: 'general', rating: 4.9,
         tags: ['Afinación', 'Suspensión', 'Diagnóstico por escáner'], zona: 'Salida a Tingüindín',
-        horario: 'Lun a Sáb · 8:00 – 19:00', tel: '523541000201',
+        horario: { 'Lun a Vie': '8:00 – 14:00, 16:00 – 19:00',
+                   'Sáb':       '8:00 – 14:00' },
+        tel: '523541000201',
         correo: 'contacto@tallermecanicoelaguacate.example',
         redes: { web: 'tallermecanicoelaguacate.example', facebook: 'demo.tallermecanicoelaguacate', instagram: 'demo.tallermecanicoelaguacate', tiktok: 'demo.tallermecanicoelaguacate' },
         desc: 'Servicio completo para auto y camioneta. Diagnóstico computarizado sin costo.' },
@@ -384,7 +407,8 @@ const CATEGORIAS = [
         desc: 'Instalaciones eléctricas residenciales, reparación de cortos y centros de carga.' },
       { nombre: 'Carpintería La Madera Fina', plan: 'basico', filtro: 'carpinteros', rating: 4.6,
         tags: ['Cocinas integrales', 'Closets', 'A medida'], zona: 'Col. Morelos',
-        horario: 'Lun a Vie · 9:00 – 18:00', tel: '523541000604',
+        horario: { 'Lun a Vie': '8:00 – 14:00, 16:00 – 19:00' },
+        tel: '523541000604',
         redes: { instagram: 'demo.carpinterialamaderafina', tiktok: 'demo.carpinterialamaderafina' },
         desc: 'Muebles a medida, cocinas integrales y closets en madera de pino y encino.' },
       { nombre: 'Construcciones Tarasco', plan: 'completa', filtro: 'albaniles', rating: 4.5,
@@ -625,7 +649,9 @@ const CATEGORIAS = [
     negocios: [
       { nombre: 'Ferretería El Tornillo Feliz', plan: 'destacado', filtro: 'ferreteria', rating: 4.8,
         tags: ['Herramienta', 'Material eléctrico', 'Entrega a obra'], zona: 'Av. Juárez',
-        horario: 'Lun a Sáb · 8:00 – 20:00', tel: '523541001201',
+        horario: { 'Lun a Vie': '8:00 – 14:00, 16:00 – 20:00',
+                   'Sáb':       '8:00 – 15:00' },
+        tel: '523541001201',
         correo: 'contacto@ferreteriaeltornillofeliz.example',
         redes: { web: 'ferreteriaeltornillofeliz.example', facebook: 'demo.ferreteriaeltornillofeliz', instagram: 'demo.ferreteriaeltornillofeliz', tiktok: 'demo.ferreteriaeltornillofeliz' },
         desc: 'Herramienta, plomería, material eléctrico y pinturas. Entregamos en obra.' },
@@ -647,7 +673,9 @@ const CATEGORIAS = [
         desc: 'Salas, comedores, refrigeradores y lavadoras con crédito propio y entrega gratis.' },
       { nombre: 'Papelería El Estudiante', plan: 'completa', filtro: 'papeleria', rating: 4.6,
         tags: ['Copias', 'Impresiones', 'Útiles escolares'], zona: 'Col. Zaragoza',
-        horario: 'Lun a Sáb · 8:00 – 20:00', tel: '523541001205',
+        horario: { 'Lun a Vie': '8:30 – 14:00, 16:00 – 20:00',
+                   'Sáb':       '9:00 – 14:00' },
+        tel: '523541001205',
         redes: { facebook: 'demo.papeleriaelestudiante' },
         desc: 'Papelería, copias, impresiones a color, engargolados y artículos de oficina.' },
       { nombre: 'Agroinsumos del Aguacate', plan: 'basico', filtro: 'agro', rating: 4.7,

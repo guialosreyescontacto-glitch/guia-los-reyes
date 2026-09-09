@@ -174,7 +174,7 @@
     }
   }
 
-  /** Los días que abre, leídos del horario ya normalizado. Entiende "todos los
+  /** Los días que abre, leídos de un texto ya normalizado. Entiende "todos los
       días", los rangos ("Lun a Sáb", incluso los que dan la vuelta como "Sáb a
       Mar") y los días sueltos ("Sáb · 10:00 – 14:00"). */
   function diasDe(texto) {
@@ -199,34 +199,170 @@
     }, []);
   }
 
-  const HORAS = /(\d{1,2}):(\d{2})\s*[–—-]\s*(\d{1,2}):(\d{2})/;
+  const HORAS = /(\d{1,2}):(\d{2})\s*[–—-]\s*(\d{1,2}):(\d{2})/g;
+
+  /** Los tramos de reloj de un texto, en minutos desde la medianoche:
+      "9:00 – 14:00, 16:30 – 20:00" da [[540, 840], [990, 1200]]. */
+  function tramosDe(texto) {
+    const tramos = [];
+    let hallazgo;
+    HORAS.lastIndex = 0;
+    while ((hallazgo = HORAS.exec(texto))) {
+      tramos.push([
+        Number(hallazgo[1]) * 60 + Number(hallazgo[2]),
+        Number(hallazgo[3]) * 60 + Number(hallazgo[4])
+      ]);
+    }
+    return tramos;
+  }
+
+  const TODA_LA_SEMANA = [0, 1, 2, 3, 4, 5, 6];
+  const DIA_ENTERO = [[0, 1440]];
+
+  /** El horario del negocio, venga como venga, convertido a una sola forma:
+      [{ dias: [1,2,3,4,5], tramos: [[540,840],[990,1200]] }, …]
+
+      `horario` se puede escribir de dos maneras. La sencilla, un renglón, para
+      el negocio que abre y cierra una vez al día:
+
+          horario: 'Lun a Sáb · 9:00 – 20:00'
+
+      y la de jornada partida, un renglón por grupo de días, para el que cierra
+      a comer o el que el sábado trabaja distinto:
+
+          horario: { 'Lun a Vie': '9:00 – 14:00, 16:30 – 20:00',
+                     'Sáb':       '9:00 – 15:00' }
+
+      Las dos acaban aquí en la misma lista, así que las fichas viejas siguen
+      valiendo tal como están. Lista vacía quiere decir que no hay horas de
+      abrir: ese trabaja por cita. */
+  function jornadas(neg) {
+    const crudo = neg.horario;
+    const renglones = (crudo && typeof crudo === 'object')
+      ? Object.keys(crudo).map(dias => dias + ' ' + crudo[dias])
+      : [String(crudo || '')];
+
+    return renglones.reduce((lista, renglon) => {
+      const texto = norm(renglon);
+      const abiertoSiempre = texto.includes('24 horas') || texto.includes('todo el dia');
+      const dias = diasDe(texto);
+      /* "Abierto 24 horas" no nombra ningún día porque son todos. */
+      const cuando = dias.length ? dias : (abiertoSiempre ? TODA_LA_SEMANA : []);
+      const tramos = abiertoSiempre ? DIA_ENTERO : tramosDe(texto);
+      /* Un día sin horas —"Dom: Cerrado"— simplemente no entra. */
+      if (cuando.length && tramos.length) lista.push({ dias: cuando, tramos: tramos });
+      return lista;
+    }, []);
+  }
 
   /** 'abierto', 'cerrado' o 'cita' para los que trabajan por cita y no tienen
       una hora de abrir: de esos no se puede decir ni una cosa ni la otra. */
   function estado(neg) {
-    const texto = norm(neg.horario || '');
-    if (!texto) return 'cita';
-    if (texto.includes('24 horas') || texto.includes('todo el dia')) return 'abierto';
+    const lista = jornadas(neg);
+    if (!lista.length) return 'cita';    // "Con cita previa", "Visitas con cita"
 
-    const horas = texto.match(HORAS);
-    if (!horas) return 'cita';           // "Con cita previa", "Visitas con cita"
+    const hoy  = reloj();
+    const ayer = (hoy.dia + 6) % 7;
 
-    const dias = diasDe(texto);
-    if (!dias.length) return 'cita';
+    const dentro = lista.some(j => j.tramos.some((tramo) => {
+      const abre = tramo[0], cierra = tramo[1];
+      /* Tramo que cruza la medianoche, como el 19:00 – 2:00 de un bar: a la
+         una de la mañana el negocio sigue en la jornada del día anterior. */
+      if (cierra <= abre) {
+        return (j.dias.includes(hoy.dia) && hoy.minuto >= abre) ||
+               (j.dias.includes(ayer) && hoy.minuto < cierra);
+      }
+      return j.dias.includes(hoy.dia) && hoy.minuto >= abre && hoy.minuto < cierra;
+    }));
+    return dentro ? 'abierto' : 'cerrado';
+  }
 
-    const abre   = Number(horas[1]) * 60 + Number(horas[2]);
-    const cierra = Number(horas[3]) * 60 + Number(horas[4]);
-    const hoy    = reloj();
+  const hhmm = (min) => Math.floor(min / 60) + ':' + String(min % 60).padStart(2, '0');
+  const tramoTexto = (t) =>
+    (t[0] === 0 && t[1] === 1440) ? '24 horas' : hhmm(t[0]) + ' – ' + hhmm(t[1]);
 
-    /* Horario que cruza la medianoche, como el 19:00 – 2:00 de un bar: a la una
-       de la mañana el negocio sigue en la jornada del día anterior. */
-    if (cierra <= abre) {
-      if (dias.includes(hoy.dia) && hoy.minuto >= abre) return 'abierto';
-      const ayer = (hoy.dia + 6) % 7;
-      return (dias.includes(ayer) && hoy.minuto < cierra) ? 'abierto' : 'cerrado';
+  /** Los tramos de un día, juntos y en orden. */
+  const tramosDelDia = (lista, dia) => lista
+    .filter(j => j.dias.includes(dia))
+    .reduce((t, j) => t.concat(j.tramos), [])
+    .sort((a, b) => a[0] - b[0]);
+
+  /** El renglón que se ve sin abrir nada: lo de hoy y nada más, que es lo
+      único que quiere saber quien está decidiendo si sale de su casa. */
+  function horarioHoy(neg) {
+    const lista = jornadas(neg);
+    /* Sin horas, el texto original ya lo dice mejor: "Con cita previa". */
+    if (!lista.length) {
+      return typeof neg.horario === 'string' ? neg.horario : 'Consultar horario';
     }
-    return (dias.includes(hoy.dia) && hoy.minuto >= abre && hoy.minuto < cierra)
-      ? 'abierto' : 'cerrado';
+
+    const tramos = tramosDelDia(lista, reloj().dia);
+    if (!tramos.length) return 'Hoy cerrado';
+    if (tramos.length === 1 && tramos[0][0] === 0 && tramos[0][1] === 1440) {
+      return 'Abierto 24 horas';
+    }
+    /* "A, B y C", no "A y B y C": es un renglón que se lee, no una lista. */
+    const partes = tramos.map(tramoTexto);
+    const ultimo = partes.pop();
+    return 'Hoy ' + (partes.length ? partes.join(', ') + ' y ' + ultimo : ultimo);
+  }
+
+  const DIA_NOMBRE = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  /* La semana empieza en lunes, como en el letrero de cualquier negocio. */
+  const SEMANA_LUNES = [1, 2, 3, 4, 5, 6, 0];
+
+  /** La semana completa, un renglón por horario. Los días seguidos que abren
+      igual se juntan —"Lun a Vie"— porque así es como lo escribiría cualquiera
+      a mano, y porque siete renglones para decir tres cosas se leen peor. */
+  function horarioSemana(neg) {
+    const lista = jornadas(neg);
+    if (!lista.length) return [];
+
+    const dia = reloj().dia;
+    const filas = [];
+    SEMANA_LUNES.forEach((d) => {
+      const tramos = tramosDelDia(lista, d);
+      const texto = tramos.length ? tramos.map(tramoTexto).join(', ') : 'Cerrado';
+      const ultima = filas[filas.length - 1];
+      if (ultima && ultima.texto === texto) {
+        ultima.hasta = d;
+        ultima.hoy = ultima.hoy || d === dia;
+      } else {
+        filas.push({ desde: d, hasta: d, texto: texto, hoy: d === dia });
+      }
+    });
+
+    return filas.map(f => ({
+      dias: f.desde === f.hasta
+        ? DIA_NOMBRE[f.desde]
+        : DIA_NOMBRE[f.desde] + ' a ' + DIA_NOMBRE[f.hasta],
+      texto: f.texto,
+      hoy: f.hoy
+    }));
+  }
+
+  /** El horario en la ficha: lo de hoy a la vista y la semana detrás de un
+      "Ver horario". Casi nadie necesita la semana entera —quiere saber si
+      puede ir ahora—, pero el que la necesita no tiene dónde más consultarla,
+      y desplegada de raíz le robaría media tarjeta a la descripción. Cuando el
+      negocio abre siempre igual no hay nada que desplegar. */
+  function bloqueHorario(neg) {
+    const hoy = `${icon(ICONS.clock)} ${esc(horarioHoy(neg))}`;
+    const semana = horarioSemana(neg);
+    if (semana.length < 2) return `<p class="card__line">${hoy}</p>`;
+
+    const filas = semana.map(f =>
+      `<tr${f.hoy ? ' class="es-hoy"' : ''}>` +
+      `<th scope="row">${esc(f.dias)}</th><td>${esc(f.texto)}</td></tr>`).join('');
+
+    return `
+      <details class="horario">
+        <summary class="horario__hoy">
+          ${hoy}
+          <span class="horario__ver">Ver horario</span>
+        </summary>
+        <table class="horario__semana">${filas}</table>
+      </details>`;
   }
 
   /* Cómo se ve cada estado. El sello corto es para el renglón de las fichas
@@ -355,7 +491,7 @@
           <p class="fila__meta">
             <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener"
                title="Cómo llegar a ${esc(neg.nombre)}">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
-            <span class="fila__horario">${icon(ICONS.clock)} ${esc(neg.horario)}</span>
+            <span class="fila__horario">${icon(ICONS.clock)} ${esc(horarioHoy(neg))}</span>
           </p>
         </div>
 
@@ -411,7 +547,7 @@
 
           <ul class="tags">${tags}</ul>
 
-          <p class="card__line">${icon(ICONS.clock)} ${esc(neg.horario)}</p>
+          ${bloqueHorario(neg)}
 
           <div class="card__actions">${botonesContacto(neg)}</div>
         </div>
