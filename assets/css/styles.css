@@ -560,9 +560,10 @@ button { font: inherit; color: inherit; }
 
 /* La pista es la ventana por la que pasa el desfile, y mide exactamente lo
    mismo que la caja de contenido: empieza y termina donde el título de la
-   sección y la cuadrícula de categorías. El corte es limpio contra ese borde
-   —sin degradados ni velos— para que las tarjetas se vean nítidas de lado a
-   lado. */
+   sección y la cuadrícula de categorías. En los costados los banners se
+   desvanecen en vez de cortarse en seco: así entran y salen del desfile sin
+   que se vea el filo de la ventana, y el marco ámbar no aparece de golpe a
+   media tarjeta. */
 .dest__pista {
   position: relative;
   overflow: hidden;
@@ -571,7 +572,15 @@ button { font: inherit; color: inherit; }
      de la página, si no el usuario quedaría atorado al querer bajar. */
   touch-action: pan-y;
   cursor: grab;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px,
+                                      #000 calc(100% - 24px), transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 24px,
+                                      #000 calc(100% - 24px), transparent);
 }
+/* Con animaciones reducidas el carrusel no arranca solo; queda quieto en la
+   primera tarjeta hasta que el usuario lo mueva. Y sin movimiento el
+   desvanecido de la izquierda parecería un defecto, así que ahí se apaga. */
+.dest__pista.is-manual { -webkit-mask-image: none; mask-image: none; }
 .dest__pista.is-agarrada { cursor: grabbing; }
 /* Los enlaces traen su propio cursor de mano; la manita de arrastrar es para
    los huecos entre tarjetas. */
