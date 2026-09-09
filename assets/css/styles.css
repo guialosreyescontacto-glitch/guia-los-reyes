@@ -20,6 +20,7 @@
   --accent-soft:   #e6f2f0;
   --gold:          #b45309;   /* ámbar para destacados */
   --gold-soft:     #fdf3e3;
+  --abierto:       #15803d;   /* verde del aviso de abierto */
   --wa:            #25d366;
   --wa-ink:        #128c3f;
 
@@ -58,6 +59,7 @@
   --d-accent:      #2dd4bf;   /* verde brillante para botones y enlaces */
   --d-accent-ink:  #5eead4;
   --d-accent-soft: #14312e;
+  --d-abierto:     #4ade80;
   --d-gold:        #fbbf24;
   --d-gold-soft:   #332711;
   --d-brand-web:   #60a5fa;   /* los azules y el rosa se aclaran para que */
@@ -83,6 +85,7 @@
     --gold: var(--d-gold);             --gold-soft: var(--d-gold-soft);
     --brand-web: var(--d-brand-web);   --brand-fb: var(--d-brand-fb);
     --brand-ig: var(--d-brand-ig); --brand-mail: var(--d-brand-mail);
+    --abierto: var(--d-abierto);
     --shadow-sm: var(--d-shadow-sm);   --shadow-md: var(--d-shadow-md);
     --shadow-lg: var(--d-shadow-lg);
   }
@@ -100,6 +103,7 @@
   --gold: var(--d-gold);             --gold-soft: var(--d-gold-soft);
   --brand-web: var(--d-brand-web);   --brand-fb: var(--d-brand-fb);
   --brand-ig: var(--d-brand-ig); --brand-mail: var(--d-brand-mail);
+  --abierto: var(--d-abierto);
   --shadow-sm: var(--d-shadow-sm);   --shadow-md: var(--d-shadow-md);
   --shadow-lg: var(--d-shadow-lg);
 }
@@ -865,8 +869,62 @@ button { font: inherit; color: inherit; }
   *, *::before, *::after { transition-duration: .01ms !important; }
 }
 
+/* La ficha gratuita: un renglón, no una tarjeta. Ocupa el ancho completo de la
+   retícula —abajo de las que pagan, que es donde las deja el orden— y mide lo
+   que mide su contenido: nombre, dónde está, a qué hora abre y el botón de
+   llamar. En un teléfono caben diez donde antes cabía una tarjeta. */
+.card--fila {
+  grid-column: 1 / -1;
+  flex-direction: row; align-items: center; gap: 12px;
+  padding: 10px 12px;
+}
+.fila__sello {
+  flex: none; width: 44px; height: 44px; border-radius: 11px;
+  background: var(--banner, var(--surface-2));
+  display: grid; place-items: center; position: relative; overflow: hidden;
+}
+.fila__ini {
+  position: relative; z-index: 1;
+  font-size: 13px; font-weight: 700; letter-spacing: -.03em;
+  color: rgba(255,255,255,.95);
+}
+.fila__glifo {
+  position: absolute; right: -7px; bottom: -8px; width: 30px; height: 30px;
+  color: rgba(255,255,255,.18);
+}
+.fila__texto { flex: 1 1 auto; min-width: 0; }
+.fila__nombre {
+  margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -.01em;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.fila__estado {
+  font-size: 10.5px; font-weight: 600; letter-spacing: .02em;
+  padding: 2px 7px; border-radius: 999px; white-space: nowrap;
+}
+.fila__estado--abierto { background: color-mix(in srgb, var(--abierto) 15%, transparent); color: var(--abierto); }
+.fila__estado--cerrado { background: var(--surface-2); color: var(--ink-3); }
+/* La zona y el horario van uno al lado del otro y bajan de renglón si no
+   caben. Sin punto separador a propósito: al envolverse quedaría colgando al
+   principio de la segunda línea. */
+.fila__meta {
+  margin: 2px 0 0; font-size: 12.5px; color: var(--ink-3);
+  display: flex; align-items: center; gap: 2px 14px; flex-wrap: wrap;
+}
+.fila__meta svg { width: 13px; height: 13px; }
+.fila__horario { display: inline-flex; align-items: center; gap: 4px; }
+/* Un solo botón: no necesita el aire que separa a los siete de una ficha de
+   pago, ni el borde de arriba que los despega del cuerpo de la tarjeta. */
+.fila__accion { flex: none; margin: 0; padding: 0; border: 0; }
+
+/* En el teléfono la columna del texto es angosta: el sello y el relleno ceden
+   unos píxeles para que el nombre y la zona quepan en menos renglones. */
+@media (max-width: 559.98px) {
+  .card--fila { padding: 9px 10px; gap: 10px; }
+  .fila__sello { width: 40px; height: 40px; border-radius: 10px; }
+}
+
 /* Anillos por plan: dorado para el destacado, del color de acento para el
-   premium. Los básicos se quedan con el borde neutro de `.card`. */
+   premium. Las fichas completas se quedan con el borde neutro de `.card`. */
 .card--featured {
   border-color: color-mix(in srgb, var(--gold) 38%, var(--line));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 18%, transparent), var(--shadow-md);

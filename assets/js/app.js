@@ -183,25 +183,57 @@
       </li>`;
   }
 
+  /* La ficha gratuita no es una tarjeta chica: es un renglón. Con foto,
+     descripción y etiquetas de por medio, una tarjeta con la mitad del
+     contenido sigue ocupando el ancho entero de un teléfono y se lee como si
+     valiera lo mismo que la de al lado. Como renglón dice lo que es —un
+     nombre, dónde está, a qué hora abre y su teléfono—, cabe diez veces en la
+     misma pantalla y deja la diferencia a la vista sin decir nada. */
+  function filaNegocio(neg, idx) {
+    const [c1, c2] = neg.cat.banner;
+    return `
+      <article class="card card--fila" data-neg="${seña(neg)}"
+               style="animation-delay:${Math.min(idx, 8) * 35}ms">
+
+        <span class="fila__sello" style="--banner:linear-gradient(135deg, ${c1}, ${c2})" aria-hidden="true">
+          <span class="fila__ini">${esc(iniciales(neg.nombre))}</span>
+          <span class="fila__glifo">${icon(neg.cat.icono)}</span>
+        </span>
+
+        <div class="fila__texto">
+          <h3 class="fila__nombre">
+            ${esc(neg.nombre)}
+            <span class="fila__estado fila__estado--${neg.abierto ? 'abierto' : 'cerrado'}">
+              ${neg.abierto ? 'Abierto' : 'Cerrado'}
+            </span>
+          </h3>
+          <p class="fila__meta">
+            <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener"
+               title="Cómo llegar a ${esc(neg.nombre)}">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
+            <span class="fila__horario">${icon(ICONS.clock)} ${esc(neg.horario)}</span>
+          </p>
+        </div>
+
+        <div class="card__actions fila__accion">${botonesContacto(neg)}</div>
+      </article>`;
+  }
+
   function tarjetaNegocio(neg, idx) {
-    const cat   = neg.cat;
-    const vip   = esPremium(neg);
-    const dest  = esDestacado(neg);
-    const magra = esBasica(neg);
+    if (esBasica(neg)) return filaNegocio(neg, idx);
+
+    const cat  = neg.cat;
+    const vip  = esPremium(neg);
+    const dest = esDestacado(neg);
     /* El anillo de la tarjeta y el badge del plan comparten variante. */
     const variante = vip ? 'vip' : (dest ? 'featured' : 'basic');
     const [c1, c2] = cat.banner;
     const tags = (neg.tags || []).slice(0, 4)
       .map(t => `<li class="tag">${esc(t)}</li>`).join('');
 
-    /* La ficha gratuita enseña lo indispensable: quién es, dónde está, a qué
-       hora abre y su teléfono. La descripción, las etiquetas, la calificación
-       y el resto de los botones son de la ficha completa en adelante, así que
-       aquí ni siquiera se pintan. El sello del plan sólo lo llevan los dos de
-       pago que compran posición; en la completa la diferencia se ve sola, en
-       todo lo que la básica no trae. */
+    /* El sello del plan sólo lo llevan los dos que compran posición; la ficha
+       completa se distingue sola, por todo lo que la gratuita no trae. */
     return `
-      <article class="card card--${variante}${magra ? ' card--magra' : ''}" data-neg="${seña(neg)}"
+      <article class="card card--${variante}" data-neg="${seña(neg)}"
                style="animation-delay:${Math.min(idx, 8) * 35}ms">
 
         <div class="card__banner" style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
@@ -223,15 +255,15 @@
           <h3 class="card__title">${esc(neg.nombre)}</h3>
 
           <p class="card__line">
-            ${magra ? '' : `<span class="card__rating">${icon(ICONS.star)}${neg.rating.toFixed(1)}</span>
-            <span class="card__sep">·</span>`}
+            <span class="card__rating">${icon(ICONS.star)}${neg.rating.toFixed(1)}</span>
+            <span class="card__sep">·</span>
             <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener"
                title="Cómo llegar en Google Maps">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
           </p>
 
-          ${magra ? '' : `<p class="card__desc">${esc(neg.desc)}</p>
+          <p class="card__desc">${esc(neg.desc)}</p>
 
-          <ul class="tags">${tags}</ul>`}
+          <ul class="tags">${tags}</ul>
 
           <p class="card__line">${icon(ICONS.clock)} ${esc(neg.horario)}</p>
 
