@@ -125,9 +125,13 @@
     return botones.join('');
   }
 
-  /* Índice plano de negocios, con su categoría asociada */
+  /* Índice plano de negocios, con su categoría asociada y su número de la
+     suerte: el sorteo que decide su lugar dentro de su plan. Se reparte una
+     sola vez por carga, no en cada pintada, para que el orden aguante mientras
+     el usuario filtra, entra a una ficha y regresa; con la página recargada se
+     vuelve a sortear y les toca a otros ir primero. */
   const TODOS = CATEGORIAS.flatMap(cat =>
-    cat.negocios.map(n => Object.assign({}, n, { cat: cat }))
+    cat.negocios.map(n => Object.assign({}, n, { cat: cat, suerte: Math.random() }))
   );
 
   /* Jerarquía de planes. El número es la posición en el listado: cuanto más
@@ -142,10 +146,17 @@
      lo que se compra al pasar a la ficha completa. */
   const esBasica    = (n) => rango(n) === RANGO.basico;
 
-  /** Por plan y, dentro de cada plan, por calificación. */
+  /** Por plan y, dentro de cada plan, al azar.
+
+      El plan es lo único que compra posición; entre los que pagan lo mismo no
+      hay razón para que siempre sean los mismos los de arriba. Antes mandaba la
+      calificación, que además de estar inventada dejaba el orden clavado para
+      siempre. Con el sorteo, a lo largo de los días todos los de un plan pasan
+      por los primeros lugares de su categoría, de su especialidad y de las
+      búsquedas. Vale para todos los planes, incluidas las fichas gratuitas. */
   const ordenar = (lista) => lista.slice().sort((a, b) => {
     if (rango(a) !== rango(b)) return rango(a) - rango(b);
-    return (b.rating || 0) - (a.rating || 0);
+    return a.suerte - b.suerte;
   });
 
 
@@ -349,9 +360,19 @@
      El recorrido entre páginas sigue siendo horizontal. */
   const vipPorPagina = () => (window.innerWidth >= 768 ? 2 : 1);
 
+  /* Cuántos Premium caben en el banner de la portada. La portada es finita: con
+     un cambio cada 4 segundos y uno por pantalla en el teléfono, arriba de ocho
+     la vuelta completa dura más que una visita entera y a los últimos no los ve
+     nadie —cobrarle a alguien por un lugar que no se ve es como se pierde un
+     cliente—. Mientras haya ocho o menos salen todos siempre; pasando de ahí se
+     sortean en cada carga, igual que el carrusel de destacados, para que la
+     rotación sea pareja y nadie quede siempre fuera. El lugar que de verdad
+     compra el Premium —el primero de su especialidad— no depende de esto. */
+  const VIP_MAX = 8;
+
   function renderVip() {
     const caja = $('#vipBanner');
-    const vips = ordenar(TODOS.filter(esPremium));
+    const vips = alAzar(TODOS.filter(esPremium), VIP_MAX);
     caja.hidden = vips.length === 0;
     if (caja.hidden) return;
 
@@ -911,13 +932,13 @@
       <button class="chip" type="button" role="tab" data-filtro="${f.id}"
               aria-selected="${f.id === filtro}">${esc(f.label)}</button>`).join('');
 
-    /* Lista de negocios */
-    const lista = filtro === 'todos'
-      ? cat.negocios
-      : cat.negocios.filter(n => n.filtro === filtro);
-
-    const conCat = lista.map(n => Object.assign({}, n, { cat: cat }));
-    pintarLista($('#businessList'), conCat, negocio);
+    /* Lista de negocios. Sale del índice y no de `cat.negocios` para que sean
+       los mismos objetos que usa el resto del sitio: los del catálogo vienen
+       pelones, sin la categoría y sin el número de la suerte que decide el
+       orden dentro de cada plan. */
+    const lista = TODOS.filter(n =>
+      n.cat === cat && (filtro === 'todos' || n.filtro === filtro));
+    pintarLista($('#businessList'), lista, negocio);
 
     $('#resultCount').textContent = filtro === 'todos'
       ? 'Todos los negocios de la categoría'
