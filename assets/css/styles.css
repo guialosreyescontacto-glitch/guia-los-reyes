@@ -902,6 +902,7 @@ button { font: inherit; color: inherit; }
   padding: 2px 7px; border-radius: 999px; white-space: nowrap;
 }
 .fila__estado--abierto { background: color-mix(in srgb, var(--abierto) 15%, transparent); color: var(--abierto); }
+.fila__estado--cita    { background: color-mix(in srgb, var(--brand-web) 14%, transparent); color: var(--brand-web); }
 .fila__estado--cerrado { background: var(--surface-2); color: var(--ink-3); }
 /* La zona y el horario van uno al lado del otro y bajan de renglón si no
    caben. Sin punto separador a propósito: al envolverse quedaría colgando al
@@ -1033,9 +1034,13 @@ button { font: inherit; color: inherit; }
 }
 :root[data-theme="dark"] .badge--vip { color: #06302c; }
 /* Ya no hay sello de plan para las fichas que no compran posición: sólo los
-   Premium y los Destacados llevan el suyo. */
-.badge--open   { background: rgba(22,163,74,.92);  color: #fff; }
-.badge--closed { background: rgba(0,0,0,.55);      color: #fff; }
+   Premium y los Destacados llevan el suyo. El de abierto o cerrado sí lo lleva
+   cualquiera, y sale de la hora, no de un dato escrito a mano. */
+.badge--abierto { background: rgba(22,163,74,.92); color: #fff; }
+.badge--cerrado { background: rgba(0,0,0,.55);     color: #fff; }
+/* Los que trabajan por cita no están abiertos ni cerrados: decir cualquiera de
+   las dos cosas sería mentir, así que llevan su propio sello. */
+.badge--cita    { background: rgba(30,64,175,.88); color: #fff; }
 
 /* --- Cuerpo --- */
 .card__body { display: flex; flex-direction: column; gap: 9px; padding: 14px 15px 15px; flex: 1; }

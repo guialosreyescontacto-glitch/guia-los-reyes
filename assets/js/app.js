@@ -134,6 +134,117 @@
     cat.negocios.map(n => Object.assign({}, n, { cat: cat, suerte: Math.random() }))
   );
 
+  /* ------------------------------------------- ¿Está abierto en este momento?
+
+     El estado no se escribe en `data.js`: se saca del horario cada vez que se
+     pinta. Un dato escrito a mano quedaría mintiendo a los diez minutos, y
+     nadie va a estar editando sesenta fichas dos veces al día. */
+
+  /* El reloj de Los Reyes, no el del visitante: media comunidad tiene familia
+     del otro lado, y quien abra la guía desde allá trae el teléfono en otra
+     hora. Sin fijar la zona vería cerrada una tienda que está abierta. */
+  const ZONA = 'America/Mexico_City';
+  const SEMANA  = ['dom', 'lun', 'mar', 'mie', 'jue', 'vie', 'sab'];
+  const SEMANA_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  /* El mismo orden que SEMANA, para los horarios de un día solo. El límite de
+     palabra evita que "sab" se cuele dentro de otra palabra. */
+  const SEMANA_RE = [/\bdom/, /\blun/, /\bmar/, /\bmie/, /\bjue/, /\bvie/, /\bsab/];
+
+  /* Construir el formateador es la parte costosa, así que se hace una vez y se
+     reusa; leer la hora con él es barato. */
+  let formatoHora = null;
+
+  /** Día de la semana (0 = domingo) y minutos transcurridos del día, en la hora
+      de Los Reyes. Si el navegador no conoce la zona, usa la del aparato. */
+  function reloj() {
+    try {
+      if (!formatoHora) formatoHora = new Intl.DateTimeFormat('en-US', {
+        timeZone: ZONA, hour12: false,
+        weekday: 'short', hour: '2-digit', minute: '2-digit'
+      });
+      const partes = formatoHora.formatToParts(new Date());
+      const dato = (tipo) => (partes.find(p => p.type === tipo) || {}).value || '';
+      const dia = SEMANA_EN.indexOf(dato('weekday'));
+      if (dia < 0) throw new Error('sin día');
+      /* A la medianoche algunos navegadores dicen 24 en vez de 0. */
+      return { dia: dia, minuto: (Number(dato('hour')) % 24) * 60 + Number(dato('minute')) };
+    } catch (_) {
+      const d = new Date();
+      return { dia: d.getDay(), minuto: d.getHours() * 60 + d.getMinutes() };
+    }
+  }
+
+  /** Los días que abre, leídos del horario ya normalizado. Entiende "todos los
+      días", los rangos ("Lun a Sáb", incluso los que dan la vuelta como "Sáb a
+      Mar") y los días sueltos ("Sáb · 10:00 – 14:00"). */
+  function diasDe(texto) {
+    if (texto.includes('todos los dias')) return [0, 1, 2, 3, 4, 5, 6];
+
+    const tramo = texto.match(/(dom|lun|mar|mie|jue|vie|sab)\w*\s+a\s+(dom|lun|mar|mie|jue|vie|sab)/);
+    if (tramo) {
+      const fin = SEMANA.indexOf(tramo[2]);
+      const dias = [];
+      let d = SEMANA.indexOf(tramo[1]);
+      for (let vuelta = 0; vuelta < 7; vuelta++) {
+        dias.push(d);
+        if (d === fin) break;
+        d = (d + 1) % 7;
+      }
+      return dias;
+    }
+
+    return SEMANA_RE.reduce((dias, patron, i) => {
+      if (patron.test(texto)) dias.push(i);
+      return dias;
+    }, []);
+  }
+
+  const HORAS = /(\d{1,2}):(\d{2})\s*[–—-]\s*(\d{1,2}):(\d{2})/;
+
+  /** 'abierto', 'cerrado' o 'cita' para los que trabajan por cita y no tienen
+      una hora de abrir: de esos no se puede decir ni una cosa ni la otra. */
+  function estado(neg) {
+    const texto = norm(neg.horario || '');
+    if (!texto) return 'cita';
+    if (texto.includes('24 horas') || texto.includes('todo el dia')) return 'abierto';
+
+    const horas = texto.match(HORAS);
+    if (!horas) return 'cita';           // "Con cita previa", "Visitas con cita"
+
+    const dias = diasDe(texto);
+    if (!dias.length) return 'cita';
+
+    const abre   = Number(horas[1]) * 60 + Number(horas[2]);
+    const cierra = Number(horas[3]) * 60 + Number(horas[4]);
+    const hoy    = reloj();
+
+    /* Horario que cruza la medianoche, como el 19:00 – 2:00 de un bar: a la una
+       de la mañana el negocio sigue en la jornada del día anterior. */
+    if (cierra <= abre) {
+      if (dias.includes(hoy.dia) && hoy.minuto >= abre) return 'abierto';
+      const ayer = (hoy.dia + 6) % 7;
+      return (dias.includes(ayer) && hoy.minuto < cierra) ? 'abierto' : 'cerrado';
+    }
+    return (dias.includes(hoy.dia) && hoy.minuto >= abre && hoy.minuto < cierra)
+      ? 'abierto' : 'cerrado';
+  }
+
+  /* Cómo se ve cada estado. El sello corto es para el renglón de las fichas
+     gratuitas, donde no cabe más. */
+  const ESTADOS = {
+    abierto: { corto: 'Abierto',  largo: 'Abierto ahora' },
+    cita:    { corto: 'Con cita', largo: 'Con cita' },
+    cerrado: { corto: 'Cerrado',  largo: 'Cerrado' }
+  };
+
+  /* Turno: el desempate que va después del plan. Primero los que están
+     abiertos, porque es a los que el vecino les puede marcar ahora mismo;
+     luego los de cita, que nunca están cerrados del todo; al final los
+     cerrados. Nadie cambia de plan por esto: un Premium cerrado sigue arriba
+     de un destacado abierto, lo que se mueve es el orden entre iguales. */
+  const TURNO = { abierto: 0, cita: 1, cerrado: 2 };
+  const turno = (n) => TURNO[estado(n)];
+
   /* Jerarquía de planes. El número es la posición en el listado: cuanto más
      chico, más arriba. Un plan desconocido cae al fondo, con los básicos. */
   const RANGO = { premium: 0, destacado: 1, completa: 2, basico: 3 };
@@ -146,18 +257,28 @@
      lo que se compra al pasar a la ficha completa. */
   const esBasica    = (n) => rango(n) === RANGO.basico;
 
-  /** Por plan y, dentro de cada plan, al azar.
+  /** Por plan; dentro del plan, los abiertos primero; entre iguales, al azar.
 
       El plan es lo único que compra posición; entre los que pagan lo mismo no
       hay razón para que siempre sean los mismos los de arriba. Antes mandaba la
       calificación, que además de estar inventada dejaba el orden clavado para
       siempre. Con el sorteo, a lo largo de los días todos los de un plan pasan
       por los primeros lugares de su categoría, de su especialidad y de las
-      búsquedas. Vale para todos los planes, incluidas las fichas gratuitas. */
-  const ordenar = (lista) => lista.slice().sort((a, b) => {
-    if (rango(a) !== rango(b)) return rango(a) - rango(b);
-    return a.suerte - b.suerte;
-  });
+      búsquedas. Vale para todos los planes, incluidas las fichas gratuitas.
+
+      Entre los del mismo plan se cuela un desempate antes del sorteo: los que
+      están abiertos a esta hora van primero. A quien busca una tortillería a
+      las siete de la mañana no le sirve la mejor tortillería del pueblo si
+      abre a las diez. El plan sigue mandando —esto sólo mueve el orden dentro
+      de cada grupo—, así que nadie pierde el lugar que pagó.
+
+      El turno se calcula una sola vez por negocio, no dentro del comparador,
+      que se llama cientos de veces por lista. */
+  const ordenar = (lista) => lista
+    .map(n => ({ neg: n, plan: rango(n), turno: turno(n) }))
+    .sort((a, b) => (a.plan - b.plan) || (a.turno - b.turno) ||
+                    (a.neg.suerte - b.neg.suerte))
+    .map(x => x.neg);
 
 
   /** Copia barajada (Fisher-Yates); la lista original no se toca. */
@@ -174,6 +295,18 @@
      reparte parejo: en cada carga todos los negocios del plan tienen la misma
      probabilidad de salir, y ninguno queda siempre fuera por su orden. */
   const alAzar = (lista, n) => barajar(lista).slice(0, n);
+
+  /* Lo mismo, pero abriéndoles paso a los que están abiertos: se baraja cada
+     turno por separado y se pegan en orden, así que los primeros banners del
+     carrusel son negocios a los que se les puede marcar ahora mismo. Los
+     cerrados no desaparecen, quedan detrás; sólo si hay más negocios que
+     lugares en el carrusel se queda alguno fuera, y a esa hora el que se va es
+     el que de todos modos tiene la cortina abajo. */
+  const alAzarAbiertos = (lista, n) => {
+    const turnos = [[], [], []];
+    lista.forEach(neg => turnos[turno(neg)].push(neg));
+    return turnos.reduce((todos, grupo) => todos.concat(barajar(grupo)), []).slice(0, n);
+  };
 
   /* ---------------------------------------------------- Plantillas (HTML) */
 
@@ -202,6 +335,7 @@
      misma pantalla y deja la diferencia a la vista sin decir nada. */
   function filaNegocio(neg, idx) {
     const [c1, c2] = neg.cat.banner;
+    const ahora = estado(neg);
     return `
       <article class="card card--fila" data-neg="${seña(neg)}"
                style="animation-delay:${Math.min(idx, 8) * 35}ms">
@@ -214,8 +348,8 @@
         <div class="fila__texto">
           <h3 class="fila__nombre">
             ${esc(neg.nombre)}
-            <span class="fila__estado fila__estado--${neg.abierto ? 'abierto' : 'cerrado'}">
-              ${neg.abierto ? 'Abierto' : 'Cerrado'}
+            <span class="fila__estado fila__estado--${ahora}">
+              ${ESTADOS[ahora].corto}
             </span>
           </h3>
           <p class="fila__meta">
@@ -238,6 +372,7 @@
     /* El anillo de la tarjeta y el badge del plan comparten variante. */
     const variante = vip ? 'vip' : (dest ? 'featured' : 'basic');
     const [c1, c2] = cat.banner;
+    const ahora = estado(neg);
     const tags = (neg.tags || []).slice(0, 4)
       .map(t => `<li class="tag">${esc(t)}</li>`).join('');
 
@@ -256,8 +391,8 @@
               : dest
               ? `<span class="badge badge--featured">${icon(ICONS.star)} Destacado</span>`
               : ''}
-            <span class="badge ${neg.abierto ? 'badge--open' : 'badge--closed'}">
-              ${neg.abierto ? 'Abierto ahora' : 'Cerrado'}
+            <span class="badge badge--${ahora}">
+              ${ESTADOS[ahora].largo}
             </span>
           </div>
         </div>
@@ -372,7 +507,7 @@
 
   function renderVip() {
     const caja = $('#vipBanner');
-    const vips = alAzar(TODOS.filter(esPremium), VIP_MAX);
+    const vips = alAzarAbiertos(TODOS.filter(esPremium), VIP_MAX);
     caja.hidden = vips.length === 0;
     if (caja.hidden) return;
 
@@ -641,7 +776,7 @@
 
   function renderDestacados() {
     const caja  = $('#destBanner');
-    const lista = alAzar(TODOS.filter(esDestacado), DEST_MAX);
+    const lista = alAzarAbiertos(TODOS.filter(esDestacado), DEST_MAX);
     caja.hidden = lista.length === 0;
     if (caja.hidden) return;
 
