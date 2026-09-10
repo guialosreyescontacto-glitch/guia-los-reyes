@@ -883,14 +883,13 @@ button { font: inherit; color: inherit; }
   background: var(--banner, var(--surface-2));
   display: grid; place-items: center; position: relative; overflow: hidden;
 }
-.fila__ini {
-  position: relative; z-index: 1;
-  font-size: 13px; font-weight: 700; letter-spacing: -.03em;
-  color: rgba(255,255,255,.95);
-}
+/* Sin iniciales: el icono de la categoría al centro y a plena luz. Dos letras
+   sobre un cuadro de 44px no se leen y no dicen nada —"CM" no es nadie—;
+   el icono, en cambio, dice de qué es el negocio de un vistazo, y es el mismo
+   dibujo con el que la persona acaba de entrar a la categoría. */
 .fila__glifo {
-  position: absolute; right: -7px; bottom: -8px; width: 30px; height: 30px;
-  color: rgba(255,255,255,.18);
+  width: 22px; height: 22px;
+  color: rgba(255,255,255,.95);
 }
 .fila__texto { flex: 1 1 auto; min-width: 0; }
 .fila__nombre {
@@ -922,6 +921,7 @@ button { font: inherit; color: inherit; }
 @media (max-width: 559.98px) {
   .card--fila { padding: 9px 10px; gap: 10px; }
   .fila__sello { width: 40px; height: 40px; border-radius: 10px; }
+  .fila__glifo { width: 20px; height: 20px; }
 }
 
 /* Anillos por plan: dorado para el destacado, del color de acento para el
@@ -1095,6 +1095,17 @@ button { font: inherit; color: inherit; }
 /* El día de hoy se marca: es el renglón que la persona vino a buscar. */
 .horario__semana .es-hoy th,
 .horario__semana .es-hoy td { color: var(--ink); font-weight: 650; }
+
+/* En el renglón gratuito el horario va al lado de la zona, no en su propio
+   párrafo, así que el "Ver horario" se queda en el puro triangulito: ahí no
+   hay ancho para la palabra. Cerrado no ocupa alto, o sea que el renglón mide
+   exactamente lo que medía antes. */
+.horario--fila .horario__hoy { gap: 4px; display: inline-flex; }
+.horario--fila .horario__ver { margin-left: 3px; font-size: 0; }
+.horario--fila .horario__ver::after { font-size: 10px; margin-left: 0; }
+/* Al abrirse se lleva su propio renglón para que la tabla salga a lo ancho;
+   cerrado se acomoda en la misma línea que la zona. */
+.fila__meta .horario--fila[open] { flex: 1 1 100%; margin-top: 2px; }
 
 .card__rating { display: inline-flex; align-items: center; gap: 4px; font-weight: 650; color: var(--gold); }
 .card__rating svg { width: 13px; height: 13px; }

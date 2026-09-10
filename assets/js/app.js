@@ -278,8 +278,17 @@
   }
 
   const hhmm = (min) => Math.floor(min / 60) + ':' + String(min % 60).padStart(2, '0');
-  const tramoTexto = (t) =>
-    (t[0] === 0 && t[1] === 1440) ? '24 horas' : hhmm(t[0]) + ' – ' + hhmm(t[1]);
+
+  /* La raya de un tramo, blindada contra el salto de línea. No basta con
+     espacios duros: la raya larga es, ella misma, un punto de corte válido en
+     Unicode, así que el navegador parte "16:00 – 19:00" justo después de la
+     raya y en el renglón de un teléfono angosto queda "16:00 –" arriba y
+     "19:00" abajo, que se lee como dos horas sueltas. El unidor de palabras
+     tapa ese corte. Entre un tramo y otro sí se puede partir, y ahí parte. */
+  const RAYA = '\u00a0\u2013\u2060\u00a0';   // duro + raya + unidor + duro
+  const tramoTexto = (t) => (t[0] === 0 && t[1] === 1440)
+    ? '24\u00a0horas'
+    : hhmm(t[0]) + RAYA + hhmm(t[1]);
 
   /** Los tramos de un día, juntos y en orden. */
   const tramosDelDia = (lista, dia) => lista
@@ -345,21 +354,33 @@
       "Ver horario". Casi nadie necesita la semana entera —quiere saber si
       puede ir ahora—, pero el que la necesita no tiene dónde más consultarla,
       y desplegada de raíz le robaría media tarjeta a la descripción. Cuando el
-      negocio abre siempre igual no hay nada que desplegar. */
-  function bloqueHorario(neg) {
+      negocio abre siempre igual no hay nada que desplegar.
+
+      `compacto` es la versión del renglón gratuito, donde el horario va al
+      lado de la zona y no en su propio párrafo: ahí el "Ver horario" se queda
+      en el puro triangulito, porque el renglón no da para más. Cerrado no
+      ocupa ni un pixel de alto, así que el renglón se ve igual de chico; lo
+      que compra la ficha completa sigue siendo la foto, la descripción y las
+      etiquetas, no el derecho a que le lean el horario. */
+  function bloqueHorario(neg, compacto) {
     const hoy = `${icon(ICONS.clock)} ${esc(horarioHoy(neg))}`;
     const semana = horarioSemana(neg);
-    if (semana.length < 2) return `<p class="card__line">${hoy}</p>`;
+
+    if (semana.length < 2) {
+      return compacto
+        ? `<span class="fila__horario">${hoy}</span>`
+        : `<p class="card__line">${hoy}</p>`;
+    }
 
     const filas = semana.map(f =>
       `<tr${f.hoy ? ' class="es-hoy"' : ''}>` +
       `<th scope="row">${esc(f.dias)}</th><td>${esc(f.texto)}</td></tr>`).join('');
 
     return `
-      <details class="horario">
-        <summary class="horario__hoy">
+      <details class="horario${compacto ? ' horario--fila' : ''}">
+        <summary class="horario__hoy" title="Ver el horario de la semana">
           ${hoy}
-          <span class="horario__ver">Ver horario</span>
+          <span class="horario__ver">${compacto ? '' : 'Ver horario'}</span>
         </summary>
         <table class="horario__semana">${filas}</table>
       </details>`;
@@ -477,8 +498,7 @@
                style="animation-delay:${Math.min(idx, 8) * 35}ms">
 
         <span class="fila__sello" style="--banner:linear-gradient(135deg, ${c1}, ${c2})" aria-hidden="true">
-          <span class="fila__ini">${esc(iniciales(neg.nombre))}</span>
-          <span class="fila__glifo">${icon(neg.cat.icono)}</span>
+          ${icon(neg.cat.icono, 'fila__glifo')}
         </span>
 
         <div class="fila__texto">
@@ -488,11 +508,11 @@
               ${ESTADOS[ahora].corto}
             </span>
           </h3>
-          <p class="fila__meta">
+          <div class="fila__meta">
             <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener"
                title="Cómo llegar a ${esc(neg.nombre)}">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
-            <span class="fila__horario">${icon(ICONS.clock)} ${esc(horarioHoy(neg))}</span>
-          </p>
+            ${bloqueHorario(neg, true)}
+          </div>
         </div>
 
         <div class="card__actions fila__accion">${botonesContacto(neg)}</div>
