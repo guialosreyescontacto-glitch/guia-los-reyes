@@ -914,9 +914,9 @@ button { font: inherit; color: inherit; }
   .pila .fila__rotulo {
     min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .pila .horario__semana { font-size: 11.5px; }
-  .pila .horario__semana th { padding: 2px 10px 2px 0; }
-  .pila .horario__semana td { padding: 2px 0; }
+  .pila .horario__semana { font-size: 11.5px; margin-top: 5px; }
+  .pila .horario__semana th { padding: 1px 10px 1px 0; }
+  .pila .horario__semana td { padding: 1px 0; }
 }
 /* El filo sólo cuando hay tarjetas arriba de qué separarse. */
 .card + .filas { margin-top: 6px; padding-top: 16px; border-top: 1px solid var(--line); }
@@ -1009,6 +1009,18 @@ button { font: inherit; color: inherit; }
 /* Un solo botón: no necesita el aire que separa a los siete de una ficha de
    pago, ni el borde de arriba que los despega del cuerpo de la tarjeta. */
 .fila__accion { flex: none; margin: 0; padding: 0; border: 0; }
+/* El teléfono a la vista, debajo del horario, en los aparatos que no llaman. */
+.fila__tel { margin-top: 7px; }
+/* Mientras el horario de esa ficha está desplegado, el número se quita: los dos
+   se turnan el mismo lugar. Es lo que hace que la semana quepa sin empujar
+   —la tabla entra donde estaba el número— y al cerrar el horario el número
+   vuelve. En una ficha se está viendo una cosa o la otra, no las dos. */
+.card--fila:has(.horario--fila[open]) .fila__tel { display: none; }
+.tel__num--fila {
+  height: 30px; padding: 0 11px 0 9px; gap: 6px;
+  font-size: 12.5px;
+}
+.tel__num--fila svg { width: 13px; height: 13px; }
 
 /* En el teléfono la columna del texto es angosta: el sello y el relleno ceden
    unos píxeles para que el nombre y la zona quepan en menos renglones. */

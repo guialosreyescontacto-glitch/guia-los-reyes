@@ -134,6 +134,22 @@
       </span>`;
   }
 
+  /** El teléfono de una ficha gratuita, ya destapado. En la computadora y en la
+      tablet no hay razón para esconderlo detrás de un botón: el botón redondo
+      existía para no gastar el poco ancho del teléfono, pero aquí el renglón va
+      apilado en una columna y le sobra alto. Puesto a la vista se lee de
+      corrido, se puede teclear en el aparato de a de veras, se copia de un
+      toque —lo hace el mismo manejador del botón— y de paso llena el espacio
+      que antes quedaba en blanco entre una ficha y otra. */
+  function telefonoFila(neg) {
+    const numero = formatoTel(neg.tel);
+    return `
+      <a class="tel__num tel__num--fila" href="tel:+${esc(neg.tel)}"
+         data-numero="${esc(numero)}" title="Copiar el número"
+         aria-label="Teléfono de ${esc(neg.nombre)}: ${esc(numero)}. Tócalo para copiarlo."
+      >${logo(LOGOS.telefono)}<span class="tel__cifras">${esc(numero)}</span></a>`;
+  }
+
   /** Fila de botones circulares: WhatsApp, teléfono y los enlaces que existan. */
   function botonesContacto(neg) {
     /* La ficha gratuita se queda con el botón de llamar y nada más: el vecino
@@ -558,9 +574,10 @@
                title="Cómo llegar a ${esc(neg.nombre)}">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
             ${bloqueHorario(neg, true)}
           </div>
+          ${ESMOVIL ? '' : `<div class="fila__tel">${telefonoFila(neg)}</div>`}
         </div>
 
-        <div class="card__actions fila__accion">${botonesContacto(neg)}</div>
+        ${ESMOVIL ? `<div class="card__actions fila__accion">${botonesContacto(neg)}</div>` : ''}
       </article>`;
   }
 
@@ -1420,8 +1437,11 @@
   /** Vuelve a esconder los números abiertos, menos el que se pida dejar. Sólo
       uno a la vez: dos pastillas abiertas en la misma lista se leen como si
       uno de los dos números fuera el de la ficha de al lado. */
+  /* Sólo los que viven dentro de un `.tel`, o sea los que se destaparon con el
+     botón. El número que las fichas gratuitas traen a la vista de nacimiento no
+     está para esconderse. */
   function cerrarTelefonos(salvo) {
-    $$('.tel__num:not([hidden])').forEach((num) => {
+    $$('.tel > .tel__num:not([hidden])').forEach((num) => {
       if (num.parentNode === salvo) return;
       num.hidden = true;
       const ver = $('.tel__ver', num.parentNode);
