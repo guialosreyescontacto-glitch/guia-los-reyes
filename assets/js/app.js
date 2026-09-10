@@ -631,7 +631,22 @@
       const tope = orden.filter(esPremium).length;   // dónde terminan los Premium
       if (i > tope) orden.splice(tope, 0, orden.splice(i, 1)[0]);
     }
-    el.innerHTML = orden.map(tarjetaNegocio).join('');
+    /* Las fichas gratuitas salen de la retícula de tarjetas y se van a su
+       propio bloque. Metidas en la retícula tenían que ocupar el ancho entero
+       —un renglón no cabe en una columna de tarjeta— y en una pantalla grande
+       quedaban como tiras larguísimas con el nombre a la izquierda y el botón
+       perdido allá en la otra orilla. Aparte, y en dos columnas, se leen como
+       lo que son: un listado debajo de las tarjetas. */
+    const tarjetas = orden.filter(n => !esBasica(n));
+    const renglones = orden.filter(esBasica);
+
+    el.innerHTML =
+      tarjetas.map(tarjetaNegocio).join('') +
+      (renglones.length
+        ? `<div class="filas">` +
+          renglones.map((n, i) => tarjetaNegocio(n, tarjetas.length + i)).join('') +
+          `</div>`
+        : '');
   };
 
   /* ----------------------------------------------------- Banner VIP (home) */

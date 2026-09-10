@@ -873,8 +873,26 @@ button { font: inherit; color: inherit; }
    retícula —abajo de las que pagan, que es donde las deja el orden— y mide lo
    que mide su contenido: nombre, dónde está, a qué hora abre y el botón de
    llamar. En un teléfono caben diez donde antes cabía una tarjeta. */
-.card--fila {
+/* El bloque de las fichas gratuitas, debajo de las tarjetas y aparte de ellas.
+   Aparte porque un renglón no cabe en una columna de tarjeta: tenía que ocupar
+   el ancho entero de la retícula y en una pantalla grande quedaba como una
+   tira larguísima, con el nombre pegado a la izquierda y el botón de llamar
+   perdido en la otra orilla. En dos columnas se lee como lo que es, un listado
+   debajo de las tarjetas, y de paso la última fila de tarjetas deja de parecer
+   una tarjeta faltante: el filo de arriba dice dónde termina una cosa y
+   empieza la otra. */
+.filas {
   grid-column: 1 / -1;
+  display: grid; gap: 10px;
+}
+/* El filo sólo cuando hay tarjetas arriba de qué separarse. */
+.card + .filas { margin-top: 6px; padding-top: 16px; border-top: 1px solid var(--line); }
+/* Las mismas columnas que las tarjetas, para que el bloque caiga alineado con
+   la retícula de arriba y no se vean dos anchos distintos en la misma página. */
+@media (min-width: 700px)  { .filas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1080px) { .filas { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.card--fila {
   flex-direction: row; align-items: center; gap: 12px;
   padding: 10px 12px;
 }
