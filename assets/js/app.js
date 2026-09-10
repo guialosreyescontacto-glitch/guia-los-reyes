@@ -85,22 +85,67 @@
     tiktok:    { logo: LOGOS.tiktok,    url: (u) => `https://www.tiktok.com/@${u}`,   nombre: 'TikTok' }
   };
 
+  /* ¿Sirve este aparato para llamar? En un teléfono, `tel:` abre el marcador y
+     con un toque ya está sonando. En una computadora no hace nada —o saca un
+     cuadro de "elige una aplicación" que nadie entiende— y el botón queda
+     muerto, que para el negocio es peor que no tenerlo: el vecino lo aprieta,
+     no pasa nada y se va. Ahí el botón enseña el número, para marcarlo en el
+     teléfono de a de veras o copiarlo de un toque.
+
+     No se husmea el `userAgent`, se pregunta por lo que importa: un teléfono no
+     tiene puntero fino ni estados de hover, y su lado corto mide menos de
+     500px. Una tablet cumple lo primero pero no lo segundo, y una computadora
+     no cumple ninguno. Si la cuenta sale mal en un teléfono tampoco se pierde
+     la llamada: el número que aparece es a su vez un enlace `tel:` y marca con
+     un toque más. */
+  const ESMOVIL = window.matchMedia('(hover: none) and (pointer: coarse)').matches &&
+    Math.min(screen.width, screen.height) < 500;
+
+  /** El número como lo escribiría un vecino: +52 354 100 0101. */
+  function formatoTel(tel) {
+    const digitos = String(tel).replace(/[^0-9]/g, '');
+    const local = digitos.slice(-10);
+    const pais  = digitos.slice(0, -10);
+    const grupos = local.length === 10
+      ? `${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`
+      : local;
+    return (pais ? `+${pais} ` : '') + grupos;
+  }
+
+  /** El botón de llamar. En el teléfono es el de siempre, un enlace directo al
+      marcador. En lo demás es un botón que se abre y deja ver el número. */
+  function botonTelefono(neg) {
+    const marcar = `tel:+${esc(neg.tel)}`;
+    if (ESMOVIL) return (
+      `<a class="act act--tel" href="${marcar}"
+          title="Llamar" aria-label="Llamar a ${esc(neg.nombre)}">${logo(LOGOS.telefono)}</a>`
+    );
+
+    const numero = formatoTel(neg.tel);
+    return `
+      <span class="tel">
+        <button class="act act--tel tel__ver" type="button" aria-expanded="false"
+                title="Ver el número" aria-label="Ver el teléfono de ${esc(neg.nombre)}"
+        >${logo(LOGOS.telefono)}</button>
+        <a class="tel__num" href="${marcar}" hidden data-numero="${esc(numero)}"
+           title="Copiar el número"
+           aria-label="Teléfono de ${esc(neg.nombre)}: ${esc(numero)}. Tócalo para copiarlo."
+        >${logo(LOGOS.telefono)}<span class="tel__cifras">${esc(numero)}</span></a>
+      </span>`;
+  }
+
   /** Fila de botones circulares: WhatsApp, teléfono y los enlaces que existan. */
   function botonesContacto(neg) {
     /* La ficha gratuita se queda con el botón de llamar y nada más: el vecino
        tiene cómo contactarlo, que es lo que hace útil al directorio, pero el
        WhatsApp con el recado ya escrito, el correo y las redes son de la ficha
        completa en adelante. */
-    if (esBasica(neg)) return (
-      `<a class="act act--tel" href="tel:+${esc(neg.tel)}"
-          title="Llamar" aria-label="Llamar a ${esc(neg.nombre)}">${logo(LOGOS.telefono)}</a>`
-    );
+    if (esBasica(neg)) return botonTelefono(neg);
 
     const botones = [
       `<a class="act act--wa" href="${waLink(neg.tel, neg.nombre)}" target="_blank" rel="noopener"
           title="WhatsApp" aria-label="Escribir por WhatsApp a ${esc(neg.nombre)}">${icon(ICONS.whatsapp)}</a>`,
-      `<a class="act act--tel" href="tel:+${esc(neg.tel)}"
-          title="Llamar" aria-label="Llamar a ${esc(neg.nombre)}">${logo(LOGOS.telefono)}</a>`
+      botonTelefono(neg)
     ];
 
     /* El correo va junto al teléfono y antes de las redes: es contacto directo
@@ -1336,6 +1381,111 @@
     const filtrando = parts[0] === 'c' && parts[2] && !parts[3];
     if (!filtrando) window.scrollTo({ top: 0, behavior: 'instant' });
   }
+
+  /* ------------------------------------------ El número que se deja ver */
+
+  /** Vuelve a esconder los números abiertos, menos el que se pida dejar. Sólo
+      uno a la vez: dos pastillas abiertas en la misma lista se leen como si
+      uno de los dos números fuera el de la ficha de al lado. */
+  function cerrarTelefonos(salvo) {
+    $$('.tel__num:not([hidden])').forEach((num) => {
+      if (num.parentNode === salvo) return;
+      num.hidden = true;
+      const ver = $('.tel__ver', num.parentNode);
+      if (!ver) return;
+      ver.hidden = false;
+      ver.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  /** Copia al portapapeles. `navigator.clipboard` sólo existe en https, y el
+      sitio se prueba muchas veces abriendo el archivo directo, así que queda
+      la vieja escuela de respaldo. Devuelve promesa: si falla, no se le dice
+      al usuario que copió algo que no copió. */
+  function copiar(texto) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(texto);
+    }
+    return new Promise((listo, falla) => {
+      const caja = document.createElement('textarea');
+      caja.value = texto;
+      caja.setAttribute('readonly', '');
+      caja.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+      document.body.appendChild(caja);
+      caja.select();
+      let bien = false;
+      try { bien = document.execCommand('copy'); } catch (_) { bien = false; }
+      document.body.removeChild(caja);
+      bien ? listo() : falla(new Error('sin portapapeles'));
+    });
+  }
+
+  /** Deja el número seleccionado. Es el plan B de cuando el navegador no
+      presta el portapapeles: en vez de que el toque no haga nada —que es
+      justamente lo que veníamos a arreglar—, queda marcado y se copia a mano
+      con Ctrl+C, o se arrastra al buscador del teléfono. */
+  function seleccionar(num) {
+    const cifras = $('.tel__cifras', num);
+    if (!cifras || !window.getSelection) return;
+    const rango = document.createRange();
+    rango.selectNodeContents(cifras);
+    const seleccion = window.getSelection();
+    seleccion.removeAllRanges();
+    seleccion.addRange(rango);
+  }
+
+  let volverCifras = null;
+
+  /** Cambia el número por un "Copiado" un momento y lo regresa. El número
+      original vive en `data-numero`, no en la pantalla, para que dos clics
+      seguidos no dejen la pastilla diciendo "Copiado" para siempre. */
+  function avisarCopiado(num) {
+    const cifras = $('.tel__cifras', num);
+    if (!cifras) return;
+    clearTimeout(volverCifras);
+    cifras.textContent = 'Copiado';
+    num.classList.add('is-copiado');
+    volverCifras = setTimeout(() => {
+      cifras.textContent = num.dataset.numero;
+      num.classList.remove('is-copiado');
+    }, 1600);
+  }
+
+  document.addEventListener('click', (e) => {
+    const ver = e.target.closest('.tel__ver');
+    if (ver) {
+      const caja = ver.parentNode;
+      const num  = $('.tel__num', caja);
+      cerrarTelefonos(caja);
+      clearTimeout(volverCifras);
+      $('.tel__cifras', num).textContent = num.dataset.numero;
+      num.classList.remove('is-copiado');
+      num.hidden = false;
+      ver.hidden = true;
+      ver.setAttribute('aria-expanded', 'true');
+      num.focus();
+      return;
+    }
+
+    /* Sin `preventDefault`: si el aparato resulta que sí sabe marcar —un
+       teléfono mal contado, o una computadora con Teams instalado— que marque.
+       Y de cualquier modo el número queda copiado. */
+    const num = e.target.closest('.tel__num');
+    if (num) {
+      copiar(num.dataset.numero).then(
+        () => avisarCopiado(num),
+        () => seleccionar(num)
+      );
+      return;
+    }
+
+    cerrarTelefonos(null);
+  });
+
+  /* Escape cierra el número, como cualquier cosa que se abre. */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') cerrarTelefonos(null);
+  });
 
   /* ------------------------------------------------------------- Eventos */
 

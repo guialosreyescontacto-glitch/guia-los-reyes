@@ -1176,9 +1176,40 @@ button { font: inherit; color: inherit; }
   .act:active { opacity: 1; border-color: var(--marca, var(--line-strong)); }
 }
 
+/* --- El número a la vista, en lo que no es teléfono ---
+   En una tablet o en una computadora `tel:` no marca nada, así que el botón se
+   abre y deja ver el número: se puede leer en voz alta, teclearlo en el
+   teléfono de a de veras o copiarlo de un toque. Con la pastilla abierta el
+   botón redondo se esconde, así que ocupa el lugar de uno solo y la fila de
+   contacto no se descuadra. */
+.tel { display: inline-flex; align-items: center; }
+/* El `display` de la regla `[hidden]` que trae el navegador no lleva clase, así
+   que cualquier `.clase { display: … }` le gana y el elemento escondido se
+   sigue dibujando: se veían el botón y la pastilla al mismo tiempo. Aquí se
+   dice con clase, para que el atributo `hidden` mande de verdad. */
+.tel__ver[hidden], .tel__num[hidden] { display: none; }
+.tel__num {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 42px; padding: 0 14px 0 12px;
+  border: 1px solid var(--line-strong); border-radius: 999px;
+  background: var(--surface); color: var(--accent-ink);
+  font-size: 13.5px; font-weight: 650; letter-spacing: .01em;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+  text-decoration: none; cursor: pointer;
+  transition: border-color .2s ease, color .2s ease;
+}
+.tel__num svg { width: 15px; height: 15px; flex: none; opacity: .7; }
+.tel__num:hover  { border-color: var(--accent); color: var(--accent); }
+.tel__num:active { transform: scale(.97); }
+/* Copiado: el mismo verde del aviso de abierto, que ya quiere decir "listo". */
+.tel__num.is-copiado { border-color: var(--abierto); color: var(--abierto); }
+/* En el banner Premium los botones son más chicos; la pastilla los sigue. */
+.vip__acciones .tel__num { height: 34px; padding: 0 11px 0 9px; font-size: 12.5px; }
+
 @media (min-width: 768px) {
   .act { width: 40px; height: 40px; padding: 9px; }
   .card__actions { gap: 8px; }
+  .tel__num { height: 40px; }
 }
 
 /* ==========================================================================
