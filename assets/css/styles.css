@@ -884,10 +884,29 @@ button { font: inherit; color: inherit; }
 .filas {
   grid-column: 1 / -1;
   display: grid; gap: 10px;
-  /* Pegados arriba: cuando el bloque va en el hueco que dejan las tarjetas, la
-     fila mide lo que mide la tarjeta de al lado, y sin esto los renglones se
-     estirarían para rellenarla. */
-  align-content: start;
+}
+/* Cada pila son hasta tres fichas gratuitas, una encima de otra, ocupando el
+   lugar de una tarjeta. La pila se estira a lo alto de la fila —o sea, a lo
+   que mide la tarjeta de al lado— y las fichas se quedan pegadas arriba: el
+   espacio de abajo queda apartado de antemano, así que al desplegar un horario
+   crece dentro de lo que ya tenía y no empuja nada. */
+.pila { display: flex; flex-direction: column; gap: 10px; }
+
+/* Dentro de una pila el renglón va en una columna angosta, así que se aprieta:
+   el nombre y el aviso se quedan en una sola línea —el nombre largo se corta
+   con puntos suspensivos, y completo sigue en el `title` del enlace del mapa—
+   y la tabla del horario baja de tamaño. Es lo que hace que tres fichas más un
+   horario desplegado quepan en el alto de una tarjeta, que es el trato: la
+   pila no crece más que la tarjeta de al lado. En el teléfono no aplica, ahí
+   el renglón tiene el ancho entero y no le falta lugar. */
+@media (min-width: 700px) {
+  .pila .fila__nombre { flex-wrap: nowrap; }
+  .pila .fila__rotulo {
+    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pila .horario__semana { font-size: 11.5px; }
+  .pila .horario__semana th { padding: 2px 10px 2px 0; }
+  .pila .horario__semana td { padding: 2px 0; }
 }
 /* El filo sólo cuando hay tarjetas arriba de qué separarse. */
 .card + .filas { margin-top: 6px; padding-top: 16px; border-top: 1px solid var(--line); }
@@ -905,17 +924,17 @@ button { font: inherit; color: inherit; }
    sobran dos lugares; si le toca el 3n+3, sobra uno. Al ser CSS y no JS, la
    cuenta se rehace sola cuando cambia el ancho de la ventana.
 
-   El `:not(:has(…))` es el freno: sólo se mete al hueco si caben sin pasarse
-   de alto, porque un bloque más alto que la tarjeta estiraría la tarjeta de al
-   lado y dejaría un hueco peor del que veníamos a quitar. Pasado ese número
-   —o en un navegador viejo, sin `:has()`— cae de vuelta al renglón completo de
-   abajo, que siempre se ve bien. */
+   El `:not(:has(…))` es el freno: sólo se mete al hueco si hay pilas para los
+   lugares que sobraron, ni una más. Si sobrara una pila el bloque crecería más
+   que la tarjeta de al lado, la estiraría y dejaría un hueco peor del que
+   veníamos a quitar. Pasado ese número —o en un navegador viejo, sin `:has()`—
+   cae de vuelta al renglón completo de abajo, que siempre se ve bien. */
 
 /* Dos columnas */
 @media (min-width: 700px) and (max-width: 1079.98px) {
   .filas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  /* Sobra un lugar: el bloque va ahí, en una sola columna. Hasta 4 renglones. */
-  .filas:nth-child(2n + 2):not(:has(> :nth-child(5))) {
+  /* Sobra un lugar: cabe una pila. */
+  .filas:nth-child(2n + 2):not(:has(> :nth-child(2))) {
     grid-column: 2 / -1;
     grid-template-columns: minmax(0, 1fr);
     margin-top: 0; padding-top: 0; border-top: 0;
@@ -925,14 +944,14 @@ button { font: inherit; color: inherit; }
 /* Tres columnas */
 @media (min-width: 1080px) {
   .filas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  /* Sobran dos lugares: caben en dos columnas, así que aguanta hasta 8. */
-  .filas:nth-child(3n + 2):not(:has(> :nth-child(9))) {
+  /* Sobran dos lugares: caben dos pilas. */
+  .filas:nth-child(3n + 2):not(:has(> :nth-child(3))) {
     grid-column: 2 / -1;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-top: 0; padding-top: 0; border-top: 0;
   }
-  /* Sobra uno: una columna, hasta 4 renglones. */
-  .filas:nth-child(3n + 3):not(:has(> :nth-child(5))) {
+  /* Sobra uno: cabe una pila. */
+  .filas:nth-child(3n + 3):not(:has(> :nth-child(2))) {
     grid-column: 3 / -1;
     grid-template-columns: minmax(0, 1fr);
     margin-top: 0; padding-top: 0; border-top: 0;

@@ -548,7 +548,7 @@
 
         <div class="fila__texto">
           <h3 class="fila__nombre">
-            ${esc(neg.nombre)}
+            <span class="fila__rotulo" title="${esc(neg.nombre)}">${esc(neg.nombre)}</span>
             <span class="fila__estado fila__estado--${ahora}">
               ${ESTADOS[ahora].corto}
             </span>
@@ -624,6 +624,11 @@
      sube al principio de la lista. Pero no por encima de los Premium de esa
      misma categoría —ese lugar está pagado y no lo cede un destacado—, sino
      justo debajo de ellos. El resto conserva su orden. */
+  /* Cuántas fichas gratuitas se apilan en el lugar de una tarjeta. Tres es lo
+     que cabe en el alto de una tarjeta aun con un horario desplegado, que es
+     el trato: la pila nunca crece más que la tarjeta de al lado. */
+  const POR_PILA = 3;
+
   const pintarLista = (el, lista, primero) => {
     const orden = ordenar(lista);
     if (primero) {
@@ -635,17 +640,30 @@
        propio bloque. Metidas en la retícula tenían que ocupar el ancho entero
        —un renglón no cabe en una columna de tarjeta— y en una pantalla grande
        quedaban como tiras larguísimas con el nombre a la izquierda y el botón
-       perdido allá en la otra orilla. Aparte, y en dos columnas, se leen como
-       lo que son: un listado debajo de las tarjetas. */
+       perdido allá en la otra orilla.
+
+       Dentro del bloque van de tres en tres, apiladas una encima de la otra:
+       cada pila ocupa el lugar de una tarjeta. Así el hueco que dejan las
+       tarjetas se llena por columna y no por renglón, y en vez de dos fichas
+       sueltas cruzando el ancho se ve otra columna del directorio, que es lo
+       que dice que la lista sigue. Tres es lo que cabe en el alto de una
+       tarjeta con su horario desplegado. */
     const tarjetas = orden.filter(n => !esBasica(n));
     const renglones = orden.filter(esBasica);
 
+    const pilas = [];
+    for (let i = 0; i < renglones.length; i += POR_PILA) {
+      pilas.push(renglones.slice(i, i + POR_PILA));
+    }
+
     el.innerHTML =
       tarjetas.map(tarjetaNegocio).join('') +
-      (renglones.length
-        ? `<div class="filas">` +
-          renglones.map((n, i) => tarjetaNegocio(n, tarjetas.length + i)).join('') +
-          `</div>`
+      (pilas.length
+        ? `<div class="filas">` + pilas.map((grupo, g) =>
+            `<div class="pila">` +
+            grupo.map((n, i) =>
+              tarjetaNegocio(n, tarjetas.length + g * POR_PILA + i)).join('') +
+            `</div>`).join('') + `</div>`
         : '');
   };
 
@@ -1501,6 +1519,21 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') cerrarTelefonos(null);
   });
+
+  /* En las fichas gratuitas sólo un horario abierto a la vez: al abrir uno se
+     cierra el anterior. Van apiladas de tres en el lugar de una tarjeta, y con
+     dos o tres horarios desplegados la pila crecería más que la tarjeta de al
+     lado y la estiraría. Con uno solo, lo desplegado cabe en el espacio que la
+     pila ya tenía apartado y nada se mueve de su sitio.
+
+     El evento `toggle` no burbujea, por eso se escucha en captura. */
+  document.addEventListener('toggle', (e) => {
+    const abierto = e.target;
+    if (!abierto.matches || !abierto.matches('.horario--fila[open]')) return;
+    $$('.horario--fila[open]').forEach((otro) => {
+      if (otro !== abierto) otro.open = false;
+    });
+  }, true);
 
   /* ------------------------------------------------------------- Eventos */
 
