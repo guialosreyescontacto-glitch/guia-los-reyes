@@ -1021,16 +1021,16 @@ button { font: inherit; color: inherit; }
   gap: 5px; font-size: 12.5px; font-weight: 650;
   color: var(--accent);
   border-bottom: 1px dashed transparent;
-  /* Renglón propio, no al hilo de la zona: pegado a ella no ocuparía nada y el
-     espacio entre una ficha y otra volvería a quedar en blanco. Abajo, ocupa
-     justo lo que sobraba. `align-self` para que el subrayado no se estire a
-     todo lo ancho, sólo al número. */
-  flex: 0 0 100%; align-self: flex-start;
 }
+/* Renglón propio, no al hilo de la zona: pegado a ella el número no ocuparía
+   nada y el espacio entre una ficha y otra volvería a quedar en blanco. El
+   ancho completo lo toma el envoltorio, no el enlace, para que el subrayado
+   del cursor se quede debajo de las cifras y no cruce la ficha entera. */
+.card--fila .fila__contacto { flex: 0 0 100%; }
 /* Con la semana desplegada el número se quita: los dos se turnan el renglón,
    así la tabla entra donde estaba el número en vez de empujar a la tarjeta de
    al lado. Al cerrar el horario, el número vuelve. */
-.card--fila:has(.horario--fila[open]) .fila__tel { display: none; }
+.card--fila:has(.horario--fila[open]) .fila__contacto { display: none; }
 .card--fila .fila__tel svg { width: 13px; height: 13px; opacity: 1; }
 .card--fila .fila__tel:hover { color: var(--accent-ink); border-bottom-color: currentColor; }
 .card--fila .fila__tel:active { transform: none; }

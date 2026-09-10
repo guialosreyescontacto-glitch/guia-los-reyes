@@ -143,11 +143,17 @@
       que antes quedaba en blanco entre una ficha y otra. */
   function telefonoFila(neg) {
     const numero = formatoTel(neg.tel);
+    /* El envoltorio es el que ocupa el renglón completo; el enlace de adentro
+       mide lo que mide el número. Si el renglón se lo quedara el enlace, el
+       subrayado de pasar el cursor le cruzaría la ficha de orilla a orilla en
+       vez de quedarse debajo de las cifras. */
     return `
-      <a class="tel__num fila__tel" href="tel:+${esc(neg.tel)}"
-         data-numero="${esc(numero)}" title="Copiar el número"
-         aria-label="Teléfono de ${esc(neg.nombre)}: ${esc(numero)}. Tócalo para copiarlo."
-      >${logo(LOGOS.telefono)}<span class="tel__cifras">${esc(numero)}</span></a>`;
+      <span class="fila__contacto">
+        <a class="tel__num fila__tel" href="tel:+${esc(neg.tel)}"
+           data-numero="${esc(numero)}" title="Copiar el número"
+           aria-label="Teléfono de ${esc(neg.nombre)}: ${esc(numero)}. Tócalo para copiarlo."
+        >${logo(LOGOS.telefono)}<span class="tel__cifras">${esc(numero)}</span></a>
+      </span>`;
   }
 
   /** Fila de botones circulares: WhatsApp, teléfono y los enlaces que existan. */
