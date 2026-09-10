@@ -186,7 +186,20 @@ const CATEGORIAS = [
         tags: ['Rehabilitación', 'Terapia deportiva'], zona: 'Col. Emiliano Zapata',
         horario: 'Lun a Vie · 8:00 – 20:00', tel: '523541000106',
         redes: { facebook: 'demo.fisioterapiamovimiento', instagram: 'demo.fisioterapiamovimiento' },
-        desc: 'Rehabilitación física, lesiones deportivas y terapia post operatoria.' }
+        desc: 'Rehabilitación física, lesiones deportivas y terapia post operatoria.' },
+      { nombre: 'Consultorio Dental Vida', plan: 'basico', filtro: 'dental', rating: 4.6,
+        tags: ['Limpiezas', 'Resinas', 'Extracciones'], zona: 'Av. Juárez 210, Centro',
+        horario: { 'Lun a Vie': '9:00 – 14:00, 16:00 – 19:30',
+                   'Sáb':       '9:00 – 13:00' },
+        tel: '523541000107',
+        correo: 'contacto@consultoriodentalvida.example',
+        redes: { facebook: 'demo.consultoriodentalvida' },
+        desc: 'Odontología general para toda la familia, con planes de pago.' },
+      { nombre: 'Nutrióloga Ana Cordero', plan: 'basico', filtro: 'especialistas', rating: 4.9,
+        tags: ['Control de peso', 'Diabetes'], zona: 'Portal Morelos 8',
+        horario: 'Mar a Sáb · 10:00 – 18:00', tel: '523541000108',
+        redes: { instagram: 'demo.nutriologaanacordero' },
+        desc: 'Planes de alimentación personalizados y seguimiento mensual.' }
     ]
   },
 
