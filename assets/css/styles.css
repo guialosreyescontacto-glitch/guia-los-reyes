@@ -891,16 +891,17 @@ button { font: inherit; color: inherit; }
    espacio de abajo queda apartado de antemano, así que al desplegar un horario
    crece dentro de lo que ya tenía y no empuja nada. */
 .pila { display: flex; flex-direction: column; gap: 10px; }
-/* La pila llena se reparte el alto de la tarjeta: el sobrante no se queda todo
-   abajo, se va a los espacios de entre una ficha y otra, y las tres ocupan de
-   arriba a abajo lo mismo que una tarjeta. Al desplegar un horario esos
-   espacios se encogen solos —el sobrante es el que se recorta— así que el
-   conjunto sigue midiendo lo mismo y nada se mueve de su lugar.
+/* La pila llena se reparte el alto de la tarjeta, pero el sobrante se lo
+   quedan las fichas, no los huecos: cada una crece un poco y su contenido
+   queda centrado, así que el aire va por dentro —donde se lee como holgura de
+   la ficha— y no por fuera, donde se leía como un espacio olvidado. Al
+   desplegar un horario esa ficha pide más y las otras devuelven su parte, así
+   que el conjunto sigue midiendo lo mismo que la tarjeta de al lado.
 
-   Sólo la pila completa: si el último grupo trae una o dos fichas, repartirlas
-   de arriba a abajo las dejaría flotando en las orillas, y ahí es mejor que se
-   queden juntas arriba. */
-.pila:has(> :nth-child(3)) { justify-content: space-between; }
+   Sólo la pila completa: si el último grupo trae una o dos fichas, estirarlas
+   las dejaría como dos cajones enormes medio vacíos, y ahí es mejor que se
+   queden de su tamaño, juntas arriba. */
+.pila:has(> :nth-child(3)) > .card--fila { flex: 1 1 auto; }
 
 /* Dentro de una pila el renglón va en una columna angosta, así que se aprieta:
    el nombre y el aviso se quedan en una sola línea —el nombre largo se corta
@@ -1009,18 +1010,31 @@ button { font: inherit; color: inherit; }
 /* Un solo botón: no necesita el aire que separa a los siete de una ficha de
    pago, ni el borde de arriba que los despega del cuerpo de la tarjeta. */
 .fila__accion { flex: none; margin: 0; padding: 0; border: 0; }
-/* El teléfono a la vista, debajo del horario, en los aparatos que no llaman. */
-.fila__tel { margin-top: 7px; }
-/* Mientras el horario de esa ficha está desplegado, el número se quita: los dos
-   se turnan el mismo lugar. Es lo que hace que la semana quepa sin empujar
-   —la tabla entra donde estaba el número— y al cerrar el horario el número
-   vuelve. En una ficha se está viendo una cosa o la otra, no las dos. */
-.card--fila:has(.horario--fila[open]) .fila__tel { display: none; }
-.tel__num--fila {
-  height: 30px; padding: 0 11px 0 9px; gap: 6px;
-  font-size: 12.5px;
+/* El teléfono a la vista en los aparatos que no llaman: escrito igual que la
+   zona —icono y texto, al hilo del renglón—, no en pastilla. En una
+   computadora el número no está para apretarlo, está para leerlo y copiarlo,
+   así que no necesita cuerpo de botón; lo que sí necesita es que se note, y
+   por eso va con el color de acento y en negritas mientras los demás datos van
+   en tinta apagada. Al hacerle clic se copia, igual que la pastilla. */
+.card--fila .fila__tel {
+  height: auto; padding: 0; border: 0; border-radius: 0; background: none;
+  gap: 5px; font-size: 12.5px; font-weight: 650;
+  color: var(--accent);
+  border-bottom: 1px dashed transparent;
+  /* Renglón propio, no al hilo de la zona: pegado a ella no ocuparía nada y el
+     espacio entre una ficha y otra volvería a quedar en blanco. Abajo, ocupa
+     justo lo que sobraba. `align-self` para que el subrayado no se estire a
+     todo lo ancho, sólo al número. */
+  flex: 0 0 100%; align-self: flex-start;
 }
-.tel__num--fila svg { width: 13px; height: 13px; }
+/* Con la semana desplegada el número se quita: los dos se turnan el renglón,
+   así la tabla entra donde estaba el número en vez de empujar a la tarjeta de
+   al lado. Al cerrar el horario, el número vuelve. */
+.card--fila:has(.horario--fila[open]) .fila__tel { display: none; }
+.card--fila .fila__tel svg { width: 13px; height: 13px; opacity: 1; }
+.card--fila .fila__tel:hover { color: var(--accent-ink); border-bottom-color: currentColor; }
+.card--fila .fila__tel:active { transform: none; }
+.card--fila .fila__tel.is-copiado { color: var(--abierto); border-bottom-color: transparent; }
 
 /* En el teléfono la columna del texto es angosta: el sello y el relleno ceden
    unos píxeles para que el nombre y la zona quepan en menos renglones. */

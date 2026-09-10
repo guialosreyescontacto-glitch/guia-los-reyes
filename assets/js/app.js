@@ -144,7 +144,7 @@
   function telefonoFila(neg) {
     const numero = formatoTel(neg.tel);
     return `
-      <a class="tel__num tel__num--fila" href="tel:+${esc(neg.tel)}"
+      <a class="tel__num fila__tel" href="tel:+${esc(neg.tel)}"
          data-numero="${esc(numero)}" title="Copiar el número"
          aria-label="Teléfono de ${esc(neg.nombre)}: ${esc(numero)}. Tócalo para copiarlo."
       >${logo(LOGOS.telefono)}<span class="tel__cifras">${esc(numero)}</span></a>`;
@@ -573,8 +573,8 @@
             <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener"
                title="Cómo llegar a ${esc(neg.nombre)}">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
             ${bloqueHorario(neg, true)}
+            ${ESMOVIL ? '' : telefonoFila(neg)}
           </div>
-          ${ESMOVIL ? '' : `<div class="fila__tel">${telefonoFila(neg)}</div>`}
         </div>
 
         ${ESMOVIL ? `<div class="card__actions fila__accion">${botonesContacto(neg)}</div>` : ''}
