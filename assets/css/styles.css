@@ -884,13 +884,60 @@ button { font: inherit; color: inherit; }
 .filas {
   grid-column: 1 / -1;
   display: grid; gap: 10px;
+  /* Pegados arriba: cuando el bloque va en el hueco que dejan las tarjetas, la
+     fila mide lo que mide la tarjeta de al lado, y sin esto los renglones se
+     estirarían para rellenarla. */
+  align-content: start;
 }
 /* El filo sólo cuando hay tarjetas arriba de qué separarse. */
 .card + .filas { margin-top: 6px; padding-top: 16px; border-top: 1px solid var(--line); }
-/* Las mismas columnas que las tarjetas, para que el bloque caiga alineado con
-   la retícula de arriba y no se vean dos anchos distintos en la misma página. */
-@media (min-width: 700px)  { .filas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1080px) { .filas { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* --- El bloque se mete en el hueco de la última fila de tarjetas ---
+
+   Si hay cuatro tarjetas en tres columnas sobran dos lugares, y el bloque
+   abriendo renglón nuevo dejaba ese espacio vacío como si faltara una tarjeta.
+   Aquí, en vez de abrir renglón, el bloque se acomoda en los lugares que
+   sobraron.
+
+   Se sabe cuántos sobran sin una línea de JS: el bloque es el último hijo, así
+   que su número de hijo dice cuántas tarjetas van antes. Con tres columnas, si
+   le toca el 3n+2 es que quedaron 3n+1 tarjetas —una sola en la última fila— y
+   sobran dos lugares; si le toca el 3n+3, sobra uno. Al ser CSS y no JS, la
+   cuenta se rehace sola cuando cambia el ancho de la ventana.
+
+   El `:not(:has(…))` es el freno: sólo se mete al hueco si caben sin pasarse
+   de alto, porque un bloque más alto que la tarjeta estiraría la tarjeta de al
+   lado y dejaría un hueco peor del que veníamos a quitar. Pasado ese número
+   —o en un navegador viejo, sin `:has()`— cae de vuelta al renglón completo de
+   abajo, que siempre se ve bien. */
+
+/* Dos columnas */
+@media (min-width: 700px) and (max-width: 1079.98px) {
+  .filas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Sobra un lugar: el bloque va ahí, en una sola columna. Hasta 4 renglones. */
+  .filas:nth-child(2n + 2):not(:has(> :nth-child(5))) {
+    grid-column: 2 / -1;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 0; padding-top: 0; border-top: 0;
+  }
+}
+
+/* Tres columnas */
+@media (min-width: 1080px) {
+  .filas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* Sobran dos lugares: caben en dos columnas, así que aguanta hasta 8. */
+  .filas:nth-child(3n + 2):not(:has(> :nth-child(9))) {
+    grid-column: 2 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 0; padding-top: 0; border-top: 0;
+  }
+  /* Sobra uno: una columna, hasta 4 renglones. */
+  .filas:nth-child(3n + 3):not(:has(> :nth-child(5))) {
+    grid-column: 3 / -1;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 0; padding-top: 0; border-top: 0;
+  }
+}
 
 .card--fila {
   flex-direction: row; align-items: center; gap: 12px;
