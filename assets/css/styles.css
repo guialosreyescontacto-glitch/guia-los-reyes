@@ -1411,3 +1411,42 @@ button { font: inherit; color: inherit; }
   padding: 10px 12px; background: var(--surface-2); border-radius: 10px;
   border: 1px solid var(--line); max-width: 62ch;
 }
+
+.footer__links { margin: 12px 0 0; font-size: 13px; }
+.footer__links a { color: var(--ink-2); text-decoration: none; border-bottom: 1px dashed var(--line-strong); }
+.footer__links a:hover { color: var(--accent); border-bottom-color: currentColor; }
+
+/* --- Documentos legales -------------------------------------------------
+   Texto largo para leer, no para hojear: renglón corto (66ch, que es donde
+   el ojo alcanza a saltar de una línea a la siguiente sin perderse), altura
+   de línea holgada, y los títulos con más aire arriba que abajo para que se
+   lean pegados a lo que anuncian y no a lo que termina. */
+.legal { max-width: 66ch; color: var(--ink-2); font-size: 14.5px; line-height: 1.65; }
+.legal h2 {
+  margin: 32px 0 10px; font-size: 17px; font-weight: 700;
+  letter-spacing: -.02em; color: var(--ink);
+  padding-top: 18px; border-top: 1px solid var(--line);
+}
+.legal h2:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.legal h3 { margin: 22px 0 6px; font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.legal p  { margin: 0 0 12px; }
+.legal ul { margin: 0 0 12px; padding-left: 20px; }
+.legal li { margin-bottom: 7px; }
+.legal strong { color: var(--ink); font-weight: 650; }
+.legal a { color: var(--accent); }
+.legal__fecha { margin-top: 20px; font-size: 13px; color: var(--ink-3); }
+
+/* Los huecos por llenar van en amarillo de marcatextos, no en gris: un hueco
+   discreto se publica sin que nadie lo note, y un aviso de privacidad con el
+   nombre del responsable en blanco no es un aviso de privacidad. Que estorbe
+   a la vista es la función. */
+.falta {
+  background: #fef08a; color: #422006; border-radius: 4px;
+  padding: 1px 5px; font-weight: 600; box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.falta--grande {
+  display: block; margin: 0 0 24px; padding: 12px 14px;
+  border-radius: 10px; border: 1px solid #ca8a04; font-weight: 400; line-height: 1.55;
+}
+.falta--grande strong { display: block; margin-bottom: 4px; }

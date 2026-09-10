@@ -1468,7 +1468,7 @@
 
   /* --------------------------------------------------------------- Router */
 
-  const VISTAS = ['home', 'category', 'search', 'registro'];
+  const VISTAS = ['home', 'category', 'search', 'registro', 'privacidad'];
 
   function mostrarVista(nombre) {
     VISTAS.forEach(v => { $('#view-' + v).hidden = (v !== nombre); });
@@ -1499,6 +1499,8 @@
       renderBusqueda(parts[1]);
     } else if (parts[0] === 'registro') {
       mostrarVista('registro');
+    } else if (parts[0] === 'privacidad') {
+      mostrarVista('privacidad');
     } else {
       mostrarVista('home');
     }
