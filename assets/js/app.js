@@ -44,6 +44,65 @@
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
+  /* ------------------------------------------------------------ Medición */
+
+  /* Qué se cuenta y por qué. Al negocio que paga hay que poder decirle qué
+     recibió por su mensualidad, y "el sitio tuvo mil visitas" no es una
+     respuesta: lo suyo son los contactos. Cuántas veces le abrieron el
+     WhatsApp, le copiaron el teléfono, le pidieron cómo llegar. Eso se apunta
+     aquí, negocio por negocio, y es la frase que renueva el mes: "en agosto te
+     buscaron 34 personas desde la guía".
+
+     De quien mira no se guarda nada: ni cookie, ni identificador, ni rastro de
+     una visita a la siguiente. Un apunte es el nombre de lo que pasó y a qué
+     negocio le pasó. Por lo mismo no se cuentan las veces que una ficha
+     aparece en pantalla, sólo los contactos: la aparición no se puede contar
+     sin seguirle la pista a la persona, y además serían cien apuntes por
+     visita en lugar de uno.
+
+     El buscador se apunta aparte, sin negocio: lo que la gente teclea y no
+     encuentra es la lista de a quién hay que ir a tocarle la puerta. */
+
+  /* A dónde van los apuntes. Vacío, la medición queda armada y callada: el
+     sitio funciona igual y no sale una sola petición a ningún lado. Cuando se
+     decida el recolector esto es lo único que se cambia —'vercel' para el de
+     Vercel, o la dirección de un recolector propio— y lo demás ya está puesto. */
+  const DESTINO = '';
+
+  /* Con `?medicion` en la dirección los apuntes salen por la consola y no se
+     mandan a ningún lado. Es como se revisa que un botón nuevo quedó contado. */
+  const ECO = /[?&]medicion(=|&|$)/.test(window.location.search);
+
+  /** Apunta algo que acaba de pasar. Nunca estorba: si el envío falla, se calla. */
+  function apuntar(nombre, datos) {
+    const dato = datos || {};
+    if (ECO) console.log('[medición]', nombre, dato);
+    if (!DESTINO) return;
+    try {
+      if (DESTINO === 'vercel') {
+        if (typeof window.va === 'function') window.va('event', { name: nombre, data: dato });
+        return;
+      }
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(DESTINO, new Blob(
+          [JSON.stringify({ ev: nombre, datos: dato })], { type: 'application/json' }
+        ));
+      }
+    } catch (e) { /* medir jamás debe romper el sitio */ }
+  }
+
+  /* El buscador se apunta cuando la persona deja de teclear, no en cada letra:
+     "d", "de", "den" y "dent" son la misma búsqueda a medio escribir y sólo
+     ensuciarían el informe. La espera es más larga que la del propio buscador
+     —que pinta a los 220ms para que se sienta vivo— porque aquí no corre prisa. */
+  let apunteTardio;
+  function apuntarBusqueda(termino, resultados) {
+    clearTimeout(apunteTardio);
+    apunteTardio = setTimeout(() => {
+      apuntar('busqueda', { termino: termino.toLowerCase(), resultados: resultados });
+    }, 1200);
+  }
+
   const waLink = (tel, nombre) =>
     `https://wa.me/${tel}?text=${encodeURIComponent(WA_TEMPLATE(nombre))}`;
 
@@ -117,14 +176,18 @@
   function botonTelefono(neg) {
     const marcar = `tel:+${esc(neg.tel)}`;
     if (ESMOVIL) return (
-      `<a class="act act--tel" href="${marcar}"
+      `<a class="act act--tel" href="${marcar}" data-medio="telefono"
           title="Llamar" aria-label="Llamar a ${esc(neg.nombre)}">${logo(LOGOS.telefono)}</a>`
     );
 
     const numero = formatoTel(neg.tel);
+    /* El contacto se cuenta al destapar el número, no al copiarlo: quien copia
+       ya lo había destapado, y contar las dos cosas sería la misma persona dos
+       veces. Por eso el `data-medio` va en el botón y no en el número. */
     return `
       <span class="tel">
         <button class="act act--tel tel__ver" type="button" aria-expanded="false"
+                data-medio="telefono"
                 title="Ver el número" aria-label="Ver el teléfono de ${esc(neg.nombre)}"
         >${logo(LOGOS.telefono)}</button>
         <a class="tel__num" href="${marcar}" hidden data-numero="${esc(numero)}"
@@ -150,7 +213,7 @@
     return `
       <span class="fila__contacto">
         <a class="tel__num fila__tel" href="tel:+${esc(neg.tel)}"
-           data-numero="${esc(numero)}" title="Copiar el número"
+           data-numero="${esc(numero)}" data-medio="telefono" title="Copiar el número"
            aria-label="Teléfono de ${esc(neg.nombre)}: ${esc(numero)}. Tócalo para copiarlo."
         >${logo(LOGOS.telefono)}<span class="tel__cifras">${esc(numero)}</span></a>
       </span>`;
@@ -166,6 +229,7 @@
 
     const botones = [
       `<a class="act act--wa" href="${waLink(neg.tel, neg.nombre)}" target="_blank" rel="noopener"
+          data-medio="whatsapp"
           title="WhatsApp" aria-label="Escribir por WhatsApp a ${esc(neg.nombre)}">${icon(ICONS.whatsapp)}</a>`,
       botonTelefono(neg)
     ];
@@ -175,6 +239,7 @@
        negocio dio uno. */
     if (neg.correo) botones.push(
       `<a class="act act--correo" href="${esc(correoLink(neg.correo, neg.nombre))}"
+          data-medio="correo"
           title="Correo" aria-label="Enviar un correo a ${esc(neg.nombre)}">${icon(ICONS.sobre)}</a>`
     );
 
@@ -185,6 +250,7 @@
       const glifo = r.logo ? logo(r.logo) : icon(r.icono);
       botones.push(
         `<a class="act act--${red}" href="${esc(r.url(usuario))}" target="_blank" rel="noopener"
+            data-medio="${red}"
             title="${r.nombre}" aria-label="${r.nombre} de ${esc(neg.nombre)}">${glifo}</a>`
       );
     });
@@ -576,7 +642,7 @@
             </span>
           </h3>
           <div class="fila__meta">
-            <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener"
+            <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener" data-medio="mapa"
                title="Cómo llegar a ${esc(neg.nombre)}">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
             ${bloqueHorario(neg, true)}
             ${ESMOVIL ? '' : telefonoFila(neg)}
@@ -627,7 +693,7 @@
           <p class="card__line">
             <span class="card__rating">${icon(ICONS.star)}${neg.rating.toFixed(1)}</span>
             <span class="card__sep">·</span>
-            <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener"
+            <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener" data-medio="mapa"
                title="Cómo llegar en Google Maps">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
           </p>
 
@@ -710,7 +776,8 @@
        otros enlaces —la dirección y los botones— y un enlace dentro de otro no
        es válido; así, tendido por encima, cada quien conserva el suyo. */
     return `
-      <article class="vip__slide" style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
+      <article class="vip__slide" data-neg="${seña(neg)}"
+               style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
         <a class="vip__manto" href="#/c/${neg.cat.id}/todos/${seña(neg)}"
            title="${esc(neg.nombre)}"
            aria-label="${esc(neg.nombre)}, ver su ficha en ${esc(neg.cat.nombre)}"></a>
@@ -721,6 +788,7 @@
             <p class="vip__desc">${esc(neg.desc)}</p>
             <p class="vip__meta">
               <a class="vip__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener"
+                 data-medio="mapa"
                  title="Cómo llegar a ${esc(neg.nombre)}">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
               <span class="vip__sep">·</span> ${esc(neg.cat.nombre)}</p>
           </div>
@@ -1010,7 +1078,7 @@
     const [c1, c2] = neg.cat.banner;
     return `
       <a class="dest__card" href="#/c/${neg.cat.id}/todos/${seña(neg)}"
-         title="${esc(neg.nombre)}"
+         data-neg="${seña(neg)}" title="${esc(neg.nombre)}"
          aria-label="${esc(neg.nombre)}, ver su ficha en ${esc(neg.cat.nombre)}"
          style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
         ${neg.foto
@@ -1309,6 +1377,11 @@
     categoriaActual = cat;
     const filtro = filtroId || 'todos';
 
+    /* Se apunta la categoría con su filtro. Como los chips vuelven a pintar
+       por aquí, esto cuenta las dos cosas de una vez: qué categorías se abren
+       y qué giros se buscan dentro de ellas. */
+    apuntar('categoria', { categoria: cat.id, filtro: filtro });
+
     /* Cabecera */
     const head = $('.catbar');
     head.style.setProperty('--cat-color', cat.color);
@@ -1389,6 +1462,8 @@
       ? 'Esto encontramos en el directorio'
       : '';
     $('#searchEmpty').hidden = res.length > 0;
+
+    apuntarBusqueda(q.trim(), res.length);
 
     mostrarVista('search');
   }
@@ -1563,6 +1638,38 @@
 
   /* ------------------------------------------------------------- Eventos */
 
+  /* Un solo escucha para todos los contactos. Cada botón dice por dónde se
+     contactó en `data-medio`, y la ficha que lo contiene dice de quién es en
+     `data-neg`, así que agregar un botón nuevo no obliga a tocar esto: basta
+     con ponerle su `data-medio`. Va sin `preventDefault` ni nada que altere el
+     clic —apuntar no cambia lo que el botón ya hacía—, y en burbuja, después
+     de los demás, para que el jalón del carrusel alcance a tragarse el clic
+     que va detrás de un arrastre antes de que aquí se cuente como contacto. */
+  document.addEventListener('click', (e) => {
+    const boton = e.target.closest('[data-medio]');
+    if (boton) {
+      const ficha = boton.closest('[data-neg]');
+      apuntar('contacto', {
+        negocio: ficha ? ficha.dataset.neg : 'sin-ficha',
+        medio: boton.dataset.medio
+      });
+      return;
+    }
+
+    /* Los banners de la portada llevan a la ficha del negocio, y eso es
+       justamente lo que compran el Destacado y el Premium: se cuenta aparte
+       de los contactos, para poder decirle a cada quien si su lugar en la
+       portada le está sirviendo de algo. */
+    const banner = e.target.closest('.dest__card, .vip__manto');
+    if (banner) {
+      const ficha = banner.closest('[data-neg]');
+      apuntar('banner', {
+        negocio: ficha ? ficha.dataset.neg : 'sin-ficha',
+        lugar: banner.classList.contains('vip__manto') ? 'premium' : 'destacado'
+      });
+    }
+  });
+
   /* Click en tarjeta de categoría */
   document.addEventListener('click', (e) => {
     const cat = e.target.closest('[data-cat]');
@@ -1657,6 +1764,9 @@
     const texto = `Hola, me interesa registrar mi negocio en Guía Los Reyes ` +
                   `con el Plan ${btn.dataset.plan} (${btn.dataset.precio}).`;
     btn.href = `https://wa.me/${WA_DIRECTORIO}?text=${encodeURIComponent(texto)}`;
+    /* El único apunte que no es de un negocio sino del directorio: cuántos
+       quisieron contratar, y cuál de los tres planes les llamó. */
+    btn.addEventListener('click', () => apuntar('plan', { plan: btn.dataset.plan }));
   });
 
   renderHome();
