@@ -691,8 +691,6 @@
           <h3 class="card__title">${esc(neg.nombre)}</h3>
 
           <p class="card__line">
-            <span class="card__rating">${icon(ICONS.star)}${neg.rating.toFixed(1)}</span>
-            <span class="card__sep">·</span>
             <a class="card__mapa" href="${mapaLink(neg)}" target="_blank" rel="noopener" data-medio="mapa"
                title="Cómo llegar en Google Maps">${icon(ICONS.pin)} ${esc(neg.zona)}</a>
           </p>
