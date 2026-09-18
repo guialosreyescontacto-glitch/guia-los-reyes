@@ -1,0 +1,3 @@
+Aqui van las fotos de los negocios, una por negocio.
+Horizontales, nombradas como el negocio sin acentos ni espacios: dental-sonrisa.jpg
+El nombre del archivo es lo que va en la columna "foto" de la hoja.

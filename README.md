@@ -50,7 +50,10 @@ Salgado, Michoacán. Sitio estático, mobile-first, sin dependencias ni paso de 
 │       ├── data.js         Categorías, filtros y negocios  ← edita aquí el contenido
 │       └── app.js          Enrutado, render y filtrado
 ├── docs/
-│   └── consentimiento.md   Los mensajes para pedirle permiso a cada negocio
+│   ├── consentimiento.md   Los mensajes para pedirle permiso a cada negocio
+│   ├── como-pasarme-los-negocios.md  Cómo entregarme los datos reales
+│   ├── negocios-plantilla.csv        La hoja que hay que llenar
+│   └── fotos/                        Una foto por negocio
 ├── vercel.json             Cabeceras y caché para el despliegue
 └── README.md
 ```
@@ -155,7 +158,7 @@ sin *Build Command* y con *Output Directory* vacío (la raíz).
 ## Siguientes pasos sugeridos
 
 - **Elegir a dónde se mandan los apuntes** y ponerlo en `DESTINO` (`app.js`). Hoy está vacío: la medición está cableada y probada, pero callada. Las cuentas verificadas en la documentación de Vercel: en el plan **Hobby los eventos propios no existen** —sólo cuenta vistas de página, con un mes de historial—, así que para tener el informe por negocio hace falta **Pro** ($20 USD/mes, 2 datos por evento, 12 meses de historial, $0.03 USD por cada mil eventos). Vale la pena saber además que el plan Hobby de Vercel es para uso **no comercial**, así que un directorio que cobra mensualidades acaba en Pro de todos modos.
-- Reemplazar los datos de ejemplo por negocios reales, con permiso de cada comercio.
+- Reemplazar los datos de ejemplo por negocios reales, con permiso de cada comercio. La entrega va en hoja de cálculo, no en PDF ni pegado en el chat: ver [`docs/como-pasarme-los-negocios.md`](docs/como-pasarme-los-negocios.md) y llenar [`docs/negocios-plantilla.csv`](docs/negocios-plantilla.csv). Se vacía **una categoría a la vez**, para que nunca haya mezcla de negocios reales y de ejemplo.
 - **Llenar los huecos amarillos del aviso de privacidad** (`#/privacidad` en `index.html`): nombre del responsable, domicilio, WhatsApp y fecha. Mientras haya uno sin llenar, el aviso no sirve como aviso. **El domicilio no es el de tu casa**: la ley pide uno para recibir avisos, así que sirve un buzón contratado, una oficina virtual o el despacho del contador; publicar un domicilio particular junto al nombre del responsable es regalar más de lo que se pide.
 - Poner el WhatsApp real del directorio en `WA_DIRECTORIO` (hoy es un número de relleno).
 - Sustituir los banners de color por fotos reales (`<img>` dentro de `.card__banner`).
