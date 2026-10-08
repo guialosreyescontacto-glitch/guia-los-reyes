@@ -668,6 +668,10 @@ button { font: inherit; color: inherit; }
   padding: 3px 8px; font-size: 10px;
 }
 .dest__card .badge svg { width: 11px; height: 11px; }
+/* Sin la palabra, el sello del carrusel es un círculo; el relleno de arriba
+   pesa más que el de `.badge--solo` y lo deformaría en pastilla. */
+.dest__card .badge--solo { width: 22px; height: 22px; padding: 0; }
+.dest__card .badge--solo svg { width: 12px; height: 12px; }
 
 /* Flechas flotantes sobre los costados. Sólo en pantallas grandes: en el
    teléfono taparían media tarjeta, y ahí el carrusel se lleva con el dedo. */
@@ -1648,16 +1652,22 @@ button { font: inherit; color: inherit; }
   .esq.is-latido { animation: none; }
 }
 
-/* En el renglón gratuito no hay banner: el botón va sin fondo, en tinta
-   apagada, y toma el color de acento al quedar guardado. */
+/* En el renglón gratuito no hay banner sobre el cual flotar: sin fondo, los
+   dos iconos se veían sueltos, como dibujos y no como botones. Van en un
+   círculo chico del mismo gris de las etiquetas, con su filo, y al quedar
+   guardado se pinta del acento. */
 .esq--fila {
-  width: 38px; height: 38px; padding: 9px;
-  background: none; color: var(--ink-3);
+  width: 34px; height: 34px; padding: 8px;
+  background: var(--surface-2); color: var(--ink-2);
+  border: 1px solid var(--line);
   backdrop-filter: none; -webkit-backdrop-filter: none;
 }
-.esq--fila[aria-pressed="true"] { color: var(--accent); }
+.esq--fila[aria-pressed="true"] {
+  color: var(--accent); background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
 @media (hover: hover) {
-  .esq--fila:hover { background: var(--surface-2); color: var(--ink); }
+  .esq--fila:hover { background: var(--surface-2); border-color: var(--line-strong); color: var(--ink); }
 }
 
 /* El botón de guardados del encabezado usa el cuerpo del selector de tema.
@@ -1689,11 +1699,22 @@ button { font: inherit; color: inherit; }
   .aviso { transition: none; }
 }
 
-/* Los dos botones del renglón, uno encima del otro y sin aire entre ellos.
-   Puestos lado a lado le quitaban al nombre 38px más, y en un renglón de pila
-   el nombre ya salía cortado ("Servicio Diésel El T…"); a lo alto, en cambio,
-   el renglón mide 115px y los dos juntos 76, así que caben sin estirarlo. */
-.fila__esquinas { flex: none; display: flex; flex-direction: column; }
+/* El costado derecho del renglón. En pantalla ancha sólo lleva guardar y
+   compartir, uno encima del otro: lado a lado le quitaban al nombre 40px, y en
+   una pila el nombre ya sale cortado; a lo alto caben sin estirar el renglón.
+
+   En el teléfono además va el botón de llamar, y ahí el costado se arma como
+   las esquinas de una tarjeta: guardar y compartir juntos arriba, chicos, y
+   el de llamar —que es al que se viene— abajo. Así ocupan 74px de ancho en
+   vez de los 92 que se comían en tres columnas sueltas. */
+.fila__lado {
+  flex: none; align-self: stretch;
+  display: flex; flex-direction: column; align-items: flex-end;
+  justify-content: center; gap: 6px;
+}
+.fila__esquinas { display: flex; flex-direction: column; gap: 6px; }
+.fila__lado--movil { justify-content: space-between; }
+.fila__lado--movil .fila__esquinas { flex-direction: row; }
 
 /* El sello de plan sin palabra: un círculo con la corona o la estrella. */
 .badge--solo {
@@ -1701,3 +1722,16 @@ button { font: inherit; color: inherit; }
   justify-content: center; border-radius: 50%;
 }
 .badge--solo svg { width: 14px; height: 14px; }
+
+/* La fachada del local en el banner de la tarjeta: nítida, a lo ancho, sin
+   logotipo encima. Se encuadra hacia arriba porque ahí suele ir el letrero;
+   el velo cambia por uno que sólo oscurece las dos orillas, donde van los
+   botones y los sellos, y deja el centro de la foto como es. */
+.card__banner--fachada {
+  background-size: cover; background-position: center 30%;
+  background-repeat: no-repeat;
+}
+.card__banner--fachada::after {
+  background: linear-gradient(180deg,
+    rgba(0,0,0,.28), transparent 32%, transparent 62%, rgba(0,0,0,.38));
+}

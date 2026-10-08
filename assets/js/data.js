@@ -105,6 +105,11 @@ const CIUDAD = 'Los Reyes de Salgado, Michoacán, México';
           nítida en el banner de la tarjeta y en el recuadro del banner
           Premium, en lugar de las iniciales. Sin `logo` se dibujan las dos
           letras de siempre.
+   fachada OPCIONAL. Foto del local por fuera, apaisada. Si está, el banner
+          de la tarjeta en los listados la enseña nítida y sin logotipo: es
+          lo que sirve para reconocer el lugar desde la calle. La portada no
+          la usa; ahí siguen mandando `logo` y `foto`. Que sea foto propia
+          del negocio, no una captura de Street View: esas son de Google.
    foto   OPCIONAL, pero clave para los destacados. Ruta o URL de la foto, el
           logotipo o el banner promocional del negocio. La usan el banner VIP
           de la portada (recuadro cuadrado) y el carrusel de destacados, donde
@@ -490,6 +495,7 @@ const CATEGORIAS = [
         anuncio: 'assets/img/soluciones-graficas-anuncio.jpg',
         hueco: '82% 1% 2% 62%',
         logo: 'assets/img/soluciones-graficas-logo.png',
+        fachada: 'assets/img/soluciones-graficas-fachada.jpg',
         tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
         zona: 'Av. Morelos, Centro',
         mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',
@@ -505,6 +511,7 @@ const CATEGORIAS = [
       { nombre: 'Soluciones Gráficas · Premium',
         foto: 'assets/img/soluciones-graficas.webp',
         logo: 'assets/img/soluciones-graficas-logo.png', plan: 'premium', filtro: 'imprenta',
+        fachada: 'assets/img/soluciones-graficas-fachada.jpg',
         tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
         zona: 'Av. Morelos, Centro',
         mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',
@@ -520,6 +527,7 @@ const CATEGORIAS = [
       { nombre: 'Soluciones Gráficas · Destacado',
         foto: 'assets/img/soluciones-graficas.webp',
         logo: 'assets/img/soluciones-graficas-logo.png', plan: 'destacado', filtro: 'imprenta',
+        fachada: 'assets/img/soluciones-graficas-fachada.jpg',
         tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
         zona: 'Av. Morelos, Centro',
         mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',
@@ -535,6 +543,7 @@ const CATEGORIAS = [
       { nombre: 'Soluciones Gráficas · Ficha completa',
         foto: 'assets/img/soluciones-graficas.webp',
         logo: 'assets/img/soluciones-graficas-logo.png', plan: 'completa', filtro: 'imprenta',
+        fachada: 'assets/img/soluciones-graficas-fachada.jpg',
         tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
         zona: 'Av. Morelos, Centro',
         mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',

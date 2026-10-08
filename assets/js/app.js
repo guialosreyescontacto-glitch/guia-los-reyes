@@ -118,9 +118,14 @@
       Escrita aquí, en el atributo, cuelga de la página y da con el archivo. */
   /* Comillas simples adentro: el atributo `style` va entre dobles, y unas
      dobles aquí lo cerrarían a media ruta. */
-  const arte = (neg) => neg.foto
-    ? `;background-image:url('${String(neg.foto).replace(/["')(\\]/g, '')}')`
-    : '';
+  const fondo = (ruta) => `;background-image:url('${String(ruta).replace(/["')(\\]/g, '')}')`;
+  const arte = (neg) => neg.foto ? fondo(neg.foto) : '';
+
+  /* La foto del local por fuera, cuando el negocio la tiene: en su ficha se
+     pone ésa, nítida y en vez del logotipo. Es lo que necesita quien va a ir —
+     reconocer la fachada desde la calle—, mientras que el logotipo ya lo vio
+     en el carrusel de la portada. */
+  const fachada = (neg) => neg.fachada ? fondo(neg.fachada) : '';
 
   const waLink = (tel, nombre) =>
     `https://wa.me/${tel}?text=${encodeURIComponent(WA_TEMPLATE(nombre))}`;
@@ -720,11 +725,13 @@
           </div>
         </div>
 
-        <div class="fila__esquinas">
-          ${botonGuardar(neg, 'esq--fila')}
-          ${botonCompartir(neg, 'esq--fila')}
+        <div class="fila__lado${ESMOVIL ? ' fila__lado--movil' : ''}">
+          <div class="fila__esquinas">
+            ${botonGuardar(neg, 'esq--fila')}
+            ${botonCompartir(neg, 'esq--fila')}
+          </div>
+          ${ESMOVIL ? `<div class="card__actions fila__accion">${botonesContacto(neg)}</div>` : ''}
         </div>
-        ${ESMOVIL ? `<div class="card__actions fila__accion">${botonesContacto(neg)}</div>` : ''}
       </article>`;
   }
 
@@ -755,9 +762,12 @@
       <article class="card card--${variante}" data-neg="${seña(neg)}"
                style="animation-delay:${Math.min(idx, 8) * 35}ms">
 
-        <div class="card__banner${neg.foto ? ' card__banner--arte' : ''}"
-             style="--banner:linear-gradient(135deg, ${c1}, ${c2})${arte(neg)}">
-          ${neg.logo
+        <div class="card__banner${neg.fachada ? ' card__banner--fachada'
+                                   : neg.foto ? ' card__banner--arte' : ''}"
+             style="--banner:linear-gradient(135deg, ${c1}, ${c2})${neg.fachada ? fachada(neg) : arte(neg)}">
+          ${neg.fachada
+            ? ''
+            : neg.logo
             ? `<img class="card__logo" src="${esc(neg.logo)}" alt="" loading="lazy">`
             : `<span class="card__initials">${esc(iniciales(neg.nombre))}</span>
                <span class="card__glyph">${icon(cat.icono)}</span>`}
@@ -894,7 +904,7 @@
            aria-label="${esc(neg.nombre)}, ver su ficha en ${esc(neg.cat.nombre)}"></a>
         <div class="vip__cuerpo">
           <div class="vip__texto">
-            <span class="badge badge--vip">${icon(ICONS.corona)} Premium</span>
+            <span class="badge badge--vip badge--solo" role="img" aria-label="Premium" title="Premium">${icon(ICONS.corona)}</span>
             <h3 class="vip__nombre">${esc(neg.nombre)}</h3>
             <p class="vip__desc">${esc(neg.desc)}</p>
             <p class="vip__meta">
@@ -1205,7 +1215,7 @@
           ? `<img src="${esc(neg.foto)}" alt="" loading="lazy">`
           : `<span class="dest__ini">${esc(iniciales(neg.nombre))}</span>` +
             `<span class="dest__glifo">${icon(neg.cat.icono)}</span>`}
-        <span class="badge badge--featured">${icon(ICONS.star)} Destacado</span>
+        <span class="badge badge--featured badge--solo" role="img" aria-label="Destacado" title="Destacado">${icon(ICONS.star)}</span>
       </a>`;
   }
 
