@@ -1497,3 +1497,64 @@ button { font: inherit; color: inherit; }
   box-shadow: 0 2px 12px rgba(0,0,0,.3);
 }
 @media (min-width: 560px) { .card__logo { width: 60px; height: 60px; } }
+
+/* --- El logotipo en el carrusel de destacados --------------------------- */
+.dest__card--arte { background-size: cover; background-position: center; }
+.dest__card--arte::after { backdrop-filter: blur(16px) saturate(130%); -webkit-backdrop-filter: blur(16px) saturate(130%); }
+/* El logotipo no se recorta: `contain`. Va con la tarjeta por delante en el
+   selector porque `.dest__card img` —que lo estira a todo el banner y lo
+   recorta— pesa más que una sola clase, y ganaría aunque esté más arriba. */
+.dest__card .dest__logo {
+  position: relative; z-index: 1;
+  width: 52%; height: auto; max-height: 66%;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 3px 16px rgba(0,0,0,.34);
+}
+
+/* --- El Premium que es su propio anuncio -------------------------------- */
+/* Sin relleno y sin degradado: la tarjeta es la imagen y nada más. El alto
+   se lo da el propio anuncio, así que sale completo, sin recortes. */
+.vip__slide--anuncio {
+  display: block; padding: 0;
+  background: var(--surface);
+  /* Los botones se miden contra el ancho de la tarjeta (`cqw`), no contra el
+     de la ventana: así quedan del mismo tamaño relativo al anuncio en el
+     teléfono y en el escritorio, como si vinieran impresos en él. */
+  container-type: inline-size;
+}
+.vip__slide--anuncio::before { content: none; }
+.vip__anuncio { display: block; width: 100%; height: auto; border-radius: inherit; }
+
+/* El hueco que el diseño del anuncio dejó libre. Va en el atributo `style` de
+   cada negocio porque cada anuncio lo deja en otro lado; el de aquí es la
+   esquina de abajo a la derecha. */
+.vip__acciones--hueco {
+  position: absolute; inset: var(--hueco, 86.5% 1% 1.5% 61%);
+  margin: 0; padding: 0; border: 0; background: none;
+  display: flex; align-items: center; justify-content: center;
+  gap: 1.4cqw;
+}
+/* El alto del hueco de este anuncio es el 12% de la imagen, y la imagen mide
+   2.71 de ancho por 1 de alto: 12% / 2.71 = 4.4% del ancho. Los botones van
+   un poco por debajo de esa cuenta para no tocar las orillas del hueco. */
+.vip__acciones--hueco .act,
+.vip__acciones--hueco .tel__ver {
+  width: 3.8cqw; height: 3.8cqw; min-width: 0; min-height: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.9);
+  border: 1px solid rgba(0,0,0,.12);
+  box-shadow: 0 1px 4px rgba(0,0,0,.18);
+}
+.vip__acciones--hueco .act svg { width: 58%; height: 58%; }
+/* El número destapado no cabe en el hueco de un anuncio: ahí el botón del
+   teléfono marca y ya, como en el celular. */
+.vip__acciones--hueco .tel__num { display: none; }
+
+/* Donde no hay consultas de contenedor, los botones se quedan en un tamaño
+   fijo chico en vez de encogerse a cero. */
+@supports not (container-type: inline-size) {
+  .vip__acciones--hueco .act,
+  .vip__acciones--hueco .tel__ver { width: 22px; height: 22px; }
+  .vip__acciones--hueco { gap: 6px; }
+}

@@ -475,6 +475,25 @@ const CATEGORIAS = [
          inventados de esta categoría, o se quita de aquí, porque el pie de la
          página sigue diciendo que todos los negocios son ficticios.
          ------------------------------------------------------------------ */
+      /* El Premium que se pinta como su propio anuncio: en vez de la tarjeta
+         armada con su nombre y su descripción, su arte entero y nítido, con
+         los botones de contacto metidos en el hueco blanco que su diseño dejó
+         libre abajo a la derecha. `hueco` va en porcentajes de la imagen
+         —arriba, derecha, abajo, izquierda—, medidos sobre el propio anuncio. */
+      { nombre: 'Soluciones Gráficas · Anuncio', plan: 'premium', filtro: 'imprenta',
+        anuncio: 'assets/img/soluciones-graficas-anuncio.jpg',
+        hueco: '86.5% 1% 1.5% 61%',
+        logo: 'assets/img/soluciones-graficas-logo.png',
+        tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
+        zona: 'Av. Morelos, Centro',
+        mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',
+        horario: { 'Lun a Vie': '9:00 – 14:00, 16:30 – 20:00',
+                   'Sáb':       '9:30 – 15:00' },
+        tel: '523545464993',
+        correo: 'macr0617@hotmail.com',
+        redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
+        desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
+
       { nombre: 'Soluciones Gráficas · Premium',
         foto: 'assets/img/soluciones-graficas.webp',
         logo: 'assets/img/soluciones-graficas-logo.png', plan: 'premium', filtro: 'imprenta',

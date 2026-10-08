@@ -782,7 +782,34 @@
      Las diapositivas van en fila dentro de una ventana que las recorta, y la
      fila se corre de página en página: en escritorio se ven dos a la vez, en
      el teléfono una. */
+  /* El Premium con su propio anuncio: en vez de armarle una tarjeta con su
+     nombre y su descripción, se pone su anuncio tal cual, entero y nítido,
+     como la plana de una revista. Encima van los botones de contacto de
+     siempre, metidos en el hueco que el diseño dejó libre —`--hueco`, en
+     porcentajes de la propia imagen, porque el anuncio de cada negocio deja su
+     espacio en otro lado—, y el manto hace que tocar el anuncio lleve a su
+     ficha. Eso es lo que la revista de papel no puede hacer: ahí el teléfono
+     hay que teclearlo.
+
+     Sin texto que leer, el nombre del negocio viaja en el `alt` de la imagen y
+     en el `aria-label` del manto, que es lo único que anuncia un lector de
+     pantalla cuando el contenido es una imagen. */
+  function anuncioVip(neg) {
+    return `
+      <article class="vip__slide vip__slide--anuncio" data-neg="${seña(neg)}"
+               style="--hueco:${esc(neg.hueco || '86.5% 1% 1.5% 61%')}">
+        <img class="vip__anuncio" src="${esc(neg.anuncio)}"
+             alt="Anuncio de ${esc(neg.nombre)}" decoding="async">
+        <a class="vip__manto" href="#/c/${neg.cat.id}/todos/${seña(neg)}"
+           title="${esc(neg.nombre)}"
+           aria-label="${esc(neg.nombre)}, ver su ficha en ${esc(neg.cat.nombre)}"></a>
+        <div class="vip__acciones vip__acciones--hueco">${botonesContacto(neg)}</div>
+      </article>`;
+  }
+
   function diapositivaVip(neg) {
+    if (neg.anuncio) return anuncioVip(neg);
+
     const [c1, c2] = neg.cat.banner;
     /* La fila superior lleva el texto y el recuadro de la foto; la inferior,
        la barra de contacto con los botones que ya usan las tarjetas. Sin
@@ -1097,11 +1124,20 @@
   function tarjetaDestacada(neg) {
     const [c1, c2] = neg.cat.banner;
     return `
-      <a class="dest__card" href="#/c/${neg.cat.id}/todos/${seña(neg)}"
+      <a class="dest__card${neg.logo && neg.foto ? ' dest__card--arte' : ''}"
+         href="#/c/${neg.cat.id}/todos/${seña(neg)}"
          data-neg="${seña(neg)}" title="${esc(neg.nombre)}"
          aria-label="${esc(neg.nombre)}, ver su ficha en ${esc(neg.cat.nombre)}"
-         style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
-        ${neg.foto
+         style="--banner:linear-gradient(135deg, ${c1}, ${c2})${neg.logo ? arte(neg) : ''}">
+        ${neg.logo
+          /* Con logotipo manda el logotipo, no la imagen: el banner del
+             carrusel es casi cuadrado y una lona apaisada metida aquí se
+             recorta por los lados, así que lo que se alcanza a ver es un
+             pedazo del centro —ni el nombre ni la marca—. El logotipo entero
+             sobre su propio arte borroso sí dice de quién es el banner, que es
+             lo único que este carrusel tiene que decir. */
+          ? `<img class="dest__logo" src="${esc(neg.logo)}" alt="" loading="lazy">`
+          : neg.foto
           ? `<img src="${esc(neg.foto)}" alt="" loading="lazy">`
           : `<span class="dest__ini">${esc(iniciales(neg.nombre))}</span>` +
             `<span class="dest__glifo">${icon(neg.cat.icono)}</span>`}
