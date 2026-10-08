@@ -1472,6 +1472,9 @@
     $('#emptyState').hidden = lista.length > 0;
 
     mostrarVista('category');
+    /* Recién mostrada se puede medir: oculta medía cero, y de su alto depende
+       cuánto sube al recogerse. */
+    syncHeaderHeight();
 
     /* Si se llegó tocando un banner del carrusel, su ficha —que ya quedó
        arriba, debajo de los Premium— se marca para que lata al aparecer. */
@@ -1572,7 +1575,10 @@
        desde un banner del carrusel sí sube: trae un cuarto tramo con el
        negocio, y la idea es abrir la categoría completa desde arriba. */
     const filtrando = parts[0] === 'c' && parts[2] && !parts[3];
-    if (!filtrando) window.scrollTo({ top: 0, behavior: 'instant' });
+    if (!filtrando) {
+      recoger(false);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
   }
 
   /* ------------------------------------------ El número que se deja ver */
@@ -1791,13 +1797,77 @@
      lo que descuenta el `scroll-margin-top` de las fichas. Se miden en vez de
      darlas por sentadas porque cambian con el ancho y con el largo del nombre
      de la categoría. */
+  let altoBarras = 0;
   const syncHeaderHeight = () => {
     const raiz = document.documentElement;
-    raiz.style.setProperty('--header-h', $('#header').offsetHeight + 'px');
+    const altoHeader = $('#header').offsetHeight;
+    raiz.style.setProperty('--header-h', altoHeader + 'px');
     const barra = $('.catbar');
-    if (barra) raiz.style.setProperty('--catbar-h', barra.offsetHeight + 'px');
+    if (!barra) return;
+    raiz.style.setProperty('--catbar-h', barra.offsetHeight + 'px');
+    /* Lo que hay en la barra arriba de los filtros —el regreso, el ícono y el
+       título—: es lo que se esconde al recogerse. Se mide por diferencia de
+       posiciones, que no cambia aunque la barra ya vaya desplazada. */
+    const arriba = $('.filters', barra).getBoundingClientRect().top -
+                   barra.getBoundingClientRect().top;
+    raiz.style.setProperty('--catbar-arriba', arriba + 'px');
+    altoBarras = altoHeader + barra.offsetHeight;
   };
   window.addEventListener('resize', syncHeaderHeight);
+
+  /* ------------------------------------------- Barras que se recogen
+
+     En el teléfono, dentro de una categoría, el encabezado y la barra de la
+     categoría van pegados arriba y juntos se comen casi la mitad de la
+     pantalla. Al bajar se recogen y sólo se quedan los filtros, que es lo que
+     se sigue usando mientras se recorre la lista; al subir, aunque sea un
+     poco, vuelven completos. Es lo mismo que hace la barra de direcciones del
+     navegador, así que nadie tiene que aprenderlo.
+
+     Se mueven con `transform`, no cambiando su alto: así la lista de abajo no
+     brinca, sólo se destapa. */
+  const angosta = window.matchMedia('(max-width: 899.98px)');
+  /* Cuánto hay que recorrer en un mismo sentido para que cambien. Sin este
+     margen, el temblor del dedo al detenerse las haría parpadear. */
+  const ARRANQUE = 14;
+  let ultimoY = window.scrollY;
+  let recorrido = 0;
+
+  function recoger(si) {
+    document.documentElement.classList.toggle('is-recogido', si);
+  }
+
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const paso = y - ultimoY;
+    ultimoY = y;
+
+    /* Arriba del todo se ve como siempre: no se recoge nada hasta haber
+       pasado las propias barras. Tampoco fuera de una categoría, ni en
+       pantalla ancha, donde la barra de la categoría no va pegada. */
+    if (!angosta.matches || $('#view-category').hidden || y <= altoBarras) {
+      recorrido = 0;
+      recoger(false);
+      return;
+    }
+    /* Con el teclado abierto en el buscador, el desplazamiento lo provoca el
+       propio teclado, no el vecino: no se esconde lo que está escribiendo. */
+    if (document.activeElement === input) return;
+
+    recorrido = Math.sign(paso) === Math.sign(recorrido) ? recorrido + paso : paso;
+    if (recorrido > ARRANQUE) recoger(true);
+    else if (recorrido < -ARRANQUE) recoger(false);
+  }, { passive: true });
+
+  /* Quien llega con el teclado (Tab) a algo de las barras recogidas las ve
+     volver: un foco escondido fuera de la pantalla es un foco perdido. Sólo
+     con teclado (`:focus-visible`): tocar un filtro también le da el foco, y
+     si eso las destapara, cada cambio de filtro taparía otra vez la lista. */
+  document.addEventListener('focusin', (e) => {
+    if (e.target.closest('.header, .catbar') && e.target.matches(':focus-visible')) {
+      recoger(false);
+    }
+  });
 
   /* ----------------------------------------------------------- Tema claro/oscuro */
 

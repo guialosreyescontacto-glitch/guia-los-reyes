@@ -788,6 +788,20 @@ button { font: inherit; color: inherit; }
    para saber a qué altura empieza lo que sí se ve. */
 @media (max-width: 899.98px) {
   :root { --pegado: calc(var(--header-h) + var(--catbar-h)); }
+
+  /* Recogidas al ir bajando (lo decide `app.js`): el encabezado sube su propio
+     alto y la barra sube eso más lo que tiene arriba de los filtros, así que
+     los filtros quedan solos pegados al borde de la pantalla. Las dos se
+     mueven con `transform` y no con su alto, para que la lista no brinque. */
+  .header, .catbar { transition: transform .28s cubic-bezier(.2, .7, .3, 1); }
+  .is-recogido .header { transform: translateY(-100%); }
+  .is-recogido .catbar {
+    transform: translateY(calc(-1 * (var(--header-h) + var(--catbar-arriba, 0px))));
+    box-shadow: var(--shadow-sm);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .header, .catbar { transition: none; }
 }
 
 .backlink {
