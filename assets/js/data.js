@@ -95,6 +95,10 @@ const CIUDAD = 'Los Reyes de Salgado, Michoacán, México';
 
           Los premium además rotan en el banner VIP de la portada, así que
           conviene que traigan `redes.web`.
+   logo   OPCIONAL. Ruta de la marca del negocio, cuadrada. Sale entera y
+          nítida en el banner de la tarjeta y en el recuadro del banner
+          Premium, en lugar de las iniciales. Sin `logo` se dibujan las dos
+          letras de siempre.
    foto   OPCIONAL, pero clave para los destacados. Ruta o URL de la foto, el
           logotipo o el banner promocional del negocio. La usan el banner VIP
           de la portada (recuadro cuadrado) y el carrusel de destacados, donde
@@ -471,7 +475,9 @@ const CATEGORIAS = [
          inventados de esta categoría, o se quita de aquí, porque el pie de la
          página sigue diciendo que todos los negocios son ficticios.
          ------------------------------------------------------------------ */
-      { nombre: 'Soluciones Gráficas · Premium', plan: 'premium', filtro: 'imprenta',
+      { nombre: 'Soluciones Gráficas · Premium',
+        foto: 'assets/img/soluciones-graficas.webp',
+        logo: 'assets/img/soluciones-graficas-logo.png', plan: 'premium', filtro: 'imprenta',
         tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
         zona: 'Av. Morelos, Centro',
         mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',
@@ -482,7 +488,9 @@ const CATEGORIAS = [
         redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
         desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
 
-      { nombre: 'Soluciones Gráficas · Destacado', plan: 'destacado', filtro: 'imprenta',
+      { nombre: 'Soluciones Gráficas · Destacado',
+        foto: 'assets/img/soluciones-graficas.webp',
+        logo: 'assets/img/soluciones-graficas-logo.png', plan: 'destacado', filtro: 'imprenta',
         tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
         zona: 'Av. Morelos, Centro',
         mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',
@@ -493,7 +501,9 @@ const CATEGORIAS = [
         redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
         desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
 
-      { nombre: 'Soluciones Gráficas · Ficha completa', plan: 'completa', filtro: 'imprenta',
+      { nombre: 'Soluciones Gráficas · Ficha completa',
+        foto: 'assets/img/soluciones-graficas.webp',
+        logo: 'assets/img/soluciones-graficas-logo.png', plan: 'completa', filtro: 'imprenta',
         tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
         zona: 'Av. Morelos, Centro',
         mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',
@@ -507,7 +517,9 @@ const CATEGORIAS = [
       /* Los mismos datos que las tres de arriba. La ficha gratuita no los
          pinta —ni descripción, ni etiquetas, ni correo, ni redes—, y eso es
          justo lo que se quiere enseñar: lo que se deja de ver. */
-      { nombre: 'Soluciones Gráficas · Ficha gratis', plan: 'basico', filtro: 'imprenta',
+      { nombre: 'Soluciones Gráficas · Ficha gratis',
+        foto: 'assets/img/soluciones-graficas.webp',
+        logo: 'assets/img/soluciones-graficas-logo.png', plan: 'basico', filtro: 'imprenta',
         tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
         zona: 'Av. Morelos, Centro',
         mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',

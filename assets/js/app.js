@@ -103,6 +103,25 @@
     }, 1200);
   }
 
+  /** El arte del negocio como fondo del banner. Va difuminado y oscurecido
+      detrás del logotipo, no a la vista: lo que el negocio manda suele ser su
+      lona o su tarjeta —apaisada, con su propio texto y sus teléfonos—, y
+      metida entera en un recuadro de 16:6 no se lee ni se entiende. Borrosa
+      hace lo que sí sabe hacer: poner los colores de la marca debajo de su
+      propio logotipo. Quien la quiera ver completa la tiene nítida en el
+      carrusel de la portada, que para eso es ancho.
+
+      Va como `background-image` y no como una variable: una `url()` guardada en
+      una propiedad personalizada se resuelve desde el archivo donde se *usa* la
+      variable —la hoja de estilos—, no desde donde se escribió, así que
+      'assets/img/x.webp' terminaba buscándose en 'assets/css/assets/img/'.
+      Escrita aquí, en el atributo, cuelga de la página y da con el archivo. */
+  /* Comillas simples adentro: el atributo `style` va entre dobles, y unas
+     dobles aquí lo cerrarían a media ruta. */
+  const arte = (neg) => neg.foto
+    ? `;background-image:url('${String(neg.foto).replace(/["')(\\]/g, '')}')`
+    : '';
+
   const waLink = (tel, nombre) =>
     `https://wa.me/${tel}?text=${encodeURIComponent(WA_TEMPLATE(nombre))}`;
 
@@ -672,9 +691,12 @@
       <article class="card card--${variante}" data-neg="${seña(neg)}"
                style="animation-delay:${Math.min(idx, 8) * 35}ms">
 
-        <div class="card__banner" style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
-          <span class="card__initials">${esc(iniciales(neg.nombre))}</span>
-          <span class="card__glyph">${icon(cat.icono)}</span>
+        <div class="card__banner${neg.foto ? ' card__banner--arte' : ''}"
+             style="--banner:linear-gradient(135deg, ${c1}, ${c2})${arte(neg)}">
+          ${neg.logo
+            ? `<img class="card__logo" src="${esc(neg.logo)}" alt="" loading="lazy">`
+            : `<span class="card__initials">${esc(iniciales(neg.nombre))}</span>
+               <span class="card__glyph">${icon(cat.icono)}</span>`}
           <div class="card__badges">
             ${vip
               ? `<span class="badge badge--vip">${icon(ICONS.corona)} Premium</span>`
@@ -774,8 +796,8 @@
        otros enlaces —la dirección y los botones— y un enlace dentro de otro no
        es válido; así, tendido por encima, cada quien conserva el suyo. */
     return `
-      <article class="vip__slide" data-neg="${seña(neg)}"
-               style="--banner:linear-gradient(135deg, ${c1}, ${c2})">
+      <article class="vip__slide${neg.foto ? ' vip__slide--arte' : ''}" data-neg="${seña(neg)}"
+               style="--banner:linear-gradient(135deg, ${c1}, ${c2})${arte(neg)}">
         <a class="vip__manto" href="#/c/${neg.cat.id}/todos/${seña(neg)}"
            title="${esc(neg.nombre)}"
            aria-label="${esc(neg.nombre)}, ver su ficha en ${esc(neg.cat.nombre)}"></a>
@@ -792,8 +814,8 @@
           </div>
 
           <div class="vip__foto">
-            ${neg.foto
-              ? `<img src="${esc(neg.foto)}" alt="" loading="lazy">`
+            ${neg.logo || neg.foto
+              ? `<img src="${esc(neg.logo || neg.foto)}" alt="" loading="lazy">`
               : `<span class="vip__foto-ini">${esc(iniciales(neg.nombre))}</span>` +
                 `<span class="vip__foto-glifo">${icon(neg.cat.icono)}</span>`}
           </div>

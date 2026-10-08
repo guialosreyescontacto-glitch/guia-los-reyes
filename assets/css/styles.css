@@ -1450,3 +1450,50 @@ button { font: inherit; color: inherit; }
   border-radius: 10px; border: 1px solid #ca8a04; font-weight: 400; line-height: 1.55;
 }
 .falta--grande strong { display: block; margin-bottom: 4px; }
+
+/* --- El arte del negocio de fondo ---------------------------------------
+   Cuando el negocio manda su lona o su tarjeta, va de fondo del banner pero
+   borrosa: el `backdrop-filter` del velo difumina lo que quedó detrás —la
+   imagen— sin tocar lo que va encima, que es el logotipo y los sellos. Así el
+   recuadro toma los colores de la marca sin pelearse con el texto de la lona,
+   que a ese tamaño no se lee de todos modos.
+
+   Si el navegador no sabe de `backdrop-filter`, la imagen se ve nítida bajo el
+   mismo velo oscuro: menos bonito, igual de legible. */
+/* La imagen la pone el atributo `style` de cada ficha; aquí sólo se le dice
+   cómo acomodarse. */
+.card__banner--arte,
+.vip__slide--arte {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.card__banner--arte::after,
+.vip__slide--arte::before {
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+}
+/* Con una foto debajo hace falta más sombra que sobre un degradado liso: el
+   blanco del logotipo y de los sellos tiene que ganarle a lo que haya salido
+   borroso ahí abajo. */
+.card__banner--arte::after {
+  background:
+    radial-gradient(90% 130% at 15% 0%, rgba(255,255,255,.14), transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,.34), rgba(0,0,0,.52));
+}
+.vip__slide--arte::before {
+  background:
+    radial-gradient(80% 120% at 12% 0%, rgba(255,255,255,.12), transparent 62%),
+    linear-gradient(180deg, rgba(0,0,0,.40), rgba(0,0,0,.60));
+}
+
+/* El logotipo ocupa el lugar de las iniciales: entero y sin recortar
+   —`contain`, no `cover`—, porque a una marca se le respeta la forma. */
+.card__logo {
+  position: relative; z-index: 1;
+  width: 54px; height: 54px;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+@media (min-width: 560px) { .card__logo { width: 60px; height: 60px; } }
