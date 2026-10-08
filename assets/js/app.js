@@ -694,10 +694,9 @@
   function filaNegocio(neg, idx) {
     const [c1, c2] = neg.cat.banner;
     const ahora = estado(neg);
-    /* El renglón también se puede guardar: la lista es de quien busca, no del
-       negocio, y "el cerrajero de la otra vez" no tiene por qué haber pagado.
-       Compartir sí se queda en la ficha completa, junto con las demás formas
-       de darse a conocer que la gratuita no trae. */
+    /* El renglón también se guarda y se comparte, como cualquier tarjeta: la
+       lista es de quien busca, no del negocio, y "el cerrajero de la otra vez"
+       no tiene por qué haber pagado para que se lo pasen a un vecino. */
     return `
       <article class="card card--fila" data-neg="${seña(neg)}"
                style="animation-delay:${Math.min(idx, 8) * 35}ms">
@@ -721,7 +720,10 @@
           </div>
         </div>
 
-        ${botonGuardar(neg, 'esq--fila')}
+        <div class="fila__esquinas">
+          ${botonGuardar(neg, 'esq--fila')}
+          ${botonCompartir(neg, 'esq--fila')}
+        </div>
         ${ESMOVIL ? `<div class="card__actions fila__accion">${botonesContacto(neg)}</div>` : ''}
       </article>`;
   }
@@ -740,7 +742,15 @@
       .map(t => `<li class="tag">${esc(t)}</li>`).join('');
 
     /* El sello del plan sólo lo llevan los dos que compran posición; la ficha
-       completa se distingue sola, por todo lo que la gratuita no trae. */
+       completa se distingue sola, por todo lo que la gratuita no trae. Va sin
+       la palabra: la corona y la estrella, cada una con su color, se
+       distinguen solas. La palabra se queda para el lector de pantalla y para
+       el globito que sale al pasar el cursor. */
+    const sello = vip
+      ? `<span class="badge badge--vip badge--solo" role="img" aria-label="Premium" title="Premium">${icon(ICONS.corona)}</span>`
+      : dest
+      ? `<span class="badge badge--featured badge--solo" role="img" aria-label="Destacado" title="Destacado">${icon(ICONS.star)}</span>`
+      : '';
     return `
       <article class="card card--${variante}" data-neg="${seña(neg)}"
                style="animation-delay:${Math.min(idx, 8) * 35}ms">
@@ -752,15 +762,11 @@
             : `<span class="card__initials">${esc(iniciales(neg.nombre))}</span>
                <span class="card__glyph">${icon(cat.icono)}</span>`}
           <div class="card__esquinas">
-            ${botonCompartir(neg)}
             ${botonGuardar(neg)}
+            ${botonCompartir(neg)}
           </div>
           <div class="card__badges">
-            ${vip
-              ? `<span class="badge badge--vip">${icon(ICONS.corona)} Premium</span>`
-              : dest
-              ? `<span class="badge badge--featured">${icon(ICONS.star)} Destacado</span>`
-              : ''}
+            ${sello}
             <span class="badge badge--${ahora}">
               ${ESTADOS[ahora].largo}
             </span>
@@ -1601,18 +1607,16 @@
     pintarLista($('#guardadosList'), lista);
     $('#guardadosVacio').hidden = lista.length > 0;
     mostrarVista('guardados');
-    contarGuardados();
+    botonGuardados();
   }
 
   /* El botón de guardados del encabezado sólo aparece cuando hay algo que
      ver: vacío no dice nada, y aparecer con el primer guardado es lo que
      enseña dónde quedó. Dentro de la vista se queda aunque se vacíe, para no
-     quitarle a uno el piso de donde está parado. */
-  function contarGuardados() {
-    const n = guardados.size;
-    $('#guardadosN').textContent = n;
-    $('#guardadosN').hidden = n === 0;
-    $('#guardadosBtn').hidden = n === 0 && $('#view-guardados').hidden;
+     quitarle a uno el piso de donde está parado. Va sin número: el icono
+     basta para decir que hay algo, y cuántos se ve al abrir la lista. */
+  function botonGuardados() {
+    $('#guardadosBtn').hidden = guardados.size === 0 && $('#view-guardados').hidden;
   }
 
   /* Un aviso que se va solo, abajo de la pantalla. Lo lee también el lector de
@@ -1651,7 +1655,7 @@
     });
     avisar(ahora ? 'Guardado. Lo encuentras arriba, en tus guardados.'
                  : 'Lo quitaste de tus guardados.');
-    contarGuardados();
+    botonGuardados();
     apuntar('guardar', { negocio: s, accion: ahora ? 'guarda' : 'quita' });
   }
 
@@ -1737,7 +1741,7 @@
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
     /* Saliendo de los guardados con la lista vacía, su botón se va. */
-    contarGuardados();
+    botonGuardados();
   }
 
   /* ------------------------------------------ El número que se deja ver */
@@ -1897,11 +1901,11 @@
     }
   });
 
-  /* Si otra pestaña guarda o quita algo, el contador de ésta se pone al día. */
+  /* Si otra pestaña guarda o quita algo, el botón de guardados de ésta se pone al día. */
   window.addEventListener('storage', (e) => {
     if (e.key !== LLAVE_GUARDADOS && e.key !== null) return;
     guardados = leerGuardados();
-    contarGuardados();
+    botonGuardados();
   });
 
   /* Compartir y guardar, en cualquier ficha de cualquier lista. */

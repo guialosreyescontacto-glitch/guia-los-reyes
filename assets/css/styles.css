@@ -1613,7 +1613,7 @@ button { font: inherit; color: inherit; }
    COMPARTIR Y GUARDAR
    ========================================================================== */
 
-/* Las dos esquinas de arriba del banner: compartir a la izquierda y guardar a
+/* Las dos esquinas de arriba del banner: guardar a la izquierda y compartir a
    la derecha. El contenedor no recibe clics, sólo los botones, para que el
    espacio de en medio siga siendo banner. */
 .card__esquinas {
@@ -1663,21 +1663,7 @@ button { font: inherit; color: inherit; }
 /* El botón de guardados del encabezado usa el cuerpo del selector de tema.
    Su `display` le gana al `[hidden]` del navegador, que no lleva clase, así
    que aquí se dice con clase para que esconderlo funcione. */
-.guardados-btn { position: relative; }
-.guardados-btn[hidden], .guardados-btn__n[hidden] { display: none; }
-.guardados-btn__n {
-  position: absolute; top: -4px; right: -4px;
-  min-width: 18px; height: 18px; padding: 0 5px;
-  display: grid; place-items: center; border-radius: 999px;
-  background: var(--accent); color: #fff;
-  font-size: 10.5px; font-weight: 700; line-height: 1;
-  font-variant-numeric: tabular-nums;
-  box-shadow: 0 0 0 2px var(--surface);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .guardados-btn__n { color: #06302c; }
-}
-:root[data-theme="dark"] .guardados-btn__n { color: #06302c; }
+.guardados-btn[hidden] { display: none; }
 
 .empty__icono {
   width: 16px; height: 16px; vertical-align: -3px; display: inline-block;
@@ -1686,7 +1672,9 @@ button { font: inherit; color: inherit; }
 /* El aviso pasajero: una pastilla abajo al centro, encima de todo. */
 .aviso {
   position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-  z-index: 80; max-width: calc(100% - 32px);
+  /* `max-content`: con `left: 50%` el navegador le da de ancho sólo la mitad
+     de la pantalla que queda a la derecha, y el aviso salía en tres renglones. */
+  z-index: 80; width: max-content; max-width: calc(100vw - 32px);
   transform: translate(-50%, 12px); opacity: 0;
   padding: 11px 18px; border-radius: 14px;
   background: var(--ink); color: var(--surface);
@@ -1700,3 +1688,16 @@ button { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .aviso { transition: none; }
 }
+
+/* Los dos botones del renglón, uno encima del otro y sin aire entre ellos.
+   Puestos lado a lado le quitaban al nombre 38px más, y en un renglón de pila
+   el nombre ya salía cortado ("Servicio Diésel El T…"); a lo alto, en cambio,
+   el renglón mide 115px y los dos juntos 76, así que caben sin estirarlo. */
+.fila__esquinas { flex: none; display: flex; flex-direction: column; }
+
+/* El sello de plan sin palabra: un círculo con la corona o la estrella. */
+.badge--solo {
+  width: 26px; height: 26px; padding: 0;
+  justify-content: center; border-radius: 50%;
+}
+.badge--solo svg { width: 14px; height: 14px; }
