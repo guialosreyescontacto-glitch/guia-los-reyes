@@ -1541,10 +1541,41 @@ button { font: inherit; color: inherit; }
 .vip__acciones--hueco .act,
 .vip__acciones--hueco .tel__ver {
   width: 3.8cqw; height: 3.8cqw; min-width: 0; min-height: 0;
+  /* Sin esto no se veía el icono, y no por chico: `.vip__acciones .act` trae
+     8px de relleno y la caja se mide por el borde, así que en un botón de 18px
+     el espacio de adentro salía negativo y el dibujo se quedaba en 0x0. Lo que
+     se alcanzaba a ver era el aro y el relleno, nada más. */
+  padding: 0;
   border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,.18);
+  /* Reserva para el navegador que no sepa mezclar colores: el blanco de antes,
+     que al menos se alcanza a ver. Las tres reglas de abajo lo reemplazan. */
   background: rgba(255,255,255,.9);
   border: 1px solid rgba(0,0,0,.12);
-  box-shadow: 0 1px 4px rgba(0,0,0,.18);
+  /* El disco lleva el color de la marca al 50% sobre blanco. A este tamaño el
+     glifo mide once píxeles y no se distingue, así que lo que identifica al
+     botón es el color del círculo —el verde de WhatsApp, el rosa de Instagram—
+     y no el dibujito. El aro va en marca plena para remarcar el tono, y el
+     glifo en una versión oscurecida para que resalte sobre su propio pastel.
+     La mezcla es contra blanco incluso en modo oscuro, a propósito: el fondo
+     de aquí no es el del sitio, es el recuadro blanco del anuncio impreso. */
+  background: color-mix(in srgb, var(--marca, var(--ink-2)) 50%, #fff);
+  border-color: var(--marca, var(--line-strong));
+  color: color-mix(in srgb, var(--marca, var(--ink-2)) 80%, #000);
+  /* En táctil `.act` baja al 50% de opacidad para no saturar la tarjeta; aquí
+     el pastel ya lo da el relleno, y encimar las dos cosas desteñía el botón
+     contra el anuncio. */
+  opacity: 1;
+}
+/* El recuadro del anuncio es blanco también en modo oscuro, porque es papel
+   impreso y no cambia de color: el negro de TikTok se fija aquí a mano para
+   que el tema oscuro no lo vuelva claro y deje el botón blanco sobre blanco. */
+.vip__acciones--hueco .act--tiktok { --marca: #191917; }
+/* Mientras el dedo lo mantiene pulsado: marca plena y glifo en blanco, que es
+   el acuse de recibo del toque. */
+.vip__acciones--hueco .act:active {
+  background: var(--marca, var(--ink-2));
+  color: #fff;
 }
 .vip__acciones--hueco .act svg { width: 58%; height: 58%; }
 /* El número destapado no cabe en el hueco de un anuncio: ahí el botón del
