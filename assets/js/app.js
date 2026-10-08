@@ -654,22 +654,16 @@
     return a;
   }
 
-  /* Selección al azar de hasta `n` elementos. Barajar entero y después cortar
-     reparte parejo: en cada carga todos los negocios del plan tienen la misma
-     probabilidad de salir, y ninguno queda siempre fuera por su orden. */
-  const alAzar = (lista, n) => barajar(lista).slice(0, n);
+  /* Selección al azar de hasta `n` elementos, para los dos carruseles de la
+     portada. Barajar entero y después cortar reparte parejo: en cada carga
+     todos los negocios del plan tienen la misma probabilidad de salir y de
+     quedar en cualquier lugar, y ninguno queda siempre fuera por su orden.
 
-  /* Lo mismo, pero abriéndoles paso a los que están abiertos: se baraja cada
-     turno por separado y se pegan en orden, así que los primeros banners del
-     carrusel son negocios a los que se les puede marcar ahora mismo. Los
-     cerrados no desaparecen, quedan detrás; sólo si hay más negocios que
-     lugares en el carrusel se queda alguno fuera, y a esa hora el que se va es
-     el que de todos modos tiene la cortina abajo. */
-  const alAzarAbiertos = (lista, n) => {
-    const turnos = [[], [], []];
-    lista.forEach(neg => turnos[turno(neg)].push(neg));
-    return turnos.reduce((todos, grupo) => todos.concat(barajar(grupo)), []).slice(0, n);
-  };
+     Esté abierto o cerrado, da igual. Antes los abiertos entraban primero y
+     los cerrados sólo llenaban lo que sobraba, y con más abiertos que
+     lugares, un negocio que cierra a mediodía no salía en toda la tarde: le
+     quitaba horas enteras de lo que paga, siempre al mismo. */
+  const alAzar = (lista, n) => barajar(lista).slice(0, n);
 
   /* ---------------------------------------------------- Plantillas (HTML) */
 
@@ -953,7 +947,7 @@
 
   function renderVip() {
     const caja = $('#vipBanner');
-    const vips = alAzarAbiertos(TODOS.filter(esPremium), VIP_MAX);
+    const vips = alAzar(TODOS.filter(esPremium), VIP_MAX);
     caja.hidden = vips.length === 0;
     if (caja.hidden) return;
 
@@ -1231,12 +1225,7 @@
 
   function renderDestacados() {
     const caja  = $('#destBanner');
-    /* Los `fijo` van primero y fuera del sorteo; los lugares que sobran se
-       sortean entre los demás como siempre. */
-    const fijos = TODOS.filter(n => esDestacado(n) && n.fijo);
-    const lista = fijos.concat(alAzarAbiertos(
-      TODOS.filter(n => esDestacado(n) && !n.fijo), Math.max(0, DEST_MAX - fijos.length)
-    )).slice(0, DEST_MAX);
+    const lista = alAzar(TODOS.filter(esDestacado), DEST_MAX);
     caja.hidden = lista.length === 0;
     if (caja.hidden) return;
 
