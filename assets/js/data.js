@@ -455,9 +455,69 @@ const CATEGORIAS = [
       { id: 'contadores', label: 'Contadores' },
       { id: 'notaria', label: 'Trámites y gestoría' },
       { id: 'tecnologia', label: 'Cómputo y tecnología' },
-      { id: 'seguros', label: 'Seguros' }
+      { id: 'seguros', label: 'Seguros' },
+      { id: 'imprenta', label: 'Imprenta y publicidad' }
     ],
     negocios: [
+      /* ------------------------------------------------------------------
+         EL ÚNICO NEGOCIO REAL DEL CATÁLOGO, y está cuatro veces a propósito:
+         una por cada plan, para que su dueño vea en la misma pantalla qué
+         compra cada uno. Los datos salieron de su propio sitio y de su ficha
+         de Google Maps; el nombre lleva el plan colgado para poder
+         distinguirlas, y se le quita cuando escoja.
+
+         Lo demás del catálogo sigue siendo de ejemplo. En cuanto esto deje de
+         ser una muestra para una persona, hay que decidir: o se vacían los
+         inventados de esta categoría, o se quita de aquí, porque el pie de la
+         página sigue diciendo que todos los negocios son ficticios.
+         ------------------------------------------------------------------ */
+      { nombre: 'Soluciones Gráficas · Premium', plan: 'premium', filtro: 'imprenta',
+        tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
+        zona: 'Av. Morelos, Centro',
+        mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',
+        horario: { 'Lun a Vie': '9:00 – 14:00, 16:30 – 20:00',
+                   'Sáb':       '9:30 – 15:00' },
+        tel: '523545464993',
+        correo: 'macr0617@hotmail.com',
+        redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
+        desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
+
+      { nombre: 'Soluciones Gráficas · Destacado', plan: 'destacado', filtro: 'imprenta',
+        tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
+        zona: 'Av. Morelos, Centro',
+        mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',
+        horario: { 'Lun a Vie': '9:00 – 14:00, 16:30 – 20:00',
+                   'Sáb':       '9:30 – 15:00' },
+        tel: '523545464993',
+        correo: 'macr0617@hotmail.com',
+        redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
+        desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
+
+      { nombre: 'Soluciones Gráficas · Ficha completa', plan: 'completa', filtro: 'imprenta',
+        tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
+        zona: 'Av. Morelos, Centro',
+        mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',
+        horario: { 'Lun a Vie': '9:00 – 14:00, 16:30 – 20:00',
+                   'Sáb':       '9:30 – 15:00' },
+        tel: '523545464993',
+        correo: 'macr0617@hotmail.com',
+        redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
+        desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
+
+      /* Los mismos datos que las tres de arriba. La ficha gratuita no los
+         pinta —ni descripción, ni etiquetas, ni correo, ni redes—, y eso es
+         justo lo que se quiere enseñar: lo que se deja de ver. */
+      { nombre: 'Soluciones Gráficas · Ficha gratis', plan: 'basico', filtro: 'imprenta',
+        tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
+        zona: 'Av. Morelos, Centro',
+        mapa: 'Av. Morelos 30, Centro, 60380, Los Reyes de Salgado, Michoacán',
+        horario: { 'Lun a Vie': '9:00 – 14:00, 16:30 – 20:00',
+                   'Sáb':       '9:30 – 15:00' },
+        tel: '523545464993',
+        correo: 'macr0617@hotmail.com',
+        redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
+        desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
+
       { nombre: 'Despacho Contable Aguilar', plan: 'destacado', filtro: 'contadores',
         tags: ['Declaraciones SAT', 'Nóminas', 'Facturación'], zona: 'Centro',
         horario: 'Lun a Vie · 9:00 – 18:00', tel: '523541000701',
