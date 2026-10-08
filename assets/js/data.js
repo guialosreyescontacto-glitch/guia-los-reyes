@@ -482,7 +482,7 @@ const CATEGORIAS = [
          —arriba, derecha, abajo, izquierda—, medidos sobre el propio anuncio. */
       { nombre: 'Soluciones Gráficas · Anuncio', plan: 'premium', filtro: 'imprenta',
         anuncio: 'assets/img/soluciones-graficas-anuncio.jpg',
-        hueco: '86.5% 1% 1.5% 61%',
+        hueco: '82% 1% 2% 62%',
         logo: 'assets/img/soluciones-graficas-logo.png',
         tags: ['Lonas y viniles', 'Bordado computarizado', 'Playeras DTF', 'Corte y grabado láser'],
         zona: 'Av. Morelos, Centro',
@@ -491,7 +491,9 @@ const CATEGORIAS = [
                    'Sáb':       '9:30 – 15:00' },
         tel: '523545464993',
         correo: 'macr0617@hotmail.com',
-        redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
+        redes: { web: 'soluciones-graficas-theta.vercel.app',
+                 facebook: 'https://www.facebook.com/profile.php?id=100045363739005',
+                 instagram: 'solucionesgraficaslr' },
         desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
 
       { nombre: 'Soluciones Gráficas · Premium',
@@ -504,7 +506,9 @@ const CATEGORIAS = [
                    'Sáb':       '9:30 – 15:00' },
         tel: '523545464993',
         correo: 'macr0617@hotmail.com',
-        redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
+        redes: { web: 'soluciones-graficas-theta.vercel.app',
+                 facebook: 'https://www.facebook.com/profile.php?id=100045363739005',
+                 instagram: 'solucionesgraficaslr' },
         desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
 
       { nombre: 'Soluciones Gráficas · Destacado',
@@ -517,7 +521,9 @@ const CATEGORIAS = [
                    'Sáb':       '9:30 – 15:00' },
         tel: '523545464993',
         correo: 'macr0617@hotmail.com',
-        redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
+        redes: { web: 'soluciones-graficas-theta.vercel.app',
+                 facebook: 'https://www.facebook.com/profile.php?id=100045363739005',
+                 instagram: 'solucionesgraficaslr' },
         desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
 
       { nombre: 'Soluciones Gráficas · Ficha completa',
@@ -530,7 +536,9 @@ const CATEGORIAS = [
                    'Sáb':       '9:30 – 15:00' },
         tel: '523545464993',
         correo: 'macr0617@hotmail.com',
-        redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
+        redes: { web: 'soluciones-graficas-theta.vercel.app',
+                 facebook: 'https://www.facebook.com/profile.php?id=100045363739005',
+                 instagram: 'solucionesgraficaslr' },
         desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
 
       /* Los mismos datos que las tres de arriba. La ficha gratuita no los
@@ -546,7 +554,9 @@ const CATEGORIAS = [
                    'Sáb':       '9:30 – 15:00' },
         tel: '523545464993',
         correo: 'macr0617@hotmail.com',
-        redes: { web: 'soluciones-graficas-theta.vercel.app', instagram: 'solucionesgraficaslr' },
+        redes: { web: 'soluciones-graficas-theta.vercel.app',
+                 facebook: 'https://www.facebook.com/profile.php?id=100045363739005',
+                 instagram: 'solucionesgraficaslr' },
         desc: 'Diseño, impresión y bordado bajo un mismo techo. 18 años imprimiendo ideas para familias y negocios.' },
 
       { nombre: 'Despacho Contable Aguilar', plan: 'destacado', filtro: 'contadores',

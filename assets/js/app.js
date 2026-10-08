@@ -152,15 +152,19 @@
       : `https://www.google.com/maps/dir/?api=1&destination=${destino}`;
   };
 
-  /* Enlaces opcionales de la ficha. `web` guarda un dominio o una URL; las
-     redes guardan el usuario, no la dirección completa. El sitio web usa un
-     glifo de trazo (`icono`); las redes, su logotipo relleno (`logo`). */
+  /* Enlaces opcionales de la ficha. Lo normal es guardar el usuario y que aquí
+     se le arme la dirección, pero no todos los negocios tienen uno: hay páginas
+     de Facebook que nunca escogieron nombre y sólo se llegan por un número
+     (`profile.php?id=…`). Por eso se acepta también la dirección completa, tal
+     como venga: si ya empieza con http, se usa tal cual y no se le pega nada
+     delante. El sitio web usa un glifo de trazo (`icono`); las redes, su
+     logotipo relleno (`logo`). */
+  const enlace = (base) => (u) => /^https?:\/\//i.test(u) ? u : base + u;
   const REDES = {
-    web:       { icono: ICONS.globo,    url: (u) => /^https?:\/\//i.test(u) ? u : `https://${u}`,
-                 nombre: 'Sitio web' },
-    facebook:  { logo: LOGOS.facebook,  url: (u) => `https://www.facebook.com/${u}`,  nombre: 'Facebook' },
-    instagram: { logo: LOGOS.instagram, url: (u) => `https://www.instagram.com/${u}`, nombre: 'Instagram' },
-    tiktok:    { logo: LOGOS.tiktok,    url: (u) => `https://www.tiktok.com/@${u}`,   nombre: 'TikTok' }
+    web:       { icono: ICONS.globo,    url: enlace('https://'),                  nombre: 'Sitio web' },
+    facebook:  { logo: LOGOS.facebook,  url: enlace('https://www.facebook.com/'), nombre: 'Facebook' },
+    instagram: { logo: LOGOS.instagram, url: enlace('https://www.instagram.com/'),nombre: 'Instagram' },
+    tiktok:    { logo: LOGOS.tiktok,    url: enlace('https://www.tiktok.com/@'),  nombre: 'TikTok' }
   };
 
   /* ¿Sirve este aparato para llamar? En un teléfono, `tel:` abre el marcador y

@@ -1530,17 +1530,19 @@ button { font: inherit; color: inherit; }
    cada negocio porque cada anuncio lo deja en otro lado; el de aquí es la
    esquina de abajo a la derecha. */
 .vip__acciones--hueco {
-  position: absolute; inset: var(--hueco, 86.5% 1% 1.5% 61%);
+  position: absolute; inset: var(--hueco, 82% 1% 2% 62%);
   margin: 0; padding: 0; border: 0; background: none;
   display: flex; align-items: center; justify-content: center;
-  gap: 1.4cqw;
+  gap: 1.2cqw;
 }
-/* El alto del hueco de este anuncio es el 12% de la imagen, y la imagen mide
-   2.71 de ancho por 1 de alto: 12% / 2.71 = 4.4% del ancho. Los botones van
-   un poco por debajo de esa cuenta para no tocar las orillas del hueco. */
+/* El alto del hueco de este anuncio es el 16% de la imagen, y la imagen mide
+   2.71 de ancho por 1 de alto: 16% / 2.71 = 5.9% del ancho. Los botones van
+   un poco por debajo de esa cuenta para no tocar las orillas del hueco.
+   Seis botones de 4.6 más cinco separaciones de 1.2 suman 33.6 del ancho, y el
+   hueco mide 37: caben de sobra a lo ancho, y el apretón es a lo alto. */
 .vip__acciones--hueco .act,
 .vip__acciones--hueco .tel__ver {
-  width: 3.8cqw; height: 3.8cqw; min-width: 0; min-height: 0;
+  width: 4.6cqw; height: 4.6cqw; min-width: 0; min-height: 0;
   /* Sin esto no se veía el icono, y no por chico: `.vip__acciones .act` trae
      8px de relleno y la caja se mide por el borde, así que en un botón de 18px
      el espacio de adentro salía negativo y el dibujo se quedaba en 0x0. Lo que
@@ -1586,6 +1588,6 @@ button { font: inherit; color: inherit; }
    fijo chico en vez de encogerse a cero. */
 @supports not (container-type: inline-size) {
   .vip__acciones--hueco .act,
-  .vip__acciones--hueco .tel__ver { width: 22px; height: 22px; }
+  .vip__acciones--hueco .tel__ver { width: 26px; height: 26px; }
   .vip__acciones--hueco { gap: 6px; }
 }
