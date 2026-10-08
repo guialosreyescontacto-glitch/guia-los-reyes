@@ -289,6 +289,51 @@
   const TODOS = CATEGORIAS.flatMap(cat =>
     cat.negocios.map(n => Object.assign({}, n, { cat: cat, suerte: Math.random() }))
   );
+  /* De la seña al negocio: los botones de compartir y guardar sólo saben en qué
+     ficha están, y la lista de guardados sólo guarda señas. */
+  const POR_SEÑA = new Map(TODOS.map(n => [seña(n), n]));
+
+  /* -------------------------------------------- Guardar y compartir
+
+     Ninguno de los dos pide cuenta. Guardar se queda en el navegador de quien
+     guarda (`localStorage`): cada teléfono tiene su propia lista, nadie más la
+     ve y no sale de ahí. A cambio, no viaja: en otro teléfono, o si se borran
+     los datos del navegador, la lista empieza vacía. Para una lista de "el
+     cerrajero que me gustó" es buen trato; pedir registro para eso espantaría
+     a más gente de la que ayuda.
+
+     Lo que se guarda es la seña —el nombre hecho dirección—, no el negocio
+     entero: así la ficha que se ve siempre es la del día, con su horario y su
+     teléfono al corriente. Si un negocio cambia de nombre o se da de baja, su
+     seña ya no lleva a nada y se descarta sola al abrir la lista. */
+  const LLAVE_GUARDADOS = 'guardados';
+  const leerGuardados = () => {
+    try {
+      const v = JSON.parse(localStorage.getItem(LLAVE_GUARDADOS) || '[]');
+      return new Set(Array.isArray(v) ? v.filter(s => typeof s === 'string') : []);
+    } catch (e) { return new Set(); }
+  };
+  /* Copia para pintar, no la fuente de la verdad: antes de cambiar algo se
+     vuelve a leer. Con la guía abierta en dos pestañas, cada una traía su
+     copia y la que escribía al último borraba lo que la otra había guardado. */
+  let guardados = leerGuardados();
+  const escribirGuardados = () => {
+    try { localStorage.setItem(LLAVE_GUARDADOS, JSON.stringify([...guardados])); return true; }
+    catch (e) { return false; }
+  };
+
+  /* Los dos botones de las esquinas. Se pintan dentro de la ficha y sacan de
+     ella, por su `data-neg`, de qué negocio se trata. */
+  const botonCompartir = (neg, clase) => `
+    <button class="esq esq--compartir${clase ? ' ' + clase : ''}" type="button" data-compartir
+            title="Compartir" aria-label="Compartir ${esc(neg.nombre)}">${icon(ICONS.compartir)}</button>`;
+  const botonGuardar = (neg, clase) => {
+    const si = guardados.has(seña(neg));
+    return `
+    <button class="esq esq--guardar${clase ? ' ' + clase : ''}" type="button" data-guardar
+            aria-pressed="${si}" title="${si ? 'Quitar de guardados' : 'Guardar'}"
+            aria-label="Guardar ${esc(neg.nombre)}">${icon(ICONS.guardar)}</button>`;
+  };
 
   /* ------------------------------------------- ¿Está abierto en este momento?
 
@@ -649,6 +694,10 @@
   function filaNegocio(neg, idx) {
     const [c1, c2] = neg.cat.banner;
     const ahora = estado(neg);
+    /* El renglón también se puede guardar: la lista es de quien busca, no del
+       negocio, y "el cerrajero de la otra vez" no tiene por qué haber pagado.
+       Compartir sí se queda en la ficha completa, junto con las demás formas
+       de darse a conocer que la gratuita no trae. */
     return `
       <article class="card card--fila" data-neg="${seña(neg)}"
                style="animation-delay:${Math.min(idx, 8) * 35}ms">
@@ -672,6 +721,7 @@
           </div>
         </div>
 
+        ${botonGuardar(neg, 'esq--fila')}
         ${ESMOVIL ? `<div class="card__actions fila__accion">${botonesContacto(neg)}</div>` : ''}
       </article>`;
   }
@@ -701,6 +751,10 @@
             ? `<img class="card__logo" src="${esc(neg.logo)}" alt="" loading="lazy">`
             : `<span class="card__initials">${esc(iniciales(neg.nombre))}</span>
                <span class="card__glyph">${icon(cat.icono)}</span>`}
+          <div class="card__esquinas">
+            ${botonCompartir(neg)}
+            ${botonGuardar(neg)}
+          </div>
           <div class="card__badges">
             ${vip
               ? `<span class="badge badge--vip">${icon(ICONS.corona)} Premium</span>`
@@ -1531,9 +1585,110 @@
     mostrarVista('search');
   }
 
+  /* ------------------------------------------------------ Vista: guardados */
+
+  function renderGuardados() {
+    /* Las señas que ya no llevan a ningún negocio se tiran aquí, en silencio:
+       no hay nada que enseñar de ellas. */
+    guardados = leerGuardados();
+    const lista = [];
+    [...guardados].forEach((s) => {
+      const neg = POR_SEÑA.get(s);
+      if (neg) lista.push(neg); else guardados.delete(s);
+    });
+    escribirGuardados();
+
+    pintarLista($('#guardadosList'), lista);
+    $('#guardadosVacio').hidden = lista.length > 0;
+    mostrarVista('guardados');
+    contarGuardados();
+  }
+
+  /* El botón de guardados del encabezado sólo aparece cuando hay algo que
+     ver: vacío no dice nada, y aparecer con el primer guardado es lo que
+     enseña dónde quedó. Dentro de la vista se queda aunque se vacíe, para no
+     quitarle a uno el piso de donde está parado. */
+  function contarGuardados() {
+    const n = guardados.size;
+    $('#guardadosN').textContent = n;
+    $('#guardadosN').hidden = n === 0;
+    $('#guardadosBtn').hidden = n === 0 && $('#view-guardados').hidden;
+  }
+
+  /* Un aviso que se va solo, abajo de la pantalla. Lo lee también el lector de
+     pantalla, por el `role="status"`. */
+  let avisoTimer;
+  function avisar(texto) {
+    const el = $('#aviso');
+    el.textContent = texto;
+    el.hidden = false;
+    requestAnimationFrame(() => el.classList.add('is-visible'));
+    clearTimeout(avisoTimer);
+    avisoTimer = setTimeout(() => {
+      el.classList.remove('is-visible');
+      avisoTimer = setTimeout(() => { el.hidden = true; }, 250);
+    }, 2600);
+  }
+
+  function alternarGuardado(neg) {
+    const s = seña(neg);
+    guardados = leerGuardados();
+    const ahora = !guardados.has(s);
+    if (ahora) guardados.add(s); else guardados.delete(s);
+    if (!escribirGuardados()) {
+      if (ahora) guardados.delete(s); else guardados.add(s);
+      avisar('Este navegador no deja guardar nada. Prueba fuera del modo privado.');
+      return;
+    }
+    /* El mismo negocio puede estar pintado en más de una lista a la vez —la
+       categoría y los guardados—; se marcan todos sus botones. */
+    $$(`[data-neg="${s}"] [data-guardar]`).forEach((b) => {
+      b.setAttribute('aria-pressed', String(ahora));
+      b.title = ahora ? 'Quitar de guardados' : 'Guardar';
+      b.classList.remove('is-latido');
+      void b.offsetWidth;            // reinicia la animación si se toca seguido
+      if (ahora) b.classList.add('is-latido');
+    });
+    avisar(ahora ? 'Guardado. Lo encuentras arriba, en tus guardados.'
+                 : 'Lo quitaste de tus guardados.');
+    contarGuardados();
+    apuntar('guardar', { negocio: s, accion: ahora ? 'guarda' : 'quita' });
+  }
+
+  /* Compartir abre el menú de compartir del propio teléfono —WhatsApp,
+     Messenger, lo que tenga instalado—, que es donde la gente ya sabe
+     mandar cosas. El enlace abre la categoría con la ficha arriba y latiendo,
+     igual que un banner del carrusel. Donde no hay menú (casi todas las
+     computadoras), el enlace se copia y se avisa. */
+  async function compartir(neg) {
+    const url = window.location.href.split('#')[0] +
+                `#/c/${neg.cat.id}/todos/${seña(neg)}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: neg.nombre,
+          text: `${neg.nombre}, en Los Reyes de Salgado. Lo encontré en Guía Los Reyes:`,
+          url
+        });
+        apuntar('compartir', { negocio: seña(neg), via: 'menu' });
+        return;
+      } catch (e) {
+        /* Cerrar el menú sin escoger nada no es un error: se queda así. */
+        if (e && e.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      avisar('Enlace copiado. Pégalo en el chat donde lo quieras mandar.');
+      apuntar('compartir', { negocio: seña(neg), via: 'copiado' });
+    } catch (e) {
+      window.prompt('Copia este enlace para compartirlo:', url);
+    }
+  }
+
   /* --------------------------------------------------------------- Router */
 
-  const VISTAS = ['home', 'category', 'search', 'registro', 'privacidad'];
+  const VISTAS = ['home', 'category', 'search', 'registro', 'privacidad', 'guardados'];
 
   function mostrarVista(nombre) {
     VISTAS.forEach(v => { $('#view-' + v).hidden = (v !== nombre); });
@@ -1564,6 +1719,8 @@
       renderBusqueda(parts[1]);
     } else if (parts[0] === 'registro') {
       mostrarVista('registro');
+    } else if (parts[0] === 'guardados') {
+      renderGuardados();
     } else if (parts[0] === 'privacidad') {
       mostrarVista('privacidad');
     } else {
@@ -1579,6 +1736,8 @@
       recoger(false);
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
+    /* Saliendo de los guardados con la lista vacía, su botón se va. */
+    contarGuardados();
   }
 
   /* ------------------------------------------ El número que se deja ver */
@@ -1736,6 +1895,24 @@
         lugar: banner.classList.contains('vip__manto') ? 'premium' : 'destacado'
       });
     }
+  });
+
+  /* Si otra pestaña guarda o quita algo, el contador de ésta se pone al día. */
+  window.addEventListener('storage', (e) => {
+    if (e.key !== LLAVE_GUARDADOS && e.key !== null) return;
+    guardados = leerGuardados();
+    contarGuardados();
+  });
+
+  /* Compartir y guardar, en cualquier ficha de cualquier lista. */
+  document.addEventListener('click', (e) => {
+    const boton = e.target.closest('[data-compartir], [data-guardar]');
+    if (!boton) return;
+    const ficha = boton.closest('[data-neg]');
+    const neg = ficha && POR_SEÑA.get(ficha.dataset.neg);
+    if (!neg) return;
+    if (boton.hasAttribute('data-compartir')) compartir(neg);
+    else alternarGuardado(neg);
   });
 
   /* Click en tarjeta de categoría */

@@ -13,7 +13,7 @@
   <meta property="og:locale" content="es_MX">
 
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/css/styles.css?v=73">
+  <link rel="stylesheet" href="assets/css/styles.css?v=74">
 
   <script>
     /* Aplica el tema guardado antes del primer pintado, para que no haya un
@@ -61,6 +61,15 @@
       </form>
 
       <div class="header__acciones">
+
+        <!-- Aparece con el primer negocio guardado (lo decide app.js). -->
+        <a class="theme-toggle guardados-btn" href="#/guardados" id="guardadosBtn" hidden
+           aria-label="Tus negocios guardados" title="Tus guardados">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="guardados-btn__n" id="guardadosN" hidden>0</span>
+        </a>
 
         <button class="theme-toggle" type="button" id="themeToggle"
                 aria-label="Cambiar entre modo claro y oscuro" title="Cambiar entre modo claro y oscuro">
@@ -177,6 +186,25 @@
         <div class="cards" id="searchList"></div>
         <p class="empty" id="searchEmpty" hidden>
           Sin resultados. Prueba con otra palabra como “taller”, “dentista” o “pizza”.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ VISTA: GUARDADOS ============ -->
+    <section class="view" id="view-guardados" hidden>
+      <div class="container">
+        <div class="section-head section-head--mt">
+          <h1 class="section-head__title">Tus guardados</h1>
+          <p class="section-head__sub">
+            Se quedan en este teléfono o computadora, sin cuenta y sin registrarte.
+            Nadie más los ve. Si borras los datos del navegador o cambias de teléfono, la lista empieza de nuevo.
+          </p>
+        </div>
+        <div class="cards" id="guardadosList"></div>
+        <p class="empty" id="guardadosVacio" hidden>
+          Todavía no guardas ningún negocio. Toca el
+          <svg class="empty__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          en la esquina de cualquier ficha y aparecerá aquí.
         </p>
       </div>
     </section>
@@ -442,6 +470,9 @@
     </section>
   </main>
 
+  <!-- Aviso pasajero de abajo: "Guardado", "Enlace copiado". -->
+  <div class="aviso" id="aviso" role="status" aria-live="polite" hidden></div>
+
   <footer class="footer">
     <div class="container footer__inner">
       <p class="footer__brand">Guía <strong>Los Reyes</strong></p>
@@ -451,7 +482,7 @@
     </div>
   </footer>
 
-  <script src="assets/js/data.js?v=73"></script>
-  <script src="assets/js/app.js?v=73"></script>
+  <script src="assets/js/data.js?v=74"></script>
+  <script src="assets/js/app.js?v=74"></script>
 </body>
 </html>

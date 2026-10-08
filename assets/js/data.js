@@ -41,7 +41,13 @@ const ICONS = {
   whatsapp:   '<path d="M22 11.4a9.6 9.6 0 0 1-14.19 8.43L2.27 21.53l1.81-5.44A9.6 9.6 0 1 1 22 11.4Z"/>' +
               '<g transform="translate(5.17 4.22) scale(.6)" fill="currentColor" stroke="none">' +
               '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></g>',
-  globo:      '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/>'
+  globo:      '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/>',
+  /* Compartir: los tres nodos unidos, que es el dibujo del botón de compartir
+     en Android —el teléfono que trae casi todo Los Reyes—. */
+  compartir:  '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/>',
+  /* Guardar: un separador de libro, no un corazón. El corazón se lee como "me
+     gusta", que suena a algo que alguien cuenta; esto es una lista propia. */
+  guardar:    '<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>'
 };
 
 /* --- Logotipos de contacto (rellenos, 24x24) ---------------------------- */

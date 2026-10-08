@@ -1135,9 +1135,12 @@ button { font: inherit; color: inherit; }
   color: rgba(255,255,255,.16); z-index: 1;
 }
 
-/* Badges sobre el banner */
+/* Badges sobre el banner. Van abajo porque las esquinas de arriba son de los
+   botones de compartir y guardar, que son los que se aprietan: en el teléfono
+   el pulgar llega mejor a una esquina que a media orilla, y un sello no
+   necesita alcanzarse. */
 .card__badges {
-  position: absolute; top: 10px; left: 10px; right: 10px; z-index: 2;
+  position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 2;
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
 
@@ -1604,4 +1607,96 @@ button { font: inherit; color: inherit; }
   .vip__acciones--hueco .act,
   .vip__acciones--hueco .tel__ver { width: 26px; height: 26px; }
   .vip__acciones--hueco { gap: 6px; }
+}
+
+/* ==========================================================================
+   COMPARTIR Y GUARDAR
+   ========================================================================== */
+
+/* Las dos esquinas de arriba del banner: compartir a la izquierda y guardar a
+   la derecha. El contenedor no recibe clics, sólo los botones, para que el
+   espacio de en medio siga siendo banner. */
+.card__esquinas {
+  position: absolute; top: 8px; left: 8px; right: 8px; z-index: 3;
+  display: flex; justify-content: space-between;
+  pointer-events: none;
+}
+.esq {
+  pointer-events: auto;
+  width: 36px; height: 36px; flex: none; padding: 8px;
+  display: grid; place-items: center; border-radius: 50%;
+  border: 0; cursor: pointer;
+  /* Vidrio oscuro: se lee igual sobre el degradado de la categoría que sobre
+     la foto de un negocio, sea clara u oscura. */
+  background: rgba(0,0,0,.34); color: #fff;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  transition: background .15s ease, transform .12s ease;
+}
+.esq svg { width: 100%; height: 100%; }
+.esq:active { transform: scale(.9); }
+@media (hover: hover) {
+  .esq:hover { background: rgba(0,0,0,.52); }
+}
+/* Guardado: el separador se rellena, como en cualquier aplicación que la gente
+   ya usa. Con eso basta para leerlo; no hace falta otro color. */
+.esq--guardar[aria-pressed="true"] svg { fill: currentColor; }
+.esq.is-latido { animation: esq-latido .38s ease; }
+@keyframes esq-latido {
+  40% { transform: scale(1.22); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .esq.is-latido { animation: none; }
+}
+
+/* En el renglón gratuito no hay banner: el botón va sin fondo, en tinta
+   apagada, y toma el color de acento al quedar guardado. */
+.esq--fila {
+  width: 38px; height: 38px; padding: 9px;
+  background: none; color: var(--ink-3);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.esq--fila[aria-pressed="true"] { color: var(--accent); }
+@media (hover: hover) {
+  .esq--fila:hover { background: var(--surface-2); color: var(--ink); }
+}
+
+/* El botón de guardados del encabezado usa el cuerpo del selector de tema.
+   Su `display` le gana al `[hidden]` del navegador, que no lleva clase, así
+   que aquí se dice con clase para que esconderlo funcione. */
+.guardados-btn { position: relative; }
+.guardados-btn[hidden], .guardados-btn__n[hidden] { display: none; }
+.guardados-btn__n {
+  position: absolute; top: -4px; right: -4px;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  display: grid; place-items: center; border-radius: 999px;
+  background: var(--accent); color: #fff;
+  font-size: 10.5px; font-weight: 700; line-height: 1;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .guardados-btn__n { color: #06302c; }
+}
+:root[data-theme="dark"] .guardados-btn__n { color: #06302c; }
+
+.empty__icono {
+  width: 16px; height: 16px; vertical-align: -3px; display: inline-block;
+}
+
+/* El aviso pasajero: una pastilla abajo al centro, encima de todo. */
+.aviso {
+  position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  z-index: 80; max-width: calc(100% - 32px);
+  transform: translate(-50%, 12px); opacity: 0;
+  padding: 11px 18px; border-radius: 14px;
+  background: var(--ink); color: var(--surface);
+  font-size: 14px; font-weight: 600; text-align: center;
+  box-shadow: 0 8px 28px rgba(0,0,0,.28);
+  transition: opacity .2s ease, transform .2s ease;
+  pointer-events: none;
+}
+.aviso.is-visible { opacity: 1; transform: translate(-50%, 0); }
+.aviso[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .aviso { transition: none; }
 }
