@@ -1231,7 +1231,12 @@
 
   function renderDestacados() {
     const caja  = $('#destBanner');
-    const lista = alAzarAbiertos(TODOS.filter(esDestacado), DEST_MAX);
+    /* Los `fijo` van primero y fuera del sorteo; los lugares que sobran se
+       sortean entre los demás como siempre. */
+    const fijos = TODOS.filter(n => esDestacado(n) && n.fijo);
+    const lista = fijos.concat(alAzarAbiertos(
+      TODOS.filter(n => esDestacado(n) && !n.fijo), Math.max(0, DEST_MAX - fijos.length)
+    )).slice(0, DEST_MAX);
     caja.hidden = lista.length === 0;
     if (caja.hidden) return;
 
